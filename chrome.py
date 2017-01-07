@@ -6,20 +6,6 @@ import json
 import collections
 from chromeevent import ChromeStatusUpdater
 
-channels = {
-  'drp3' : {'link':'http://live-icy.gss.dr.dk:80/A/A05H.mp3', 'name':'drp3', 'friendly':'DR P3', 'extra':'Musik'},
-  'drp2' : {'link':'http://live-icy.gss.dr.dk:80/A/A04H.mp3', 'name':'drp2', 'friendly':'DR P2', 'extra':'Musik'},
-  'drp1' : {'link':'http://live-icy.gss.dr.dk:80/A/A03H.mp3', 'name':'drp1', 'friendly':'DR P1', 'extra':''},
-  'drp4' : {'link':'http://live-icy.gss.dr.dk:80/A/A10H.mp3', 'name':'drp4', 'friendly':'DR P4', 'extra':''},
-  'drp6' : {'link':'http://live-icy.gss.dr.dk:80/A/A29H.mp3', 'name':'drp6', 'friendly':'DR P6', 'extra':''},
-  'drp7' : {'link':'http://live-icy.gss.dr.dk:80/A/A21H.mp3', 'name':'drp7', 'friendly':'DR P7', 'extra':''},
-  'ramasjang' : {'link':'http://live-icy.gss.dr.dk:80/A/A24H.mp3', 'name':'ramasjang', 'friendly':'Ramasjang', 'extra':'børn'},
-  'nyheder' : {'link':'http://live-icy.gss.dr.dk:80/A/A02H.mp3', 'name':'nyheder', 'friendly':'Nyheder', 'extra':'Nyheder'},
-  '80sforever' : {'link':'http://50.7.99.163:11067/256', 'name':'80sforever', 'friendly':'80s','extra':'Musik'},
-  '97780s' : {'link':'http://7599.live.streamtheworld.com:80/977_80AAC_SC', 'name':'97780s', 'friendly':'80s 977', 'extra':'Musik'},
-  '97790s' : {'link':'http://7599.live.streamtheworld.com:80/977_90AAC_SC', 'name':'97790s', 'friendly':'90s 977', 'extra':'Musik'}
-  }
-  
 urls = (
   '/', 'list_players',
   '/test', 'test',
@@ -31,10 +17,11 @@ urls = (
 
 app = web.application(urls, globals())
 
-audio = pychromecast.get_chromecast(friendly_name="Chrome Audio Stuen")
+# Using IP address, rather than name, speeds up the startup of the program
+audio = pychromecast.Chromecast('192.168.0.133') #get_chromecast(friendly_name="Chrome Audio Stuen")
 audio.wait()
 
-video = pychromecast.get_chromecast(friendly_name="Chrome TV Stuen")
+video = pychromecast.Chromecast('192.168.0.227') #get_chromecast(friendly_name="Chrome TV Stuen")
 video.wait()
 
 
@@ -70,7 +57,7 @@ class medialist:
     
 class list_players:
   def GET(self):
-    return json.dumps(casters.keys());
+    return json.dumps(list(casters.keys()));
     
 class get_player:
   def GET(self, device):
