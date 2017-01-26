@@ -2,16 +2,19 @@ import urllib.request
 import requests
 import pychromecast
 import json
+import streamdata
 
 class ChromeStatusUpdater:
         def __init__(self, device, idx):
                 self.idx = idx
+                self.type = device.device.cast_type
                 self.device = device
                 self.device.register_status_listener(self)
                 self.device.media_controller.register_status_listener(self)
                 self.channels = {}
-                self.status = {'device_name':device.device.friendly_name, 'title':None, 'player_state':None, 'artist': None, 'chromeApp':None}
+                self.status = {'device_name':device.device.friendly_name, 'title':None, 'player_state':None, 'artist': None, 'chromeApp':None, 'content':None, 'album':None, 'media':None}
                 print (device)
+                print (self.type)
                 
         
         def addChannel(self, link = "", name = "", friendly = "", extra = "", media="audio/mp3"):
@@ -32,11 +35,11 @@ class ChromeStatusUpdater:
                 self.notifyNodeRed(self.status)
 
         def new_media_status(self, status):
-                self.status.update({'title':status.title, 'player_state' : status.player_state, 'artist': status.artist})
+                self.status.update({'title':status.title, 'player_state' : status.player_state, 'artist': status.artist, 'album':status.album_name})
                 print (status)
                 ch = self.getChannel(status.content_id)
                 if ch['friendly'] != "N/A" :
-                        self.status.update({'title' : ch['friendly']})                
+                        self.status.update({'title' : ch['friendly'], 'chromeApp':'radio'})                
                 self.notifyNodeRed(self.status)
         
         def notifyNodeRed(self, msg):
@@ -67,33 +70,38 @@ class ChromeStatusUpdater:
                         self.device.media_controller.play()
                 else:
                         x = self.state()
-                        if (x['state'] == "PLAYING"):
+                        if (x['player_state'] == "PLAYING"):
                                 if (x['content'] == self.channels[media]['link']):
                                         return
                         self.device.media_controller.play_media(self.channels[media]['link'], self.channels[media]['media']);
         
         def state(self):
                 s = self.device.media_controller.status
+                print (s)
                 ch = self.getChannel(s.content_id)
-                status = {
-                        'state' : s.player_state,
-                        'content' : s.content_id,
-                        'channel' : ch['friendly'],
-                        'track'   : 'N/A',
-                        'artist'  : 'N/A',
-                        'album'   : 'N/A',
-                        'media'   : ch['media']
-                }
+                if ch != None:
+                        self.status.update({
+                                'content' : s.content_id,
+                                'title'   : ch['friendly'],
+                                'artist'  : 'N/A',
+                                'album'   : 'N/A',
+                                'media'   : ch['media'],
+                                'chromeApp' : 'radio'
+                        })
+                if hasattr(s, 'player_state'):
+                        if s.player_state != None:
+                                self.status.update({'player_state':s.player_state})
                 if hasattr(s, 'title'):
-                        status['track'] = s.title
+                        if s.title != None:
+                                self.status.update({'title': s.title})
                 if hasattr(s, 'artist'):
                         if s.artist != None:
-                                status['artist'] = s.artist
-                                status['channel'] = 'TIDAL'
-                        return status 
+                                self.status.update({'artist' : s.artist, 'album':s.album_name});
+                return self.status 
   
         def state_json(self):
-                return json.dumps(self.state())  
+                self.state()
+                return json.dumps(self.status)  
         
         def getChannel(self, content):
                 ch = {'friendly':"N/A", 'media':"N/A"}

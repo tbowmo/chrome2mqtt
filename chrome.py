@@ -18,10 +18,10 @@ urls = (
 app = web.application(urls, globals())
 
 # Using IP address, rather than name, speeds up the startup of the program
-audio = pychromecast.Chromecast('192.168.0.133') #get_chromecast(friendly_name="Chrome Audio Stuen")
+audio = pychromecast.Chromecast('Chromecast-Audio') #get_chromecast(friendly_name="Chrome Audio Stuen")
 audio.wait()
 
-video = pychromecast.Chromecast('192.168.0.227') #get_chromecast(friendly_name="Chrome TV Stuen")
+video = pychromecast.Chromecast('Chromecast') #get_chromecast(friendly_name="Chrome TV Stuen")
 video.wait()
 
 
