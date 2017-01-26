@@ -1,6 +1,6 @@
 # Chrome Domoticz
 
-This is a small python script using pychromecast to propegate status from my chromecast into domoticz
+This is a small python script using pychromecast to propegate status from my chromecast devices into domoticz and nodered, for further processing
 
 It also implement a simple webservice to control the chromecast, which I have used in a companion dashboard
 
