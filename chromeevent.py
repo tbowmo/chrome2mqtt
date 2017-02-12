@@ -3,6 +3,7 @@ import requests
 import pychromecast
 import json
 import streamdata
+from netflix import netflix
 
 class ChromeStatusUpdater:
         def __init__(self, device, idx):
@@ -36,6 +37,10 @@ class ChromeStatusUpdater:
 
         def new_media_status(self, status):
                 self.status.update({'title':status.title, 'player_state' : status.player_state, 'artist': status.artist, 'album':status.album_name})
+                if hasattr(status, 'content_id'):
+                        print(status.content_id)
+                        n = netflix(status.content_id)
+                        self.status.update({'title':n.title()})
                 print (status)
                 ch = self.getChannel(status.content_id)
                 if ch['friendly'] != "N/A" :
@@ -46,11 +51,13 @@ class ChromeStatusUpdater:
                 nodeRedURL = 'http://jarvis:1880/node/chromecast'
                 req = urllib.request.Request(nodeRedURL)
                 req.add_header('Content-Type', 'application/json; charset=utf-8')
+                print ("--- notifying node-red ---")
                 print (msg)
                 jsondata = json.dumps(msg)
+                print ("--- json data ----")
+                print (jsondata)
                 jsondataasbytes = jsondata.encode('utf-8')
                 req.add_header('Content-Length', len(jsondataasbytes))
-                print (jsondataasbytes)
                 response = urllib.request.urlopen(req, jsondataasbytes)
                 
         def stop(self):
