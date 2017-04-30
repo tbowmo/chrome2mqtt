@@ -5,21 +5,24 @@ from pytz import timezone
 
 class dr:
   def __init__(self, content_id):
-    tree = ET.parse('/var/www/public_html/xmltv/tv.xml')
-    root = tree.getroot()
     self.program = None
     tz = timezone('Europe/Copenhagen')
     now = datetime.now(tz)
     self.nextStart = now + timedelta(seconds=600)
-    for prg in root.findall('programme'):
-      if prg.get('channel') == content_id:
-        start = datetime.strptime(prg.get('start'),"%Y%m%d%H%M%S %z")
-        stop = datetime.strptime(prg.get('stop'),"%Y%m%d%H%M%S %z")
-        if (start < now and stop > now) :
-          self.program = prg
-        if start > datetime.now(tz):
-          self.nextStart = start;
-          return
+    try:
+      tree = ET.parse('xmltv/'+content_id + '.xml')
+      root = tree.getroot()
+      for prg in root.findall('programme'):
+        if prg.get('channel') == content_id:
+          start = datetime.strptime(prg.get('start'),"%Y%m%d%H%M%S %z")
+          stop = datetime.strptime(prg.get('stop'),"%Y%m%d%H%M%S %z")
+          if (start < now and stop > now) :
+            self.program = prg
+          if start > datetime.now(tz):
+            self.nextStart = start;
+            return
+    except:
+      pass
 
   def title(self):
     if self.program == None:

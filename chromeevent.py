@@ -4,6 +4,7 @@ import pychromecast
 import json
 from netflix import netflix
 from dr import dr
+import time
 
 class ChromeStatusUpdater:
         def __init__(self, device, idx, streams):
@@ -27,16 +28,26 @@ class ChromeStatusUpdater:
 
         def new_cast_status(self, status):
                 appName = status.display_name
+                if (appName == "Backdrop"):
+                        self.clear()
                 if (appName == None):
                         appName = "None"
+                        self.clear()
                 url = "http://jarvis:8080/json.htm?type=command&param=udevice&idx="+str(self.idx)+"&nvalue=0&svalue="+str(urllib.request.pathname2url(appName))
                 dom = requests.get(url)
                 self.status.update({'chromeApp':appName})
                 self.notifyNodeRed(self.status)
 
         def new_media_status(self, status):
-                self.createstate(status)
-                self.notifyNodeRed(self.status)
+                if (status.player_state != self.status['player_state']) :
+                        self.createstate(status)
+                        self.notifyNodeRed(self.status)
+                if self.status['player_state'] == 'PLAYING' and self.status['chromeApp'] == 'Netflix':
+                        time.sleep(1);
+                        self.device.media_controller.update_status();
+                if self.status['chromeApp'] == 'Radio' or self.status['chromeApp'] == 'TV' or self.status['chromeApp'] == 'DR TV' :
+                        time.sleep(20);
+                        self.device.media_controller.update_status();
         
         def notifyNodeRed(self, msg):
                 nodeRedURL = 'http://jarvis:1880/node/chromecast'
@@ -53,6 +64,7 @@ class ChromeStatusUpdater:
                 
         def stop(self):
                 self.device.media_controller.stop()
+                self.clear()
         
         def pause(self):
                 self.device.media_controller.pause()
@@ -62,6 +74,14 @@ class ChromeStatusUpdater:
                 
         def quit(self):
                 self.device.quit_app()
+                self.clear()
+        
+        def clear(self):
+                self.status['title'] = ''
+                self.status['artist'] = ''
+                self.status['album'] = ''
+                self.status['content'] = ''
+                self.status['player_state'] = 'STOPPED';
         
         def play(self, media = None):
                 if media == None:
@@ -75,10 +95,11 @@ class ChromeStatusUpdater:
                         self.device.media_controller.play_media(newMedia['link'], newMedia['media']);
 
         def createstate(self,s):
-                print (s)
                 ch = self.streams.getChannelData(link=s.content_id)
-                print(ch)
+                
                 if ch['friendly'] != None:
+                # Assume that it is a streaming radio / video channel if we can resolve
+                # a friendly name for the s.content_id
                         d = dr(ch['xmlid'])
                         self.status.update({
                                 'content' : s.content_id,
@@ -88,8 +109,13 @@ class ChromeStatusUpdater:
                                 'media'   : ch['media'],
                                 'chromeApp' : 'Radio'
                         })
+                        # If it's not an audio device, then it must be a video, aka TV channel
                         if self.device.cast_type != 'audio':
                                 self.status.update({'chromeApp': 'TV'})
+                                
+                if self.status['chromeApp'] == 'Netflix':
+                        d = netflix(s.content_id)
+                        self.status.update({'title':d.title()})
                                 
                 if hasattr(s, 'player_state'):
                         if s.player_state != None:
@@ -100,7 +126,10 @@ class ChromeStatusUpdater:
                 if hasattr(s, 'artist'):
                         if s.artist != None:
                                 self.status.update({'artist' : s.artist, 'album':s.album_name});
+
                 print (self.status)
+                url = "http://jarvis:8080/json.htm?type=command&param=udevice&idx=170&nvalue=0&svalue="+str(urllib.request.pathname2url(self.status['player_state']))
+                dom = requests.get(url)
                 return self.status 
   
         def state(self):
@@ -109,4 +138,3 @@ class ChromeStatusUpdater:
                 
         def state_json(self):
                 return json.dumps(self.state())  
-        

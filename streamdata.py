@@ -7,7 +7,7 @@ class streamdata:
   
   def addChannel(self, link = "", friendly = "", extra = "", media="audio/mp3", xmlid=""):
     id = hashlib.md5(friendly.encode('utf-8')).hexdigest()
-    self.channels.append({'id':id[:8], 'link':link, 'friendly':friendly,'extra':extra, 'media':media, 'xmlid':xmlid})
+    self.channels.append({'id':id[:8], 'link':link, 'friendly':friendly,'extra':extra, 'media':media, 'xmlid':xmlid, 'tv' : "", 'start':"", 'stop':""})
 
   def getChannelList(self, media):
     retCh = []

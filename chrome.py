@@ -10,6 +10,7 @@ from streamdata import streamdata
 urls = (
   '/', 'list_players',
   '/test', 'test',
+  '/status', 'status',
   '/([a-z]*)', 'get_player',
   '/([a-z]*)/list', 'medialist',
   '/([a-z]*)/play/(.*)', 'play_media',
@@ -31,11 +32,11 @@ streams = streamdata()
 streams.addChannel(link='http://live-icy.gss.dr.dk:80/A/A05H.mp3', friendly = 'DR P3', extra = 'Musik', xmlid = "p3.dr.dk")
 streams.addChannel(link='http://live-icy.gss.dr.dk:80/A/A04H.mp3', friendly = 'DR P2', extra = 'Musik', xmlid = "p2.dr.dk")
 streams.addChannel(link='http://live-icy.gss.dr.dk:80/A/A03H.mp3', friendly='DR P1', xmlid = "p1.dr.dk")
-streams.addChannel(link='http://live-icy.gss.dr.dk:80/A/A10H.mp3', friendly='DR P4', xmlid = "p4.dr.dk")
+streams.addChannel(link='http://live-icy.gss.dr.dk:80/A/A10H.mp3', friendly='DR P4', xmlid = "nordjylland.p4.dr.dk")
 streams.addChannel(link='http://live-icy.gss.dr.dk:80/A/A29H.mp3', friendly='DR P6', xmlid = "p6.dr.dk")
 streams.addChannel(link='http://live-icy.gss.dr.dk:80/A/A21H.mp3', friendly='DR P7', xmlid = "p7.dr.dk")
-streams.addChannel(link='http://live-icy.gss.dr.dk:80/A/A24H.mp3', friendly='Ramasjang', extra='børn')
-streams.addChannel(link='http://live-icy.gss.dr.dk:80/A/A02H.mp3', friendly='Nyheder', extra='Nyheder', xmlid='nyheder.dr.dk')
+#streams.addChannel(link='http://live-icy.gss.dr.dk:80/A/A24H.mp3', friendly='Ramasjang', extra='børn')
+#streams.addChannel(link='http://live-icy.gss.dr.dk:80/A/A02H.mp3', friendly='Nyheder', extra='Nyheder')
 streams.addChannel(link='http://50.7.99.163:11067/256', friendly='80s',extra='Musik')
 streams.addChannel(link= 'http://7599.live.streamtheworld.com:80/977_80AAC_SC', friendly='80s 977', extra='Musik')
 streams.addChannel(link= 'http://7599.live.streamtheworld.com:80/977_90AAC_SC', friendly='90s 977', extra='Musik')
@@ -97,5 +98,15 @@ class test:
     player = casters['video']
     return player.status
 
+class status:
+  def GET(self):
+    player = casters['video']
+    if player.status['chromeApp'] != "Backdrop":
+      return player.state_json();
+    else:
+      player = casters['audio']
+      return player.state_json();
+
 if __name__ == "__main__":
   app.run()
+
