@@ -14,9 +14,9 @@ class ChromeStatusUpdater:
                 self.device = device
                 self.device.register_status_listener(self)
                 self.device.media_controller.register_status_listener(self)
-                self.status = {'device_name':device.device.friendly_name, 'title':None, 'player_state':None, 'artist': None, 'chromeApp':None, 'content':None, 'album':None, 'media':None}
+                self.status = {'device_name':device.device.friendly_name, 'title':None, 'player_state':None, 'artist': None, 'chromeApp':None, 'content':None, 'album':None, 'media':None, 'id': None}
                 if self.device.cast_type != 'audio':
-                        self.status.update({'chromeApp':'Netflix'})
+                        self.status.update({'chromeApp':'Backdrop'})
                 print (device)
                 
         
@@ -97,22 +97,24 @@ class ChromeStatusUpdater:
         def createstate(self,s):
                 ch = self.streams.getChannelData(link=s.content_id)
                 
-                if ch['friendly'] != None:
+                if ch.friendly != None:
                 # Assume that it is a streaming radio / video channel if we can resolve
                 # a friendly name for the s.content_id
-                        d = dr(ch['xmlid'])
+                        d = dr(ch.xmlid)
                         self.status.update({
                                 'content' : s.content_id,
-                                'title'   : ch['friendly'] + " - " + d.title(),
+                                'title'   : ch.friendly + " - " + d.title(),
                                 'artist'  : None,
                                 'album'   : None,
-                                'media'   : ch['media'],
-                                'chromeApp' : 'Radio'
+                                'media'   : ch.media,
+                                'chromeApp' : 'Radio',
+                                'id'	  : ch.id
                         })
                         # If it's not an audio device, then it must be a video, aka TV channel
                         if self.device.cast_type != 'audio':
                                 self.status.update({'chromeApp': 'TV'})
-                                
+                else:
+                        self.status.update({'id': None})                
                 if self.status['chromeApp'] == 'Netflix':
                         d = netflix(s.content_id)
                         self.status.update({'title':d.title()})
