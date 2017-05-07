@@ -101,7 +101,7 @@ class test:
 class status:
   def GET(self):
     player = casters['video']
-    if player.status['chromeApp'] != "Backdrop":
+    if player.status.chromeApp != "Backdrop":
       return player.state_json();
     else:
       player = casters['audio']
