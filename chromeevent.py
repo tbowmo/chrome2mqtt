@@ -90,11 +90,15 @@ class ChromeStatusUpdater:
                         newMedia = self.streams.getChannelData(channelId = media)
                         x = self.state()
                         if (x['player_state'] == "PLAYING"):
-                                if (x['content'] == newMedia['link']):
+                                if (x['content'] == newMedia.link):
                                         return
-                        self.device.media_controller.play_media(newMedia['link'], newMedia['media']);
+                        self.device.media_controller.play_media(newMedia.link, newMedia.media);
 
         def createstate(self,s):
+                if hasattr(s, 'player_state'):
+                        if s.player_state != None:
+                                self.status.update({'player_state':s.player_state})
+
                 ch = self.streams.getChannelData(link=s.content_id)
                 
                 if ch.friendly != None:
@@ -115,18 +119,13 @@ class ChromeStatusUpdater:
                                 self.status.update({'chromeApp': 'TV'})
                 else:
                         self.status.update({'id': None})                
-                if self.status['chromeApp'] == 'Netflix':
-                        d = netflix(s.content_id)
-                        self.status.update({'title':d.title()})
+                        if self.status['chromeApp'] == 'Netflix':
+                                d = netflix(s.content_id)
+                                self.status.update({'title':d.title()})
                                 
-                if hasattr(s, 'player_state'):
-                        if s.player_state != None:
-                                self.status.update({'player_state':s.player_state})
-                if hasattr(s, 'title'):
-                        if s.title != None:
+                        if hasattr(s, 'title'):
                                 self.status.update({'title': s.title})
-                if hasattr(s, 'artist'):
-                        if s.artist != None:
+                        if hasattr(s, 'artist'):
                                 self.status.update({'artist' : s.artist, 'album':s.album_name});
 
                 print (self.status)
