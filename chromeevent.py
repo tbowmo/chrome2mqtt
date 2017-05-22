@@ -26,6 +26,8 @@ class ChromeStatusUpdater:
                         return self.streams.getChannelList('video/mp4')
 
         def new_cast_status(self, status):
+                print("----------- new cast status ---------------")
+                print(status)
                 appName = status.display_name
                 if (appName == "Backdrop"):
                         self.clear()
@@ -38,6 +40,8 @@ class ChromeStatusUpdater:
                 self.notifyNodeRed(self.status)
 
         def new_media_status(self, status):
+                print("----------- new media status ---------------")
+                print(status)
                 if (status.player_state != self.status.player_state) :
                         self.createstate(status)
                         self.notifyNodeRed(self.status)
@@ -95,7 +99,10 @@ class ChromeStatusUpdater:
                                 self.status.player_state = s.player_state
 
                 ch = self.streams.getChannelData(link=s.content_id)
-                
+                print ("--create state--")
+                if s.media_metadata != None: 
+                        if 'channel' in s.media_metadata:
+                                ch = self.streams.getChannelData(ch=s.media_metadata.channel)                
                 if ch.friendly != None:
                 # Assume that it is a streaming radio / video channel if we can resolve
                 # a friendly name for the s.content_id
@@ -128,6 +135,7 @@ class ChromeStatusUpdater:
   
         def state(self):
                 s = self.device.media_controller.status
+                print(s);
                 return self.createstate(s)
                 
         def state_json(self):

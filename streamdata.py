@@ -21,13 +21,16 @@ class streamdata:
         retCh.append(channel)
     return retCh
 
-  def getChannelData(self, channelId = None, link = None):
+  def getChannelData(self, channelId = None, link = None, ch = None):
     for channel in self.channels :
       if channelId != None: 
         if channel.id == channelId:
           return channel
       if link != None:
         if channel.link in link:
+          return channel
+      if ch != None:
+        if channel.friendly == ch:
           return channel
     return stream(friendly = None, media= None)
 
