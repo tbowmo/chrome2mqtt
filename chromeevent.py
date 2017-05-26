@@ -36,7 +36,10 @@ class ChromeStatusUpdater:
                         self.clear()
                 url = "http://jarvis:8080/json.htm?type=command&param=udevice&idx="+str(self.idx)+"&nvalue=0&svalue="+str(urllib.request.pathname2url(appName))
                 dom = requests.get(url)
-                self.status.chromeApp = appName
+                if self.device.media_controller.status.player_state == "PLAYING": 
+                        self.state()
+                else:
+                        self.status.chromeApp = appName
                 self.notifyNodeRed(self.status)
 
         def new_media_status(self, status):
@@ -92,6 +95,7 @@ class ChromeStatusUpdater:
                                 if (x.content == newMedia.link):
                                         return
                         self.device.media_controller.play_media(newMedia.link, newMedia.media);
+                        self.notifyNodeRed(self.state())
 
         def createstate(self,s):
                 if hasattr(s, 'player_state'):
