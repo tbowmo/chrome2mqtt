@@ -79,6 +79,8 @@ class ChromeStatusUpdater:
                 self.device.media_controller.skip()
                 
         def quit(self):
+                print("QUIT!");
+                self.device.media_controller.stop()
                 self.device.quit_app()
                 self.clear()
         
@@ -98,12 +100,23 @@ class ChromeStatusUpdater:
                         self.notifyNodeRed(self.state())
 
         def createstate(self,s):
+                if hasattr(s, 'supports_pause'):
+                        self.status.pause = s.supports_pause; 
+                else:
+                        self.status.pause = False;
+                if hasattr(s, 'supports_skip_forward'):
+                        self.status.skip_fwd = s.supports_skip_forward
+                else:
+                        self.status.skip_fwd = False
+                if hasattr(s, 'supports_skip_backward'):
+                        self.status.skip_bck = s.supports_skip_backward
+                else:
+                        self.status.skip_bck = False
                 if hasattr(s, 'player_state'):
                         if s.player_state != None:
                                 self.status.player_state = s.player_state
 
                 ch = self.streams.getChannelData(link=s.content_id)
-                print ("--create state--")
                 if s.media_metadata != None: 
                         if 'channel' in s.media_metadata:
                                 ch = self.streams.getChannelData(ch=s.media_metadata.channel)                
@@ -157,6 +170,9 @@ class ChromeState:
         album = None
         media = None
         id = None
+        skip_fwd = False
+        skip_bck = False
+        pause = False
         
         def __init__(self, device_name):
                 self.device_name = device_name
@@ -170,4 +186,3 @@ class ChromeState:
                 album = None
                 media = None
                 id = None
-                
