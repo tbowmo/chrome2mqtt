@@ -35,7 +35,10 @@ class ChromeStatusUpdater:
                         appName = "None"
                         self.clear()
                 url = "http://jarvis:8080/json.htm?type=command&param=udevice&idx="+str(self.idx)+"&nvalue=0&svalue="+str(urllib.request.pathname2url(appName))
-                dom = requests.get(url)
+                try:
+                        dom = requests.get(url)
+                except:
+                        print ("Silently.. domoticz down")
                 if self.device.media_controller.status.player_state == "PLAYING": 
                         self.state()
                 else:
@@ -92,10 +95,14 @@ class ChromeStatusUpdater:
                         self.device.media_controller.play()
                 else:
                         newMedia = self.streams.getChannelData(channelId = media)
-                        x = self.state()
-                        if (x.player_state == "PLAYING"):
-                                if (x.content == newMedia.link):
-                                        return
+                        if (self.device.status.app_id != None):
+                                x = self.state()
+                                if (x.player_state == "PLAYING"):
+                                        if (x.content == newMedia.link):
+                                                return
+                        print ("starting stream")
+                        print (newMedia.link)
+                        print (newMedia.media)
                         self.device.media_controller.play_media(newMedia.link, newMedia.media);
                         self.notifyNodeRed(self.state())
 
@@ -147,12 +154,19 @@ class ChromeStatusUpdater:
                                 self.status.album = s.album_name
 
                 url = "http://jarvis:8080/json.htm?type=command&param=udevice&idx=170&nvalue=0&svalue="+str(urllib.request.pathname2url(self.status.player_state))
-                dom = requests.get(url)
+                try:
+                        dom = requests.get(url)
+                except:
+                        print ("Silently dropped.. domoticz down");
                 return self.status 
   
         def state(self):
+                print("state")
+                if (self.device.status.app_id == None):
+                        self.status.clear()
+                        return self.status
                 s = self.device.media_controller.status
-                print(s);
+                print(self.device.status)
                 return self.createstate(s)
                 
         def state_json(self):
@@ -161,14 +175,14 @@ class ChromeStatusUpdater:
 
 
 class ChromeState:
-        device_name = None
-        title = None
+        device_name = ""
+        title = ""
         player_state = "STOPPED"
-        artist = None
-        chromeApp = None
-        content = None
-        album = None
-        media = None
+        artist = ""
+        chromeApp = ""
+        content = ""
+        album = ""
+        media = ""
         id = None
         skip_fwd = False
         skip_bck = False
@@ -178,11 +192,16 @@ class ChromeState:
                 self.device_name = device_name
 
         def clear(self):
-                title = None
-                player_state = "STOPPED"
-                artist = None
-                chromeApp = None
-                content = None
-                album = None
-                media = None
-                id = None
+                self.title = ""
+                self.player_state = "STOPPED"
+                self.artist = ""
+                self.chromeApp = ""
+                self.content = ""
+                self.album = ""
+                self.media = ""
+                self.id = ""
+                self.pause = False
+                self.skip_fwd = False
+                self.skip_bck = False
+
+                

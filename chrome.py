@@ -1,23 +1,13 @@
 #!/usr/bin/python3
-import web
+import bottle
+from bottle import request, response
+from bottle import get
 import pychromecast
 import time
 import json
 import collections
 from chromeevent import ChromeStatusUpdater
 from streamdata import streamdata, stream
-
-urls = (
-  '/', 'list_players',
-  '/test', 'test',
-  '/status', 'status',
-  '/([a-z]*)', 'get_player',
-  '/([a-z]*)/list', 'medialist',
-  '/([a-z]*)/play/(.*)', 'play_media',
-  '/([a-z]*)/([a-z]*)', 'control_player'
-  )
-
-app = web.application(urls, globals())
 
 # Using IP address, rather than name, speeds up the startup of the program
 audio = pychromecast.Chromecast('Chromecast-Audio') #get_chromecast(friendly_name="Chrome Audio Stuen")
@@ -55,58 +45,59 @@ casters = {
   }  
 
 
-class medialist:
-  def GET(self, device):
-    #od = collections.OrderedDict(sorted(casters[device].getChannelList().items()))
-    od = casters[device].getChannelList()
-    return json.dumps(od, default=lambda o: o.__dict__)
+app = application = bottle.default_app()
+
+
+@get('/<device>/list')
+def medialist(device):
+  #od = collections.OrderedDict(sorted(casters[device].getChannelList().items()))
+  od = casters[device].getChannelList()
+  return json.dumps(od, default=lambda o: o.__dict__)
     
-class list_players:
-  def GET(self):
-    return json.dumps(list(casters.keys()));
+@get('/')
+def listplayers():
+  return json.dumps(list(casters.keys()));
     
-class get_player:
-  def GET(self, device):
-    m = casters[device]
-    return m.state_json()
-     
-class control_player:
-  def GET(self, device, command):
-    player = casters[device]
-    if command == 'pause':
-      player.pause()
-    elif command == 'play':
-      player.play()
-    elif command == 'skip':
-      player.skip()
-    elif command == 'stop':
-      player.stop()
-    elif command == 'quit':
-      player.quit()
-    time.sleep(0.5)
-    return player.state_json()
+@get('/<device>')
+def getdevicestatus(device):
+  if (device == 'favicon.ico'):
+    return
+  m = casters[device]
+  return m.state_json()
 
-class play_media:
-  def GET(self, device, media):
-    player = casters[device]
-    player.play(media)
-    time.sleep(1)
-    return player.state_json()
+@get('/<device>/<command>')     
+def control_player(device, command):
+  player = casters[device]
+  if command == 'pause':
+    player.pause()
+  elif command == 'play':
+    player.play()
+  elif command == 'skip':
+    player.skip()
+  elif command == 'stop':
+    player.stop()
+  elif command == 'quit':
+    player.quit()
+  time.sleep(0.5)
+  return player.state_json()
 
-class test:
-  def GET(self):
-    player = casters['video']
-    return player.status
+@get('/<device>/play/<media>')
+def play_media(device, media):
+  player = casters[device]
+  player.play(media)
+  time.sleep(1)
+  return player.state_json()
 
-class status:
-  def GET(self):
-    player = casters['video']
-    if player.status.chromeApp != "Backdrop":
-      return player.state_json();
-    else:
-      player = casters['audio']
-      return player.state_json();
+@get('/status')
+def status():
+  player = casters['video']
+  if player.status.chromeApp != "Backdrop":
+    return player.state_json();
+  else:
+    player = casters['audio']
+    return player.state_json();
 
 if __name__ == "__main__":
-  app.run()
+  app.run(host='192.168.0.64', port=8182)
+
 
