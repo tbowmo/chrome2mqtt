@@ -100,9 +100,6 @@ class ChromeStatusUpdater:
                                 if (x.player_state == "PLAYING"):
                                         if (x.content == newMedia.link):
                                                 return
-                        print ("starting stream")
-                        print (newMedia.link)
-                        print (newMedia.media)
                         self.device.media_controller.play_media(newMedia.link, newMedia.media);
                         self.notifyNodeRed(self.state())
 
@@ -161,12 +158,13 @@ class ChromeStatusUpdater:
                 return self.status 
   
         def state(self):
-                print("state")
                 if (self.device.status.app_id == None):
                         self.status.clear()
                         return self.status
+                if (self.device.status.app_id == 'E8C28D3C'):
+                        self.status.clear()
+                        return self.status
                 s = self.device.media_controller.status
-                print(self.device.status)
                 return self.createstate(s)
                 
         def state_json(self):

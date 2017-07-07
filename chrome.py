@@ -25,6 +25,6 @@ app = application = bottle.default_app()
 
 
 if __name__ == "__main__":
-  app.run(host='192.168.0.64', port=8182)
+  app.run(port=8181)
 
 
