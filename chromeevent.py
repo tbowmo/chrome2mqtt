@@ -125,7 +125,7 @@ class ChromeStatusUpdater:
 
                 ch = self.streams.getChannelData(link=s.content_id)
                 if s.media_metadata != None: 
-                        if 'channel' in s.media_metadata:
+                        if hasattr(s.media_metadata, 'channel'):
                                 ch = self.streams.getChannelData(ch=s.media_metadata.channel)                
                 if ch.friendly != None:
                 # Assume that it is a streaming radio / video channel if we can resolve
