@@ -15,9 +15,9 @@ video = pychromecast.Chromecast('Chromecast') #get_chromecast(friendly_name="Chr
 video.wait()
 
 api.casters = {
-  'video' : ChromeStatusUpdater(video,156, streams),
-  'audio' : ChromeStatusUpdater(audio,157, streams)
-  }  
+    'video' : ChromeStatusUpdater(video,156, streams),
+    'audio' : ChromeStatusUpdater(audio,157, streams)
+    }    
 
 
 app = application = bottle.default_app()
@@ -25,6 +25,6 @@ app = application = bottle.default_app()
 
 
 if __name__ == "__main__":
-  app.run(port=8181)
+    app.run(port=8181)
 
 
