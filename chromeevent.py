@@ -14,7 +14,7 @@ class ChromeStatusUpdater:
         self.device = device
         self.device.register_status_listener(self)
         self.device.media_controller.register_status_listener(self)
-        self.status = ChromeState(device.device.friendly_name)
+        self.status = ChromeState(device.device)
         if self.device.cast_type != 'audio':
             self.status.chromeApp = 'Backdrop'
         
@@ -171,6 +171,7 @@ class ChromeStatusUpdater:
 
 class ChromeState:
     device_name = ""
+    device_type = ""
     title = ""
     player_state = "STOPPED"
     artist = ""
@@ -183,8 +184,12 @@ class ChromeState:
     skip_bck = False
     pause = False
     
-    def __init__(self, device_name):
-        self.device_name = device_name
+    def __init__(self, device):
+        self.device_name = device.friendly_name
+        if (device.cast_type == 'cast'):
+            self.device_type = 'video'
+        else:
+            self.device_type = device.cast_type
 
     def clear(self):
         self.title = ""
