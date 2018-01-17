@@ -5,7 +5,8 @@ import time
 import json
 from chromeevent import ChromeStatusUpdater
 import api
-from streams import streams
+from streamdata import streamdata, stream
+from shutil import copyfile
 
 # Using IP address, rather than name, speeds up the startup of the program
 casts = pychromecast.get_chromecasts()
@@ -19,12 +20,18 @@ else:
     audio = casts[1]
     video = casts[0]
 
-print(audio.cast_type)
-print(video.cast_type)
-
-    
 audio.wait()
 video.wait()
+streams = streamdata();
+
+try:
+    with open('/config/streams.json') as streams_json:
+        stdict = json.loads(streams_json.read())
+        for st in stdict:
+            streams.addChannel(stream(st))
+except IOError:
+    copyfile('streams.json', '/config/streams.json')
+              
 
 api.casters = {
     'video' : ChromeStatusUpdater(video,156, streams),
@@ -37,6 +44,6 @@ app = application = bottle.default_app()
 
 
 if __name__ == "__main__":
-    app.run(port=8181)
+    app.run(host='0.0.0.0', port=8181)
 
 

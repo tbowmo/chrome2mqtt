@@ -41,6 +41,7 @@ class stream:
     stop = ""
     
     def __init__(self, link = "", friendly = "", extra = "", media = "audio/mp3", xmlid = ""):
+        print(friendly)
         if friendly != None: 
             self.id = hashlib.md5(friendly.encode('utf-8')).hexdigest()[:8]
         self.link = link

@@ -10,7 +10,7 @@ class dr:
         now = datetime.now(tz)
         self.nextStart = now + timedelta(seconds=600)
         try:
-            tree = ET.parse('xmltv/'+content_id + '.xml')
+            tree = ET.parse('/config/xmltv/'+content_id + '.xml')
             root = tree.getroot()
             for prg in root.findall('programme'):
                 if prg.get('channel') == content_id:

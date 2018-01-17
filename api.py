@@ -2,7 +2,6 @@ from bottle import request, response
 from bottle import get
 import time
 import json
-from streams import streams
 
 casters = {}
 
