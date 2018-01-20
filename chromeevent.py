@@ -15,6 +15,7 @@ class ChromeStatusUpdater:
         self.device.register_status_listener(self)
         self.device.media_controller.register_status_listener(self)
         self.status = ChromeState(device.device)
+        self.forceSendCount = 0;
         if self.device.cast_type != 'audio':
             self.status.chromeApp = 'Backdrop'
         
@@ -34,7 +35,8 @@ class ChromeStatusUpdater:
         if (appName == None):
             appName = "None"
             self.status.clear()
-        url = "http://jarvis:8080/json.htm?type=command&param=udevice&idx="+str(self.idx)+"&nvalue=0&svalue="+str(urllib.request.pathname2url(appName))
+        url = "http://localhost:8080/json.htm?type=command&param=udevice&idx="+str(self.idx)+"&nvalue=0&svalue="+str(urllib.request.pathname2url(appName))
+        print(url)
         try:
             dom = requests.get(url)
         except:
@@ -48,7 +50,8 @@ class ChromeStatusUpdater:
     def new_media_status(self, status):
         print("----------- new media status ---------------")
         print(status)
-        if (status.player_state != self.status.player_state) :
+        if (status.player_state != self.status.player_state) or (self.forceSendCount == 10):
+            self.forceSendCount = 0;
             self.createstate(status)
             self.notifyNodeRed(self.status)
         if self.status.player_state == 'PLAYING':
@@ -61,9 +64,10 @@ class ChromeStatusUpdater:
             if self.status.chromeApp == 'Radio' or self.status.chromeApp == 'TV' or self.status.chromeApp == 'DR TV' :
                 time.sleep(20);
                 self.device.media_controller.update_status();
+        self.forceSendCount = self.forceSendCount + 1
 
     def notifyNodeRed(self, msg):
-        nodeRedURL = 'http://jarvis:1880/node/chromecast'
+        nodeRedURL = 'http://localhost:1880/node/chromecast'
         req = urllib.request.Request(nodeRedURL)
         req.add_header('Content-Type', 'application/json; charset=utf-8')
         jsondata = json.dumps(msg, default=lambda o: o.__dict__)
@@ -147,7 +151,8 @@ class ChromeStatusUpdater:
                 self.status.artist = s.artist
                 self.status.album = s.album_name
 
-        url = "http://jarvis:8080/json.htm?type=command&param=udevice&idx=170&nvalue=0&svalue="+str(urllib.request.pathname2url(self.status.player_state))
+        url = "http://localhost:8080/json.htm?type=command&param=udevice&idx=170&nvalue=0&svalue="+str(urllib.request.pathname2url(self.status.player_state))
+        print(url)
         try:
             dom = requests.get(url)
         except:
