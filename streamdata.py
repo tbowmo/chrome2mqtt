@@ -42,7 +42,7 @@ class StreamData:
                         return channel
         except Exception:
             pass
-        dummy = {'friendly':None, 'media':None}
+        dummy = {'friendly':'', 'media':''}
         return Stream(**dummy)
 
 
