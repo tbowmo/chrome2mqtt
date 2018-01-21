@@ -1,27 +1,33 @@
+"""
+ Handles stream descriptors
+"""
 import hashlib
-from dr import dr
+from dr import Dr
 
-class streamdata:
+class StreamData:
+    """ Handles stream descriptors, searching and listing all channels """
     def __init__(self):
         self.channels = []
-    
-    def addChannel(self, channel): #link = "", friendly = "", extra = "", media="audio/mp3", xmlid=""):
-#        id = hashlib.md5(friendly.encode('utf-8')).hexdigest()
-        self.channels.append(channel) #{'id':id[:8], 'link':link, 'friendly':friendly,'extra':extra, 'media':media, 'xmlid':xmlid, 'tv' : "", 'start':"", 'stop':""})
 
-    def getChannelList(self, media):
-        retCh = []
+    def addChannel(self, channel):
+        """ Add channel to repository """
+        self.channels.append(channel)
+
+    def getChannelList(self, media = "Audio/mp3"):
+        """ List all channels for given media, defaults to audio/mp3 """
+        ret_ch = []
         for channel in self.channels :
-            if (channel.media == media):
+            if channel.media == media:
                 if channel.xmlid != "":
-                    d = dr(channel.xmlid)
+                    d = Dr(channel.xmlid)
                     channel.tv = d.title()
                     channel.start = d.start()
                     channel.stop = d.stop()
-                retCh.append(channel)
-        return retCh
+                ret_ch.append(channel)
+        return ret_ch
 
     def getChannelData(self, channelId = None, link = None, ch = None):
+        """ Get data for a single channel """
         for channel in self.channels :
             if channelId != None: 
                 if channel.id == channelId:
@@ -32,17 +38,17 @@ class streamdata:
             if ch != None:
                 if channel.friendly == ch:
                     return channel
-        return stream(friendly = None, media= None)
+        return Stream(friendly = None, media= None)
 
 
-class stream:
+class Stream:
+    """ Single streaming channel data """
     tv = ""
     start = ""
     stop = ""
-    
+    id = ""
     def __init__(self, link = "", friendly = "", extra = "", media = "audio/mp3", xmlid = ""):
-        print(friendly)
-        if friendly != None: 
+        if friendly != "" and friendly is not None: 
             self.id = hashlib.md5(friendly.encode('utf-8')).hexdigest()[:8]
         self.link = link
         self.friendly = friendly

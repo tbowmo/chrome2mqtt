@@ -1,49 +1,51 @@
 #!/usr/bin/python3
+"""
+    Program that handles chromecast integration, mainly with domoticz. But also implements
+    a crude rest api for controlling a chromecast, and start streaming pre-defined streams.
+
+    This can be used to create a web interface for controlling a chromecast (for example in
+    angular)
+
+    Copyright 2018: Thomas Bowman Mørch
+"""
+import json
+from shutil import copyfile
 import bottle
 import pychromecast
-import time
-import json
-from chromeevent import ChromeStatusUpdater
 import api
-from streamdata import streamdata, stream
-from shutil import copyfile
+from chromeevent import ChromeEvent
+from streamdata import StreamData, Stream
 
-# Using IP address, rather than name, speeds up the startup of the program
-casts = pychromecast.get_chromecasts()
-if len(casts) == 0:
+STREAMS = StreamData()
+CASTS = pychromecast.get_chromecasts()
+
+if len(CASTS) == 0:
     print("No Devices Found")
     exit()
-if (casts[0].cast_type == "audio"):
-    audio = casts[0] #pychromecast.Chromecast('chromecastaudio') #get_chromecast(friendly_name="Chrome Audio Stuen")
-    video = casts[1] #pychromecast.Chromecast('chromecastvideo') #get_chromecast(friendly_name="Chrome TV Stuen")
+if CASTS[0].cast_type == "audio":
+    AUDIO = CASTS[0]
+    VIDEO = CASTS[1]
 else:
-    audio = casts[1]
-    video = casts[0]
+    AUDIO = CASTS[1]
+    VIDEO = CASTS[0]
 
-audio.wait()
-video.wait()
-streams = streamdata();
+AUDIO.wait()
+VIDEO.wait()
 
 try:
     with open('/config/streams.json') as streams_json:
         stdict = json.loads(streams_json.read())
         for st in stdict:
-            streams.addChannel(stream(st))
+            STREAMS.addChannel(Stream(st))
 except IOError:
     copyfile('streams.json', '/config/streams.json')
-              
 
 api.casters = {
-    'video' : ChromeStatusUpdater(video,156, streams),
-    'audio' : ChromeStatusUpdater(audio,157, streams)
-    }    
+    'video' : ChromeEvent(VIDEO, 156, STREAMS),
+    'audio' : ChromeEvent(AUDIO, 157, STREAMS)
+    }
 
-
-app = application = bottle.default_app()
-
-
+APP = application = bottle.default_app()
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=8181)
-
-
+    APP.run(host='0.0.0.0', port=8181)

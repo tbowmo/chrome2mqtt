@@ -1,7 +1,11 @@
-from bottle import request, response
-from bottle import get
-import time
+"""
+    API endpoints for the webservice requests
+
+    Copyright 2018: Thomas Bowman Mørch
+"""
 import json
+import time
+from bottle import get
 
 casters = {}
 
@@ -16,7 +20,7 @@ def listplayers():
         
 @get('/<device>')
 def getdevicestatus(device):
-    if (device == 'favicon.ico'):
+    if device == 'favicon.ico':
         return
     m = casters[device]
     return m.state_json()
