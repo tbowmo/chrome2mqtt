@@ -29,16 +29,19 @@ class StreamData:
 
     def get_channel_data(self, channelId=None, link=None, ch=None):
         """ Get data for a single channel """
-        for channel in self.channels:
-            if channelId is not None:
-                if channel.id == channelId:
-                    return channel
-            if link is not None:
-                if channel.link in link:
-                    return channel
-            if ch is not None:
-                if channel.friendly == ch:
-                    return channel
+        try:
+            for channel in self.channels:
+                if channelId is not None:
+                    if channel.id == channelId:
+                        return channel
+                if link is not None:
+                    if channel.link in link:
+                        return channel
+                if ch is not None:
+                    if channel.friendly == ch:
+                        return channel
+        except Exception:
+            pass
         dummy = {'friendly':None, 'media':None}
         return Stream(**dummy)
 
