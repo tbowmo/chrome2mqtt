@@ -36,7 +36,7 @@ try:
     with open('/config/streams.json') as streams_json:
         stdict = json.loads(streams_json.read())
         for st in stdict:
-            STREAMS.addChannel(Stream(st))
+            STREAMS.add_channel(Stream(**st))
 except IOError:
     copyfile('streams.json', '/config/streams.json')
 

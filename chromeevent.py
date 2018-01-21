@@ -2,19 +2,26 @@
     Handles events from a chromecast device, and reports these to various endpoints
 """
 
+import configparser
 import json
 import urllib.request
 import time
 import requests
-from netflix import Netflix
-from dr import Dr
+from chromestate import ChromeState
 
 class ChromeEvent:
     """ Chrome event handling """
     def __init__(self, device, idx, streams):
+        config = configparser.ConfigParser()
+        config.read('/config/config.ini')
+        if "default" in config:
+            self.nodered = config['default']['nodered']
+            self.domoticz = config['default']['domoticz']
+        else:
+            self.nodered = "http://localhost:1880/node"
+            self.domoticz = "http://localhost:8080/json.htm"
         self.streams = streams
         self.idx = idx
-        self.type = device.device.cast_type
         self.device = device
         self.device.register_status_listener(self)
         self.device.media_controller.register_status_listener(self)
@@ -22,13 +29,14 @@ class ChromeEvent:
         if self.device.cast_type != 'audio':
             self.status.chrome_app = 'Backdrop'
 
+
     def getChannelList(self):
         if self.device.cast_type == 'audio':
             return self.streams.getChannelList('audio/mp3')
         else:
             return self.streams.getChannelList('video/mp4')
 
-    def __new_cast_status(self, status):
+    def new_cast_status(self, status):
         print("----------- new cast status ---------------")
         print(status)
         app_name = status.display_name
@@ -44,7 +52,7 @@ class ChromeEvent:
             self.status.chrome_app = app_name
         self.__notify_node_red(self.status)
 
-    def __new_media_status(self, status):
+    def new_media_status(self, status):
         print("----------- new media status ---------------")
         print(status)
         if status.player_state != self.status.player_state:
@@ -62,16 +70,22 @@ class ChromeEvent:
                 self.device.media_controller.update_status()
 
     def __notify_node_red(self, msg):
-        node_red_url = 'http://localhost:1880/node/chromecast'
+        node_red_url = self.nodered + '/chromecast'
+        print("----- node-red -----")
+        print(node_red_url)
         req = urllib.request.Request(node_red_url)
         req.add_header('Content-Type', 'application/json; charset=utf-8')
         jsondata = json.dumps(msg, default=lambda o: o.__dict__)
         jsondataasbytes = jsondata.encode('utf-8')
         req.add_header('Content-Length', len(jsondataasbytes))
-        urllib.request.urlopen(req, jsondataasbytes)
+        try: 
+            urllib.request.urlopen(req, jsondataasbytes)
+        except requests.exceptions.RequestException:
+            print('Silently.. nodered down')
+
 
     def __notify_domoticz(self, msg, device):
-        url = "http://localhost:8080/json.htm?type=command&param=udevice&idx="+str(device)+"&nvalue=0&svalue="+str(urllib.request.pathname2url(msg))
+        url = self.domoticz + "?type=command&param=udevice&idx="+str(device)+"&nvalue=0&svalue="+str(urllib.request.pathname2url(msg))
         print("------ Domoticz ------")
         print(url)
         try:
@@ -104,7 +118,7 @@ class ChromeEvent:
             self.device.media_controller.play()
         else:
             new_media = self.streams.getChannelData(channelId=media)
-            if self.device.status.app_id != None:
+            if self.device.status.app_id is not None:
                 x = self.state()
                 if x.player_state == "PLAYING":
                     if x.content == new_media.link:
@@ -112,51 +126,8 @@ class ChromeEvent:
             self.device.media_controller.play_media(new_media.link, new_media.media)
             self.__notify_node_red(self.state())
 
-    def __createstate(self,s):
-        if hasattr(s, 'supports_pause'):
-            self.status.pause = s.supports_pause
-        else:
-            self.status.pause = False
-        if hasattr(s, 'supports_skip_forward'):
-            self.status.skip_fwd = s.supports_skip_forward
-        else:
-            self.status.skip_fwd = False
-        if hasattr(s, 'supports_skip_backward'):
-            self.status.skip_bck = s.supports_skip_backward
-        else:
-            self.status.skip_bck = False
-        if hasattr(s, 'player_state'):
-            if s.player_state != None:
-                self.status.player_state = s.player_state
-
-        ch = self.streams.getChannelData(link=s.content_id)
-        if s.media_metadata != None:
-            if hasattr(s.media_metadata, 'channel'):
-                ch = self.streams.getChannelData(ch=s.media_metadata.channel)
-        if ch.friendly != None:
-        # Assume that it is a streaming radio / video channel if we can resolve
-        # a friendly name for the s.content_id
-            d = Dr(ch.xmlid)
-            self.status.content = s.content_id
-            self.status.title = ch.friendly + " - " + d.title()
-            self.status.artist = None
-            self.status.album = None
-            self.status.media = ch.media
-            self.status.chrome_app = 'Radio'
-            self.status.id = ch.id
-            # If it's not an audio device, then it must be a video, aka TV channel
-            if self.device.cast_type != 'audio':
-                self.status.chrome_app = 'TV'
-        else:
-            self.status.id = None
-            if self.status.chrome_app == 'Netflix':
-                d = Netflix(s.content_id)
-                self.status.title = d.title()
-            if hasattr(s, 'title'):
-                self.status.title = s.title
-            if hasattr(s, 'artist'):
-                self.status.artist = s.artist
-                self.status.album = s.album_name
+    def __createstate(self, state):
+        self.status.update(state, self.streams)
         self.__notify_domoticz(self.status.player_state, 170)
         return self.status
 
@@ -170,41 +141,7 @@ class ChromeEvent:
             return self.status
         s = self.device.media_controller.status
         return self.__createstate(s)
-
-
-class ChromeState:
-    """ Holds state of the chromecast player """
-    device_name = ""
-    device_type = ""
-    title = ""
-    player_state = "STOPPED"
-    artist = ""
-    chrome_app = ""
-    content = ""
-    album = ""
-    media = ""
-    id = None
-    skip_fwd = False
-    skip_bck = False
-    pause = False
-
-    def __init__(self, device):
-        self.device_name = device.friendly_name
-        if device.cast_type == 'cast':
-            self.device_type = 'video'
-        else:
-            self.device_type = device.cast_type
-
-    def clear(self):
-        """ Clear all fields """
-        self.title = ""
-        self.player_state = "STOPPED"
-        self.artist = ""
-        self.chrome_app = ""
-        self.content = ""
-        self.album = ""
-        self.media = ""
-        self.id = ""
-        self.pause = False
-        self.skip_fwd = False
-        self.skip_bck = False
+  
+    def state_json(self):
+        """ Returns status as json encoded string """
+        return self.status.json()

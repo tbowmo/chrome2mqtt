@@ -2,6 +2,7 @@
  Handles stream descriptors
 """
 import hashlib
+import json
 from dr import Dr
 
 class StreamData:
@@ -9,11 +10,11 @@ class StreamData:
     def __init__(self):
         self.channels = []
 
-    def addChannel(self, channel):
+    def add_channel(self, channel):
         """ Add channel to repository """
         self.channels.append(channel)
 
-    def getChannelList(self, media = "Audio/mp3"):
+    def get_channel_list(self, media = "Audio/mp3"):
         """ List all channels for given media, defaults to audio/mp3 """
         ret_ch = []
         for channel in self.channels :
@@ -26,19 +27,20 @@ class StreamData:
                 ret_ch.append(channel)
         return ret_ch
 
-    def getChannelData(self, channelId = None, link = None, ch = None):
+    def get_channel_data(self, channelId=None, link=None, ch=None):
         """ Get data for a single channel """
-        for channel in self.channels :
-            if channelId != None: 
+        for channel in self.channels:
+            if channelId is not None:
                 if channel.id == channelId:
                     return channel
-            if link != None:
+            if link is not None:
                 if channel.link in link:
                     return channel
-            if ch != None:
+            if ch is not None:
                 if channel.friendly == ch:
                     return channel
-        return Stream(friendly = None, media= None)
+        dummy = {'friendly':None, 'media':None}
+        return Stream(**dummy)
 
 
 class Stream:
@@ -47,11 +49,16 @@ class Stream:
     start = ""
     stop = ""
     id = ""
-    def __init__(self, link = "", friendly = "", extra = "", media = "audio/mp3", xmlid = ""):
-        if friendly != "" and friendly is not None: 
-            self.id = hashlib.md5(friendly.encode('utf-8')).hexdigest()[:8]
-        self.link = link
-        self.friendly = friendly
-        self.extra = extra
-        self.media = media
-        self.xmlid = xmlid
+    friendly = ""
+    extra = ""
+    xmlid = ""
+    link = ""
+    friendly = ""
+    media = ""
+    def __init__(self, **data):
+        self.__dict__.update(data)
+        if self.friendly != "":
+            self.id = hashlib.md5(self.friendly.encode('utf-8')).hexdigest()[:8]
+
+    def __repr__(self):
+        return json.dumps(self, default=lambda o: o.__dict__)
