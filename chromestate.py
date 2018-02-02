@@ -68,13 +68,18 @@ class ChromeState:
 
         if hasattr(player, 'player_state') and player.player_state is not None:
             self.player_state = player.player_state
+        ch = None
+        try:
+            if player.media_metadata is not None:
+                if hasattr(player.media_metadata, 'channel'):
+                    ch = streams.get_channel_data(ch=player.media_metadata.channel)
+            else:
+                ch = streams.get_channel_data(link=player.content_id)
+        except:
+            print('aaa')
 
-        ch = streams.get_channel_data(link=player.content_id)
-        if player.media_metadata is not None:
-            if hasattr(player.media_metadata, 'channel'):
-                ch = streams.get_channel_data(ch=player.media_metadata.channel)
 
-        if ch.friendly is not None:
+        if ch is not None and ch.friendly is not None:
         # Assume that it is a streaming radio / video channel if we can resolve
         # a friendly name for the s.content_id
             d = Dr(ch.xmlid)
@@ -89,6 +94,7 @@ class ChromeState:
             if self.device_type != 'audio':
                 self.chrome_app = 'TV'
         else:
+            print('bbb')
             self.id = None
             if self.chrome_app == 'Netflix':
                 d = Netflix(player.content_id)
