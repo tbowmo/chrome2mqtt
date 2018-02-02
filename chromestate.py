@@ -76,7 +76,7 @@ class ChromeState:
             else:
                 ch = streams.get_channel_data(link=player.content_id)
         except:
-
+            print('"silently" thrown error away')
 
         if ch is not None and ch.friendly is not None:
         # Assume that it is a streaming radio / video channel if we can resolve
