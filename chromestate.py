@@ -76,7 +76,6 @@ class ChromeState:
             else:
                 ch = streams.get_channel_data(link=player.content_id)
         except:
-            print('aaa')
 
 
         if ch is not None and ch.friendly is not None:
@@ -94,7 +93,6 @@ class ChromeState:
             if self.device_type != 'audio':
                 self.chrome_app = 'TV'
         else:
-            print('bbb')
             self.id = None
             if self.chrome_app == 'Netflix':
                 d = Netflix(player.content_id)
