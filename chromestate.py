@@ -74,7 +74,7 @@ class ChromeState:
             if hasattr(player.media_metadata, 'channel'):
                 ch = streams.get_channel_data(ch=player.media_metadata.channel)
 
-        if ch.friendly is not None:
+        if ch.friendly is not '':
         # Assume that it is a streaming radio / video channel if we can resolve
         # a friendly name for the s.content_id
             d = Dr(ch.xmlid)

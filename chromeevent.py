@@ -1,4 +1,4 @@
-""" 
+"""
     Handles events from a chromecast device, and reports these to various endpoints
 """
 
@@ -8,6 +8,7 @@ import urllib.request
 import time
 import requests
 from chromestate import ChromeState
+import paho.mqtt.publish as publish
 
 class ChromeEvent:
     """ Chrome event handling """
@@ -15,10 +16,12 @@ class ChromeEvent:
         config = configparser.ConfigParser()
         config.read('/config/config.ini')
         if "default" in config:
-            self.nodered = config['default']['nodered']
+            self.mqtthost = config['default']['mqtthost']
+            self.mqttport = int(config['default']['mqttport'])
             self.domoticz = config['default']['domoticz']
         else:
-            self.nodered = "http://localhost:1880/node"
+            self.mqtthost = "jarvis"
+            self.mqttport = 1883
             self.domoticz = "http://localhost:8080/json.htm"
         self.streams = streams
         self.idx = idx
@@ -28,7 +31,6 @@ class ChromeEvent:
         self.status = ChromeState(device.device)
         if self.device.cast_type != 'audio':
             self.status.chrome_app = 'Backdrop'
-
 
     def getChannelList(self):
         if self.device.cast_type == 'audio':
@@ -70,19 +72,9 @@ class ChromeEvent:
                 self.device.media_controller.update_status()
 
     def __notify_node_red(self, msg):
-        node_red_url = self.nodered + '/chromecast'
-        print("----- node-red -----")
-        print(node_red_url)
-        req = urllib.request.Request(node_red_url)
-        req.add_header('Content-Type', 'application/json; charset=utf-8')
         jsondata = json.dumps(msg, default=lambda o: o.__dict__)
         jsondataasbytes = jsondata.encode('utf-8')
-        req.add_header('Content-Length', len(jsondataasbytes))
-        try: 
-            urllib.request.urlopen(req, jsondataasbytes)
-        except requests.exceptions.RequestException:
-            print('Silently.. nodered down')
-
+        publish.single('dashboard/chromecast/' + self.device.cast_type , jsondataasbytes, hostname=self.mqtthost, port=self.mqttport, retain=True)
 
     def __notify_domoticz(self, msg, device):
         url = self.domoticz + "?type=command&param=udevice&idx="+str(device)+"&nvalue=0&svalue="+str(urllib.request.pathname2url(msg))
@@ -141,7 +133,7 @@ class ChromeEvent:
             return self.status
         s = self.device.media_controller.status
         return self.__createstate(s)
-  
+
     def state_json(self):
         """ Returns status as json encoded string """
         return self.status.json()
