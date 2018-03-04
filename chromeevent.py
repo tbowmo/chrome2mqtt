@@ -4,9 +4,7 @@
 
 import configparser
 import json
-import urllib.request
 import time
-import requests
 from chromestate import ChromeState
 import paho.mqtt.publish as publish
 
@@ -47,19 +45,18 @@ class ChromeEvent:
         if app_name is None:
             app_name = "None"
             self.status.clear()
-        self.__notify_domoticz(app_name, self.idx)
         if self.device.media_controller.status.player_state == "PLAYING":
             self.state()
         else:
             self.status.chrome_app = app_name
-        self.__notify_node_red(self.status)
+        self.__mqtt_publish(self.status)
 
     def new_media_status(self, status):
         print("----------- new media status ---------------")
         print(status)
         if status.player_state != self.status.player_state:
             self.__createstate(status)
-            self.__notify_node_red(self.status)
+            self.__mqtt_publish(self.status)
         if self.status.player_state == 'PLAYING':
             # Netflix is not reporting nicely on play / pause state changes, so we poll it to get an up to date status
             if self.status.chrome_app == 'Netflix':
@@ -71,19 +68,15 @@ class ChromeEvent:
                 time.sleep(20)
                 self.device.media_controller.update_status()
 
-    def __notify_node_red(self, msg):
-        jsondata = json.dumps(msg, default=lambda o: o.__dict__)
-        jsondataasbytes = jsondata.encode('utf-8')
-        publish.single('dashboard/chromecast/' + self.device.cast_type , jsondataasbytes, hostname=self.mqtthost, port=self.mqttport, retain=True)
+    def __mqtt_publish(self, msg):
+        basetopic = 'dashboard/chromecast/' + self.device.cast_type + '/'
+        msg = [
+            {'topic': basetopic + 'media', 'payload': (json.dumps(msg.media, default=lambda o: o.__dict__)).encode('utf-8'), 'retain': True },
+            {'topic': basetopic + 'app', 'payload': (json.dumps(msg.app, default=lambda o: o.__dict__)).encode('utf-8'), 'retain': True },
+            {'topic': basetopic + 'state', 'payload': msg.player_state, 'retain': True },            
+            ]
 
-    def __notify_domoticz(self, msg, device):
-        url = self.domoticz + "?type=command&param=udevice&idx="+str(device)+"&nvalue=0&svalue="+str(urllib.request.pathname2url(msg))
-        print("------ Domoticz ------")
-        print(url)
-        try:
-            requests.get(url)
-        except requests.exceptions.RequestException:
-            print("Silently.. domoticz down")
+        publish.multiple( msg , hostname=self.mqtthost, port=self.mqttport)
 
     def stop(self):
         """ Stop playing on the chromecast """
@@ -116,11 +109,10 @@ class ChromeEvent:
                     if x.content == new_media.link:
                         return
             self.device.media_controller.play_media(new_media.link, new_media.media)
-            self.__notify_node_red(self.state())
+            self.__mqtt_publish(self.state())
 
     def __createstate(self, state):
         self.status.update(state, self.streams)
-        self.__notify_domoticz(self.status.player_state, 170)
         return self.status
 
     def state(self):

@@ -9,13 +9,8 @@ class ChromeState:
     """ Holds state of the chromecast player """
     device_name = ""
     device_type = ""
-    title = ""
     player_state = "STOPPED"
-    artist = ""
     chrome_app = ""
-    content = ""
-    album = ""
-    media = ""
     id = None
     skip_fwd = False
     skip_bck = False
@@ -23,6 +18,8 @@ class ChromeState:
 
     def __init__(self, device):
         self.device_name = device.friendly_name
+        self.media = Media()
+        self.app = App()
         if device.cast_type == 'cast':
             self.device_type = 'video'
         else:
@@ -37,20 +34,42 @@ class ChromeState:
 
     def clear(self):
         """ Clear all fields """
-        self.title = ""
         self.player_state = "STOPPED"
-        self.artist = ""
         self.chrome_app = ""
-        self.content = ""
-        self.album = ""
-        self.media = ""
         self.id = ""
         self.pause = False
         self.skip_fwd = False
         self.skip_bck = False
 
     def update(self, player, streams):
+        if hasattr(player, 'player_state') and player.player_state is not None:
+            self.player_state = player.player_state
+        
+        self.media.update(player, streams, self.chrome_app)
+        self.app.update(player, self.chrome_app)
 
+class App:
+    chrome_app = ""
+    skip_fwd = False
+    skip_bck = False
+    pause = False
+
+    def __repr__(self):
+        return json.dumps(self, default=lambda o: o.__dict__)
+
+    def json(self):
+        """ Returns a json interpretation of the object """
+        return json.dumps(self, default=lambda o: o.__dict__)
+
+    def clear(self):
+        """ Clear all fields """
+        self.chrome_app = ""
+        self.pause = False
+        self.skip_fwd = False
+        self.skip_bck = False
+
+    def update(self, player, chrome_app):
+        self.chrome_app = chrome_app
         if hasattr(player, 'supports_pause'):
             self.pause = player.supports_pause
         else:
@@ -66,8 +85,31 @@ class ChromeState:
         else:
             self.skip_bck = False
 
-        if hasattr(player, 'player_state') and player.player_state is not None:
-            self.player_state = player.player_state
+
+class Media:
+    title = ""
+    artist = ""
+    album = ""
+    content = ""
+    media = ""
+    id = ""    
+
+    def __repr__(self):
+        return json.dumps(self, default=lambda o: o.__dict__)
+
+    def json(self):
+        """ Returns a json interpretation of the object """
+        return json.dumps(self, default=lambda o: o.__dict__)
+
+    def clear(self):
+        """ Clear all fields """
+        self.title = ""
+        self.artist = ""
+        self.content = ""
+        self.album = ""
+        self.media = ""
+
+    def update(self, player, streams, chrome_app):
         ch = None
         try:
             if player.media_metadata is not None:
@@ -87,14 +129,10 @@ class ChromeState:
             self.artist = None
             self.album = None
             self.media = ch.media
-            self.chrome_app = 'Radio'
             self.id = ch.id
-            # If it's not an audio device, then it must be a video, aka TV channel
-            if self.device_type != 'audio':
-                self.chrome_app = 'TV'
         else:
             self.id = None
-            if self.chrome_app == 'Netflix':
+            if chrome_app == 'Netflix':
                 d = Netflix(player.content_id)
                 self.title = d.title()
 
