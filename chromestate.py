@@ -37,9 +37,8 @@ class ChromeState:
         self.player_state = "STOPPED"
         self.chrome_app = ""
         self.id = ""
-        self.pause = False
-        self.skip_fwd = False
-        self.skip_bck = False
+        self.app.clear()
+        self.media.clear()
 
     def update(self, player, streams):
         if hasattr(player, 'player_state') and player.player_state is not None:

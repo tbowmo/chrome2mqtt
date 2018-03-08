@@ -25,7 +25,7 @@ class ChromeEvent:
         self.device.media_controller.register_status_listener(self)
         self.status = ChromeState(device.device)
         if self.device.cast_type != 'audio':
-            self.status.app.chrome_app = 'Backdrop'
+            self.status.chrome_app = 'Backdrop'
 
     def getChannelList(self):
         if self.device.cast_type == 'audio':
@@ -45,7 +45,8 @@ class ChromeEvent:
         if self.device.media_controller.status.player_state == "PLAYING":
             self.state()
         else:
-            self.status.app.chrome_app = app_name
+            self.status.chrome_app = app_name
+        self.state()
         self.__mqtt_publish(self.status)
 
     def new_media_status(self, status):
@@ -56,12 +57,12 @@ class ChromeEvent:
             self.__mqtt_publish(self.status)
         if self.status.player_state == 'PLAYING':
             # Netflix is not reporting nicely on play / pause state changes, so we poll it to get an up to date status
-            if self.status.app.chrome_app == 'Netflix':
+            if self.status.chrome_app == 'Netflix':
                 time.sleep(1)
                 self.device.media_controller.update_status()
 
             # The following is needed to update radio / tv programme displayed on dashboard
-            if self.status.app.chrome_app == 'Radio' or self.status.app.chrome_app == 'TV' or self.status.app.chrome_app == 'DR TV' :
+            if self.status.chrome_app == 'Radio' or self.status.chrome_app == 'TV' or self.status.chrome_app == 'DR TV' :
                 time.sleep(20)
                 self.device.media_controller.update_status()
 
