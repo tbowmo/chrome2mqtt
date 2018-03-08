@@ -41,8 +41,8 @@ except IOError:
     copyfile('streams.json', '/config/streams.json')
 
 api.casters = {
-    'video' : ChromeEvent(VIDEO, 156, STREAMS),
-    'audio' : ChromeEvent(AUDIO, 157, STREAMS)
+    'video' : ChromeEvent(VIDEO, STREAMS),
+    'audio' : ChromeEvent(AUDIO, STREAMS)
     }
 
 APP = application = bottle.default_app()

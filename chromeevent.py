@@ -10,7 +10,7 @@ import paho.mqtt.publish as publish
 
 class ChromeEvent:
     """ Chrome event handling """
-    def __init__(self, device, idx, streams):
+    def __init__(self, device, streams):
         config = configparser.ConfigParser()
         config.read('/config/config.ini')
         if "default" in config:
@@ -20,7 +20,6 @@ class ChromeEvent:
             self.mqtthost = "jarvis"
             self.mqttport = 1883
         self.streams = streams
-        self.idx = idx
         self.device = device
         self.device.register_status_listener(self)
         self.device.media_controller.register_status_listener(self)
@@ -46,7 +45,7 @@ class ChromeEvent:
         if self.device.media_controller.status.player_state == "PLAYING":
             self.state()
         else:
-            self.status.chrome_app = app_name
+            self.status.app.chrome_app = app_name
         self.__mqtt_publish(self.status)
 
     def new_media_status(self, status):
