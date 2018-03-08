@@ -16,11 +16,9 @@ class ChromeEvent:
         if "default" in config:
             self.mqtthost = config['default']['mqtthost']
             self.mqttport = int(config['default']['mqttport'])
-            self.domoticz = config['default']['domoticz']
         else:
             self.mqtthost = "jarvis"
             self.mqttport = 1883
-            self.domoticz = "http://localhost:8080/json.htm"
         self.streams = streams
         self.idx = idx
         self.device = device
@@ -69,13 +67,12 @@ class ChromeEvent:
                 self.device.media_controller.update_status()
 
     def __mqtt_publish(self, msg):
-        basetopic = 'dashboard/chromecast/' + self.device.cast_type + '/'
+        basetopic = 'chromecast/' + self.device.cast_type + '/'
         msg = [
             {'topic': basetopic + 'media', 'payload': (json.dumps(msg.media, default=lambda o: o.__dict__)).encode('utf-8'), 'retain': True },
             {'topic': basetopic + 'app', 'payload': (json.dumps(msg.app, default=lambda o: o.__dict__)).encode('utf-8'), 'retain': True },
             {'topic': basetopic + 'state', 'payload': msg.player_state, 'retain': True },            
             ]
-
         publish.multiple( msg , hostname=self.mqtthost, port=self.mqttport)
 
     def stop(self):
