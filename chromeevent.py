@@ -3,7 +3,6 @@
 """
 
 import configparser
-import json
 import time
 from chromestate import ChromeState
 import paho.mqtt.publish as publish
@@ -30,7 +29,7 @@ class ChromeEvent:
         self.device.media_controller.register_status_listener(self)
         self.status = ChromeState(device.device)
         if self.device.cast_type != 'audio':
-            self.status.chrome_app = 'Backdrop'
+            self.status.setApp('Backdrop')
         self.mqttroot = self.mqttroot + '/' + self.device.cast_type
 
     def getChannelList(self):
@@ -62,18 +61,18 @@ class ChromeEvent:
         self.__mqtt_publish(self.status)
         if self.status.player_state == 'PLAYING':
             # Netflix is not reporting nicely on play / pause state changes, so we poll it to get an up to date status
-            if self.status.chrome_app == 'Netflix':
+            if self.status.app() == 'Netflix':
                 time.sleep(1)
                 self.device.media_controller.update_status()
 
             # The following is needed to update radio / tv programme displayed on dashboard
-            if self.status.chrome_app == 'Radio' or self.status.chrome_app == 'TV' or self.status.chrome_app == 'DR TV' :
+            if self.status.app() == 'Radio' or self.status.app() == 'TV' or self.status.app() == 'DR TV' :
                 time.sleep(20)
                 self.device.media_controller.update_status()
 
     def __mqtt_publish(self, msg):
         msg = [
-            {'topic': self.mqttroot + '/media', 'payload': (json.dumps(msg, default=lambda o: o.__dict__)).encode('utf-8'), 'retain': False },
+            {'topic': self.mqttroot + '/media', 'payload': msg.json(), 'retain': False },
             {'topic': self.mqttroot + '/state', 'payload': msg.player_state, 'retain': False },            
             ]
         publish.multiple( msg , hostname=self.mqtthost, port=self.mqttport)

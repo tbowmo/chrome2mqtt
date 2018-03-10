@@ -7,8 +7,8 @@ from netflix import Netflix
 
 class ChromeState:
     """ Holds state of the chromecast player """
-    device_name = ""
-    device_type = ""
+    __device_type = ""
+    __chrome_app = ""
     title = ""
     artist = ""
     album = ""
@@ -17,26 +17,37 @@ class ChromeState:
     skip_fwd = False
     skip_bck = False
     pause = False
-    chrome_app = ""
+    player_state = ""
 
     def __init__(self, device):
-        self.device_name = device.friendly_name
         if device.cast_type == 'cast':
-            self.device_type = 'video'
+            self.__device_type = 'video'
         else:
-            self.device_type = device.cast_type
+            self.__device_type = device.cast_type
 
     def __repr__(self):
-        return json.dumps(self, default=lambda o: o.__dict__)
+        return json.dumps(self.dtodict())
 
     def json(self):
+        return json.dumps(self.dtodict()).encode('utf-8')
+
+    def dtodict(self):
         """ Returns a json interpretation of the object """
-        return json.dumps(self, default=lambda o: o.__dict__)
+        return {
+            "title": self.title,
+            "artist":self.artist,
+            "album":self.album,
+            "content": self.content,
+            "skip_fwd": self.skip_fwd,
+            "skip_bck": self.skip_bck,
+            "pause": self.pause,
+            "id": self.id
+        }
 
     def clear(self):
         """ Clear all fields """
         self.player_state = "STOPPED"
-        self.chrome_app = ""
+        self.__chrome_app = ""
         self.id = ""
         self.title = ""
         self.artist = ""
@@ -48,7 +59,10 @@ class ChromeState:
         self.skip_bck = False
     
     def setApp(self, appName):
-        self.chrome_app = appName
+        self.__chrome_app = appName
+
+    def app(self):
+        return self.__chrome_app
 
     def update(self, player, streams):
         if hasattr(player, 'player_state') and player.player_state is not None:
@@ -69,9 +83,6 @@ class ChromeState:
             self.skip_bck = player.supports_skip_backward
         else:
             self.skip_bck = False
-
-
-
         try:
             if player.media_metadata is not None:
                 if hasattr(player.media_metadata, 'channel'):
@@ -93,7 +104,7 @@ class ChromeState:
             self.id = ch.id
         else:
             self.id = None
-            if self.chrome_app == 'Netflix':
+            if self.__chrome_app == 'Netflix':
                 d = Netflix(player.content_id)
                 self.title = d.title()
 
