@@ -13,12 +13,17 @@ class ChromeEvent:
     def __init__(self, device, streams):
         config = configparser.ConfigParser()
         config.read('/config/config.ini')
+        self.mqtthost = "jarvis"
+        self.mqttport = 1883
+        self.mqttroot = 'chromecast'
         if "default" in config:
-            self.mqtthost = config['default']['mqtthost']
-            self.mqttport = int(config['default']['mqttport'])
-        else:
-            self.mqtthost = "jarvis"
-            self.mqttport = 1883
+            default = config['default']
+            if 'mqtthost' in default:
+                self.mqtthost = default['mqtthost']
+            if 'mqttport' in default:
+                self.mqttport = int(default['mqttport'])
+            if 'mqttroot' in default:
+                self.mqttroot = default['mqttroot']
         self.streams = streams
         self.device = device
         self.device.register_status_listener(self)
@@ -42,12 +47,12 @@ class ChromeEvent:
         if (app_name is None) or (app_name == ""):
             app_name = "None"
             self.status.clear()
+
+        self.status.setApp(app_name)
+
         if self.device.media_controller.status.player_state == "PLAYING":
             self.state()
-        else:
-            self.status.chrome_app = app_name
-        self.state()
-        self.__mqtt_publish(self.status)
+        publish.single(self.mqttroot+'/app', app_name, hostname=self.mqtthost, port=self.mqttport)
 
     def new_media_status(self, status):
         print("----------- new media status ---------------")
@@ -67,11 +72,9 @@ class ChromeEvent:
                 self.device.media_controller.update_status()
 
     def __mqtt_publish(self, msg):
-        basetopic = 'chromecast/' + self.device.cast_type + '/'
         msg = [
-            {'topic': basetopic + 'media', 'payload': (json.dumps(msg.media, default=lambda o: o.__dict__)).encode('utf-8'), 'retain': True },
-            {'topic': basetopic + 'app', 'payload': (json.dumps(msg.app, default=lambda o: o.__dict__)).encode('utf-8'), 'retain': True },
-            {'topic': basetopic + 'state', 'payload': msg.player_state, 'retain': True },            
+            {'topic': self.mqttroot + '/media', 'payload': (json.dumps(msg.media, default=lambda o: o.__dict__)).encode('utf-8'), 'retain': False },
+            {'topic': self.mqttroot + '/state', 'payload': msg.player_state, 'retain': False },            
             ]
         publish.multiple( msg , hostname=self.mqtthost, port=self.mqttport)
 

@@ -9,17 +9,11 @@ class ChromeState:
     """ Holds state of the chromecast player """
     device_name = ""
     device_type = ""
-    player_state = "STOPPED"
-    chrome_app = ""
     id = None
-    skip_fwd = False
-    skip_bck = False
-    pause = False
 
     def __init__(self, device):
         self.device_name = device.friendly_name
         self.media = Media()
-        self.app = App()
         if device.cast_type == 'cast':
             self.device_type = 'video'
         else:
@@ -37,53 +31,17 @@ class ChromeState:
         self.player_state = "STOPPED"
         self.chrome_app = ""
         self.id = ""
-        self.app.clear()
         self.media.clear()
+    
+    def setApp(self, appName):
+        self.chrome_app = appName
 
     def update(self, player, streams):
         if hasattr(player, 'player_state') and player.player_state is not None:
             self.player_state = player.player_state
         
         self.media.update(player, streams, self.chrome_app)
-        self.app.update(player, self.chrome_app)
-
-class App:
-    chrome_app = ""
-    skip_fwd = False
-    skip_bck = False
-    pause = False
-
-    def __repr__(self):
-        return json.dumps(self, default=lambda o: o.__dict__)
-
-    def json(self):
-        """ Returns a json interpretation of the object """
-        return json.dumps(self, default=lambda o: o.__dict__)
-
-    def clear(self):
-        """ Clear all fields """
-        self.chrome_app = ""
-        self.pause = False
-        self.skip_fwd = False
-        self.skip_bck = False
-
-    def update(self, player, chrome_app):
-        self.chrome_app = chrome_app
-        if hasattr(player, 'supports_pause'):
-            self.pause = player.supports_pause
-        else:
-            self.pause = False
-
-        if hasattr(player, 'supports_skip_forward'):
-            self.skip_fwd = player.supports_skip_forward
-        else:
-            self.skip_fwd = False
-
-        if hasattr(player, 'supports_skip_backward'):
-            self.skip_bck = player.supports_skip_backward
-        else:
-            self.skip_bck = False
-
+        return self
 
 class Media:
     title = ""
@@ -92,6 +50,9 @@ class Media:
     content = ""
     media = ""
     id = ""    
+    skip_fwd = False
+    skip_bck = False
+    pause = False
 
     def __repr__(self):
         return json.dumps(self, default=lambda o: o.__dict__)
@@ -107,9 +68,26 @@ class Media:
         self.content = ""
         self.album = ""
         self.media = ""
+        self.pause = False
+        self.skip_fwd = False
+        self.skip_bck = False
 
     def update(self, player, streams, chrome_app):
         ch = None
+        if hasattr(player, 'supports_pause'):
+            self.pause = player.supports_pause
+        else:
+            self.pause = False
+
+        if hasattr(player, 'supports_skip_forward'):
+            self.skip_fwd = player.supports_skip_forward
+        else:
+            self.skip_fwd = False
+
+        if hasattr(player, 'supports_skip_backward'):
+            self.skip_bck = player.supports_skip_backward
+        else:
+            self.skip_bck = False
         try:
             if player.media_metadata is not None:
                 if hasattr(player.media_metadata, 'channel'):
