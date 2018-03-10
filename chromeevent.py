@@ -31,6 +31,7 @@ class ChromeEvent:
         self.status = ChromeState(device.device)
         if self.device.cast_type != 'audio':
             self.status.chrome_app = 'Backdrop'
+        self.mqttroot = self.mqttroot + '/' + self.device.cast_type
 
     def getChannelList(self):
         if self.device.cast_type == 'audio':
