@@ -57,9 +57,8 @@ class ChromeEvent:
     def new_media_status(self, status):
         print("----------- new media status ---------------")
         print(status)
-        if status.player_state != self.status.player_state:
-            self.__createstate(status)
-            self.__mqtt_publish(self.status)
+        self.__createstate(status)
+        self.__mqtt_publish(self.status)
         if self.status.player_state == 'PLAYING':
             # Netflix is not reporting nicely on play / pause state changes, so we poll it to get an up to date status
             if self.status.chrome_app == 'Netflix':
@@ -73,7 +72,7 @@ class ChromeEvent:
 
     def __mqtt_publish(self, msg):
         msg = [
-            {'topic': self.mqttroot + '/media', 'payload': (json.dumps(msg.media, default=lambda o: o.__dict__)).encode('utf-8'), 'retain': False },
+            {'topic': self.mqttroot + '/media', 'payload': (json.dumps(msg, default=lambda o: o.__dict__)).encode('utf-8'), 'retain': False },
             {'topic': self.mqttroot + '/state', 'payload': msg.player_state, 'retain': False },            
             ]
         publish.multiple( msg , hostname=self.mqtthost, port=self.mqttport)

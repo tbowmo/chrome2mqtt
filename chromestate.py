@@ -9,11 +9,18 @@ class ChromeState:
     """ Holds state of the chromecast player """
     device_name = ""
     device_type = ""
-    id = None
+    title = ""
+    artist = ""
+    album = ""
+    content = ""
+    id = ""    
+    skip_fwd = False
+    skip_bck = False
+    pause = False
+    chrome_app = ""
 
     def __init__(self, device):
         self.device_name = device.friendly_name
-        self.media = Media()
         if device.cast_type == 'cast':
             self.device_type = 'video'
         else:
@@ -31,38 +38,6 @@ class ChromeState:
         self.player_state = "STOPPED"
         self.chrome_app = ""
         self.id = ""
-        self.media.clear()
-    
-    def setApp(self, appName):
-        self.chrome_app = appName
-
-    def update(self, player, streams):
-        if hasattr(player, 'player_state') and player.player_state is not None:
-            self.player_state = player.player_state
-        
-        self.media.update(player, streams, self.chrome_app)
-        return self
-
-class Media:
-    title = ""
-    artist = ""
-    album = ""
-    content = ""
-    media = ""
-    id = ""    
-    skip_fwd = False
-    skip_bck = False
-    pause = False
-
-    def __repr__(self):
-        return json.dumps(self, default=lambda o: o.__dict__)
-
-    def json(self):
-        """ Returns a json interpretation of the object """
-        return json.dumps(self, default=lambda o: o.__dict__)
-
-    def clear(self):
-        """ Clear all fields """
         self.title = ""
         self.artist = ""
         self.content = ""
@@ -71,8 +46,14 @@ class Media:
         self.pause = False
         self.skip_fwd = False
         self.skip_bck = False
+    
+    def setApp(self, appName):
+        self.chrome_app = appName
 
-    def update(self, player, streams, chrome_app):
+    def update(self, player, streams):
+        if hasattr(player, 'player_state') and player.player_state is not None:
+            self.player_state = player.player_state
+
         ch = None
         if hasattr(player, 'supports_pause'):
             self.pause = player.supports_pause
@@ -88,6 +69,9 @@ class Media:
             self.skip_bck = player.supports_skip_backward
         else:
             self.skip_bck = False
+
+
+
         try:
             if player.media_metadata is not None:
                 if hasattr(player.media_metadata, 'channel'):
@@ -109,7 +93,7 @@ class Media:
             self.id = ch.id
         else:
             self.id = None
-            if chrome_app == 'Netflix':
+            if self.chrome_app == 'Netflix':
                 d = Netflix(player.content_id)
                 self.title = d.title()
 
