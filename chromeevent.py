@@ -6,6 +6,8 @@ import configparser
 import time
 from chromestate import ChromeState
 import paho.mqtt.publish as publish
+import paho.mqtt.client as mqtt_client
+import os
 
 class ChromeEvent:
     """ Chrome event handling """
@@ -31,12 +33,37 @@ class ChromeEvent:
         if self.device.cast_type != 'audio':
             self.status.setApp('Backdrop')
         self.mqttroot = self.mqttroot + '/' + self.device.cast_type
+        client = mqtt_client.Client(self.device.cast_type + '_client')
+        client.on_message = self.on_mqtt_message
+        client.connect(self.mqtthost)
+        client.loop_start()
+        client.subscribe(self.mqttroot + '/control/#')
+        client.on_disconnect = self.on_mqtt_disconnect
+
+    def on_mqtt_message(self, client, userdata, message):
+        parameter = message.payload.decode("utf-8")
+        cmd = os.path.basename(os.path.normpath(message.topic))
+        if cmd == 'stop':
+            self.stop()
+        if cmd == 'play':
+            self.play(parameter)
+        if cmd == 'pause':
+            self.pause()
+        if cmd == 'skip':
+            self.skip()
+        if cmd == 'quit':
+            self.quit()
+
+    def on_mqtt_disconnect(self, client, userdata, rc):
+        print(self.device.cast_type)
+        print(rc)
+    
 
     def getChannelList(self):
         if self.device.cast_type == 'audio':
-            return self.streams.getChannelList('audio/mp3')
+            return self.streams.get_channel_list('audio/mp3')
         else:
-            return self.streams.getChannelList('video/mp4')
+            return self.streams.get_channel_list('video/mp4')
 
     def new_cast_status(self, status):
         print("----------- new cast status ---------------")
@@ -52,7 +79,7 @@ class ChromeEvent:
 
         if self.device.media_controller.status.player_state == "PLAYING":
             self.state()
-        publish.single(self.mqttroot+'/app', app_name, hostname=self.mqtthost, port=self.mqttport)
+        publish.single(self.mqttroot+'/app', app_name, hostname=self.mqtthost, port=self.mqttport, retain=True)
 
     def new_media_status(self, status):
         print("----------- new media status ---------------")
@@ -72,8 +99,8 @@ class ChromeEvent:
 
     def __mqtt_publish(self, msg):
         msg = [
-            {'topic': self.mqttroot + '/media', 'payload': msg.json(), 'retain': False },
-            {'topic': self.mqttroot + '/state', 'payload': msg.player_state, 'retain': False },            
+            {'topic': self.mqttroot + '/media', 'payload': msg.json(), 'retain': True },
+            {'topic': self.mqttroot + '/state', 'payload': msg.player_state, 'retain': True },            
             ]
         publish.multiple( msg , hostname=self.mqtthost, port=self.mqttport)
 
@@ -101,7 +128,7 @@ class ChromeEvent:
         if media is None:
             self.device.media_controller.play()
         else:
-            new_media = self.streams.getChannelData(channelId=media)
+            new_media = self.streams.get_channel_data(channelId=media)
             if self.device.status.app_id is not None:
                 x = self.state()
                 if x.player_state == "PLAYING":
