@@ -9,10 +9,10 @@
 {"link":"http://7599.live.streamtheworld.com/977_80AAC_SC","friendly":"80s 977","extra":"Musik"},
 {"link":"http://7599.live.streamtheworld.com/977_90AAC_SC","friendly":"90s 977","extra":"Musik"},
 
-{"link":"http://dr01-lh.akamaihd.net/i/dr01_0@147054/master.m3u8?b=100-3000","friendly":"DR1","media":"video/mp4","xmlid":"dr1.dr.dk"},
-{"link":"http://dr02-lh.akamaihd.net/i/dr02_0@147055/master.m3u8","friendly":"DR2","media":"video/mp4","xmlid":"dr2.dr.dk"},
-{"link":"http://dr03-lh.akamaihd.net/i/dr03_0@147056/master.m3u8","friendly":"DR3","media":"video/mp4","xmlid":"dr3.dr.dk"},
-{"link":"http://dr04-lh.akamaihd.net/i/dr04_0@147057/master.m3u8","friendly":"DRK","media":"video/mp4","xmlid":"k.dr.dk"},
-{"link":"http://dr05-lh.akamaihd.net/i/dr05_0@147058/master.m3u8","friendly":"Ramasjang","media":"video/mp4","xmlid":"ramasjang.dr.dk"},
-{"link":"http://dr06-lh.akamaihd.net/i/dr06_0@147059/master.m3u8","friendly":"Ultra","media":"video/mp4","xmlid":"ultra.dr.dk"}
+{"link":"https://dr01-lh.akamaihd.net/i/live/dr01_0@147054/master.m3u8?b=100-4000","friendly":"DR1","media":"video/mp4","xmlid":"dr1.dr.dk"},
+{"link":"https://dr02-lh.akamaihd.net/i/live/dr02_0@147055/master.m3u8?b=100-4000","friendly":"DR2","media":"video/mp4","xmlid":"dr2.dr.dk"},
+{"link":"https://dr03-lh.akamaihd.net/i/live/dr03_0@147056/master.m3u8?b=100-4000","friendly":"DR3","media":"video/mp4","xmlid":"dr3.dr.dk"},
+{"link":"https://dr04-lh.akamaihd.net/i/live/dr04_0@147057/master.m3u8?b=100-4000","friendly":"DRK","media":"video/mp4","xmlid":"k.dr.dk"},
+{"link":"https://dr05-lh.akamaihd.net/i/live/dr05_0@147058/master.m3u8?b=100-4000","friendly":"Ramasjang","media":"video/mp4","xmlid":"ramasjang.dr.dk"},
+{"link":"https://dr06-lh.akamaihd.net/i/live/dr06_0@147059/master.m3u8?b=100-4000","friendly":"Ultra","media":"video/mp4","xmlid":"ultra.dr.dk"}
 ]

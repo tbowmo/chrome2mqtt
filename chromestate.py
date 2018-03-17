@@ -87,7 +87,7 @@ class ChromeState:
             if player.media_metadata is not None:
                 if hasattr(player.media_metadata, 'channel'):
                     ch = streams.get_channel_data(ch=player.media_metadata.channel)
-            else:
+            if ch is None:
                 ch = streams.get_channel_data(link=player.content_id)
         except:
             print('"silently" thrown error away')
