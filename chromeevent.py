@@ -46,7 +46,10 @@ class ChromeEvent:
         if cmd == 'stop':
             self.stop()
         if cmd == 'play':
-            self.play(parameter)
+            if parameter == '':
+                self.play()
+            else: 
+                self.play(parameter)
         if cmd == 'pause':
             self.pause()
         if cmd == 'skip':
