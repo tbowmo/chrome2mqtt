@@ -43,19 +43,19 @@ class ChromeEvent:
     def on_mqtt_message(self, client, userdata, message):
         parameter = message.payload.decode("utf-8")
         cmd = os.path.basename(os.path.normpath(message.topic))
-        if cmd == 'stop':
-            self.stop()
         if cmd == 'play':
-            if parameter == '':
+            self.play(parameter)
+        else:
+            if parameter == 'pause':
+                self.pause()
+            if parameter == 'skip':
+                self.skip()
+            if parameter == 'quit':
+                self.quit()
+            if parameter == 'stop':
+                self.stop()
+            if parameter == 'play':
                 self.play()
-            else: 
-                self.play(parameter)
-        if cmd == 'pause':
-            self.pause()
-        if cmd == 'skip':
-            self.skip()
-        if cmd == 'quit':
-            self.quit()
 
     def on_mqtt_disconnect(self, client, userdata, rc):
         print(self.device.cast_type)
