@@ -14,7 +14,7 @@ class StreamData:
         """ Add channel to repository """
         self.channels.append(channel)
 
-    def get_channel_list(self, media = "Audio/mp3"):
+    def get_channel_list(self, media = "audio/mp3"):
         """ List all channels for given media, defaults to audio/mp3 """
         ret_ch = []
         for channel in self.channels :
@@ -57,7 +57,7 @@ class Stream:
     xmlid = ""
     link = ""
     friendly = ""
-    media = ""
+    media = "audio/mp3"
     def __init__(self, **data):
         self.__dict__.update(data)
         if self.friendly != "":
