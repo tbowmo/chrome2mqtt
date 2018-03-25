@@ -93,7 +93,7 @@ class ChromeState:
         except:
             print('"silently" thrown error away')
 
-        if ch is not None and ch.friendly is not None:
+        if ch is not None and ch.friendly is not None and ch.friendly != '':
         # Assume that it is a streaming radio / video channel if we can resolve
         # a friendly name for the s.content_id
             d = Dr(ch.xmlid)
