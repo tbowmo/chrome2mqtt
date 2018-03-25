@@ -42,7 +42,8 @@ class ChromeState:
             "skip_bck": self.skip_bck,
             "pause": self.pause,
             "id": self.id,
-            "player_state": self.player_state
+            "player_state": self.player_state,
+            "chrome_app": self.__chrome_app
         }
 
     def clear(self):
