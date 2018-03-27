@@ -48,8 +48,10 @@ class ChromeEvent:
         else:
             if parameter == 'pause':
                 self.pause()
-            if parameter == 'skip':
-                self.skip()
+            if parameter == 'fwd':
+                self.fwd()
+            if parameter == 'rev':
+                self.rev()
             if parameter == 'quit':
                 self.quit()
             if parameter == 'stop':
@@ -116,9 +118,13 @@ class ChromeEvent:
         """ Pause playback """
         self.device.media_controller.pause()
 
-    def skip(self):
+    def fwd(self):
         """ Skip to next track """
         self.device.media_controller.skip()
+
+    def rev(self):
+        """ Rewind to previous track """
+        self.device.media_controller.rewind()
 
     def quit(self):
         """ Quit running application on chromecast """
