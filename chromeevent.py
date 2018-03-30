@@ -85,6 +85,7 @@ class ChromeEvent:
         if self.device.media_controller.status.player_state == "PLAYING":
             self.state()
         publish.single(self.mqttroot+'/app', app_name, hostname=self.mqtthost, port=self.mqttport, retain=True)
+        publish.single('chromecast/app',  app_name, hostname=self.mqtthost, port=self.mqttport, retain=True)
 
     def new_media_status(self, status):
         print("----------- new media status ---------------")
@@ -105,7 +106,9 @@ class ChromeEvent:
     def __mqtt_publish(self, msg):
         msg = [
             {'topic': self.mqttroot + '/media', 'payload': msg.json(), 'retain': True },
+            {'topic': 'chromecast/media', 'payload': msg.json(), 'retain': True },
             {'topic': self.mqttroot + '/state', 'payload': msg.player_state, 'retain': True },            
+            {'topic': 'chromecast/state', 'payload': msg.player_state, 'retain': True },            
             ]
         publish.multiple( msg , hostname=self.mqtthost, port=self.mqttport)
 
