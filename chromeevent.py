@@ -2,7 +2,6 @@
     Handles events from a chromecast device, and reports these to various endpoints
 """
 
-import configparser
 import time
 from chromestate import ChromeState
 import paho.mqtt.publish as publish
@@ -12,19 +11,11 @@ import os
 class ChromeEvent:
     """ Chrome event handling """
     def __init__(self, device, streams):
-        config = configparser.ConfigParser()
-        config.read('/config/config.ini')
-        self.mqtthost = "jarvis"
-        self.mqttport = 1883
-        self.mqttroot = 'chromecast'
-        if "default" in config:
-            default = config['default']
-            if 'mqtthost' in default:
-                self.mqtthost = default['mqtthost']
-            if 'mqttport' in default:
-                self.mqttport = int(default['mqttport'])
-            if 'mqttroot' in default:
-                self.mqttroot = default['mqttroot']
+
+        self.mqtthost = os.environ['MQTT_HOST']
+        self.mqttport = int(os.environ['MQTT_PORT'])
+        self.mqttroot = os.environ['MQTT_ROOT']
+
         self.streams = streams
         self.device = device
         self.device.register_status_listener(self)
