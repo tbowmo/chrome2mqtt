@@ -7,6 +7,7 @@ COPY . .
 ENV MQTT_HOST=jarvis
 ENV MQTT_PORT=1883
 ENV MQTT_ROOT=chromecast
+ENV CORS_HOST=*
 
 CMD [ "python", "./chrome.py" ]
 

@@ -15,6 +15,8 @@ import pychromecast
 import api
 from chromeevent import ChromeEvent
 from streamdata import StreamData, Stream
+from bottle import response
+from os import environ
 
 STREAMS = StreamData()
 CASTS = pychromecast.get_chromecasts()
@@ -45,7 +47,27 @@ api.casters = {
     'audio' : ChromeEvent(AUDIO, STREAMS)
     }
 
-APP = application = bottle.default_app()
 
+class EnableCors(object):
+    name = 'enable_cors'
+    api = 2
+
+    def apply(self, fn, context):
+        def _enable_cors(*args, **kwargs):
+            # set CORS headers
+            print(args)
+            print(kwargs)
+            response.headers['Access-Control-Allow-Origin'] = environ['CORS_HOST']
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, OPTIONS'
+            response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
+
+            if bottle.request.method != 'OPTIONS':
+                # actual request; reply with the actual response
+                return fn(*args, **kwargs)
+
+        return _enable_cors
+
+APP = application = bottle.default_app()
+application.install(EnableCors())
 if __name__ == "__main__":
     APP.run(host='0.0.0.0', port=8181)
