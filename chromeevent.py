@@ -7,6 +7,8 @@ from chromestate import ChromeState
 import paho.mqtt.publish as publish
 import paho.mqtt.client as mqtt_client
 import os
+import sys
+from logger import setup_custom_logger
 
 class ChromeEvent:
     """ Chrome event handling """
@@ -30,6 +32,7 @@ class ChromeEvent:
         client.loop_start()
         client.subscribe(self.mqttroot + '/control/#')
         client.on_disconnect = self.on_mqtt_disconnect
+        self.log = setup_custom_logger('ChromeEvent')
 
     def on_mqtt_message(self, client, userdata, message):
         parameter = message.payload.decode("utf-8")
@@ -51,8 +54,8 @@ class ChromeEvent:
                 self.play()
 
     def on_mqtt_disconnect(self, client, userdata, rc):
-        print(self.device.cast_type)
-        print(rc)
+        self.log.info(self.device.cast_type)
+        self.log.info(rc)
     
 
     def getChannelList(self):
@@ -62,8 +65,8 @@ class ChromeEvent:
             return self.streams.get_channel_list('video/mp4')
 
     def new_cast_status(self, status):
-        print("----------- new cast status ---------------")
-        print(status)
+        self.log.info("----------- new cast status ---------------")
+        self.log.info(status)
         app_name = status.display_name
         if app_name == "Backdrop":
             self.status.clear()
@@ -79,8 +82,8 @@ class ChromeEvent:
         publish.single('chromecast/app',  app_name, hostname=self.mqtthost, port=self.mqttport, retain=True)
 
     def new_media_status(self, status):
-        print("----------- new media status ---------------")
-        print(status)
+        self.log.info("----------- new media status ---------------")
+        self.log.info(status)
         self.__createstate(status)
         self.__mqtt_publish(self.status)
         if self.status.player_state == 'PLAYING':
@@ -105,40 +108,61 @@ class ChromeEvent:
 
     def stop(self):
         """ Stop playing on the chromecast """
-        self.device.media_controller.stop()
-        self.status.clear()
+        try:
+            self.device.media_controller.stop()
+            self.status.clear()
+        except:
+            self.handle_error()
 
     def pause(self):
         """ Pause playback """
-        self.device.media_controller.pause()
+        try:
+            self.device.media_controller.pause()
+        except:
+            self.handle_error()           
 
     def fwd(self):
         """ Skip to next track """
-        self.device.media_controller.skip()
+        try:
+            self.device.media_controller.skip()
+        except:
+            self.handle_error()
 
     def rev(self):
         """ Rewind to previous track """
-        self.device.media_controller.rewind()
+        try: 
+            self.device.media_controller.rewind()
+        except:
+            self.handle_error()
 
     def quit(self):
         """ Quit running application on chromecast """
-        self.device.media_controller.stop()
-        self.device.quit_app()
-        self.status.clear()
+        try:
+            self.device.media_controller.stop()
+            self.device.quit_app()
+            self.status.clear()
+        except:
+            self.handle_error()
 
     def play(self, media=None):
         """ Play a media URL on the chromecast """
-        if media is None:
-            self.device.media_controller.play()
-        else:
-            new_media = self.streams.get_channel_data(channelId=media)
-            if self.device.status.app_id is not None:
-                x = self.state()
-                if x.player_state == "PLAYING":
-                    if x.content == new_media.link:
-                        return
-            self.device.media_controller.play_media(new_media.link, new_media.media)
-            self.__mqtt_publish(self.state())
+        try:
+            if media is None:
+                self.device.media_controller.play()
+            else:
+                new_media = self.streams.get_channel_data(channelId=media)
+                if self.device.status.app_id is not None:
+                    x = self.state()
+                    if x.player_state == "PLAYING":
+                        if x.content == new_media.link:
+                            return
+                self.device.media_controller.play_media(new_media.link, new_media.media)
+                self.__mqtt_publish(self.state())
+        except:
+            self.handle_error()
+
+    def handle_error(self):
+        sys.exit(1)
 
     def __createstate(self, state):
         self.status.update(state, self.streams)

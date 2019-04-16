@@ -2,3 +2,4 @@ xmltv/*
 __pycache__/*
 *.pyc
 .vscode/*
+env/*

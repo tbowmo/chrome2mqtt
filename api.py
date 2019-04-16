@@ -16,7 +16,7 @@ def medialist(device):
         
 @get('/')
 def listplayers():
-    return json.dumps(list(casters.keys()));
+    return json.dumps(list(casters.keys()))
         
 @get('/<device>')
 def getdevicestatus(device):
@@ -43,7 +43,6 @@ def control_player(device, command):
 
 @get('/<device>/play/<media>')
 def play_media(device, media):
-    print(media)
     player = casters[device]
     player.play(media)
     time.sleep(1)
@@ -53,8 +52,8 @@ def play_media(device, media):
 def status():
     player = casters['video']
     if player.status.chromeApp != "Backdrop" and player.status.chromeApp != "":
-        return player.state_json();
+        return player.state_json()
     else:
         player = casters['audio']
-        return player.state_json();
+        return player.state_json()
 

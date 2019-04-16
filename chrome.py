@@ -55,8 +55,6 @@ class EnableCors(object):
     def apply(self, fn, context):
         def _enable_cors(*args, **kwargs):
             # set CORS headers
-            print(args)
-            print(kwargs)
             response.headers['Access-Control-Allow-Origin'] = environ['CORS_HOST']
             response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, OPTIONS'
             response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'

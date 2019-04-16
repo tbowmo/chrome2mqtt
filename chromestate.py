@@ -4,7 +4,7 @@
 import json
 from dr import Dr
 from netflix import Netflix
-
+from logger import setup_custom_logger
 class ChromeState:
     """ Holds state of the chromecast player """
     __device_type = ""
@@ -24,6 +24,7 @@ class ChromeState:
             self.__device_type = 'video'
         else:
             self.__device_type = device.cast_type
+        self.log = setup_custom_logger('chromestate')
 
     def __repr__(self):
         return json.dumps(self.dtodict())
@@ -92,7 +93,7 @@ class ChromeState:
             if ch is None:
                 ch = streams.get_channel_data(link=player.content_id)
         except:
-            print('"silently" thrown error away')
+            self.log.info('"silently" thrown error away')
 
         if ch is not None and ch.friendly is not None and ch.friendly != '':
         # Assume that it is a streaming radio / video channel if we can resolve
