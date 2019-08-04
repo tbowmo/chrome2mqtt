@@ -17,6 +17,22 @@ from chromeevent import ChromeEvent
 from streamdata import StreamData, Stream
 from bottle import response
 from os import environ
+from mqtt import MQTT
+
+mqtt_root = environ.get('MQTT_ROOT')
+mqtt_host = environ.get('MQTT_HOST')
+mqtt_port = environ.get('MQTT_PORT')
+
+if not mqtt_root:
+    mqtt_root='chromecast'
+if not mqtt_host:
+    mqtt_host = '127.0.0.1'
+if not mqtt_port:
+    mqtt_port = 1883
+
+mqtt = MQTT(mqtt_host, mqtt_port)
+mqtt.conn()
+mqtt.loop_start()
 
 STREAMS = StreamData()
 CASTS = pychromecast.get_chromecasts()
@@ -43,8 +59,8 @@ except IOError:
     copyfile('streams.json', '/config/streams.json')
 
 api.casters = {
-    'video' : ChromeEvent(VIDEO, STREAMS),
-    'audio' : ChromeEvent(AUDIO, STREAMS)
+    'video' : ChromeEvent(VIDEO, STREAMS, mqtt, mqtt_root),
+    'audio' : ChromeEvent(AUDIO, STREAMS, mqtt, mqtt_root)
     }
 
 

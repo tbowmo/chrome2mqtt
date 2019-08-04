@@ -3,3 +3,8 @@ __pycache__/*
 *.pyc
 .vscode/*
 env/*
+bin
+lib64
+share
+lib
+pyvenv.cfg
