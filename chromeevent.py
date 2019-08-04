@@ -18,11 +18,10 @@ class ChromeEvent:
 
         self.mqtt = mqtt
 
-        self.mqttroot = mqttroot
         self.status = ChromeState(device.device)
         if self.device.cast_type != 'audio':
-            self.status.setApp('Netflix')
-        self.mqttpath = self.mqttroot + '/' + self.device.cast_type
+            self.status.setApp('Backdrop')
+        self.mqttpath = mqttroot + '/' + self.device.cast_type
 
         self.mediax = ''
         self.statex = ''
@@ -72,7 +71,6 @@ class ChromeEvent:
         if self.device.media_controller.status.player_state == "PLAYING":
             self.state()
         self.mqtt.publish(self.mqttpath+'/app', app_name, retain=True)
-        self.mqtt.publish(self.mqttroot+'/app',  app_name, retain=True)
 
     def new_media_status(self, status):
         self.log.info("----------- new media status ---------------")
@@ -96,11 +94,9 @@ class ChromeEvent:
         mqtt_msg = []
         if (self.statex != msg.player_state):
             self.mqtt.publish(self.mqttpath + '/state', msg.player_state, retain = True )
-            self.mqtt.publish(self.mqttroot + '/state', msg.player_state, retain = True )
             self.statex = msg.player_state
         if (self.mediax != msg.json()):            
             self.mqtt.publish(self.mqttpath + '/media', msg.json(), retain = True )
-            self.mqtt.publish(self.mqttroot + '/media', msg.json(), retain = True )
             self.mediax = msg.json()
 
     def stop(self):
