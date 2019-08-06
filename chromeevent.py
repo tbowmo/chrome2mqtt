@@ -10,7 +10,7 @@ from logger import setup_custom_logger
 
 class ChromeEvent:
     """ Chrome event handling """
-    def __init__(self, device, streams,  mqtt, mqttroot):
+    def __init__(self, device,  mqtt, mqttroot):
 
         self.device = device
         self.device.register_status_listener(self)
@@ -25,11 +25,15 @@ class ChromeEvent:
 
         self.mediax = ''
         self.statex = ''
-        self.streams = streams
+
         controlPath = self.mqttpath + '/control/#'
         self.mqtt.subscribe(controlPath)
         self.mqtt.message_callback_add(controlPath, self.mqtt_action)
         self.log = setup_custom_logger('ChromeEvent_' + self.device.cast_type)
+        try:
+            self.device.media_controller.update_status()
+        except:
+            self.log.warn('xx')
 
     def mqtt_action(self, client, userdata, message):
         parameter = message.payload.decode("utf-8")
@@ -50,12 +54,6 @@ class ChromeEvent:
             if parameter == 'play':
                 self.play()
 
-    def getChannelList(self):
-        if self.device.cast_type == 'audio':
-            return self.streams.get_channel_list('audio/mp3')
-        else:
-            return self.streams.get_channel_list('video/mp4')
-
     def new_cast_status(self, status):
         self.log.info("----------- new cast status ---------------")
         self.log.info(status)
@@ -69,6 +67,7 @@ class ChromeEvent:
         self.status.setApp(app_name)
 
         if self.device.media_controller.status.player_state == "PLAYING":
+            self.log.warn('!!!!!THIS SHOULD NOT BE CALLED!!!!!')
             self.state()
         self.mqtt.publish(self.mqttpath+'/app', app_name, retain=True)
 
@@ -80,14 +79,7 @@ class ChromeEvent:
         if self.status.player_state == 'PLAYING':
             # Netflix is not reporting nicely on play / pause state changes, so we poll it to get an up to date status
             if self.status.app() == 'Netflix':
-                self.log.info("Reloading netflix status")
                 sleep(1)
-                self.device.media_controller.update_status()
-
-            # The following is needed to update radio / tv programme displayed on dashboard
-            if self.status.app() == 'Radio' or self.status.app() == 'TV' or self.status.app() == 'DR TV' :
-                self.log.info("Reloading DR status")
-                sleep(20)
                 self.device.media_controller.update_status()
 
     def __mqtt_publish(self, msg):
@@ -105,28 +97,28 @@ class ChromeEvent:
             self.device.media_controller.stop()
             self.status.clear()
         except:
-            self.handle_error()
+            self.__handle_error()
 
     def pause(self):
         """ Pause playback """
         try:
             self.device.media_controller.pause()
         except:
-            self.handle_error()           
+            self.__handle_error()           
 
     def fwd(self):
         """ Skip to next track """
         try:
             self.device.media_controller.skip()
         except:
-            self.handle_error()
+            self.__handle_error()
 
     def rev(self):
         """ Rewind to previous track """
         try: 
             self.device.media_controller.rewind()
         except:
-            self.handle_error()
+            self.__handle_error()
 
     def quit(self):
         """ Quit running application on chromecast """
@@ -135,7 +127,7 @@ class ChromeEvent:
             self.device.quit_app()
             self.status.clear()
         except:
-            self.handle_error()
+            self.__handle_error()
 
     def play(self, media=None):
         """ Play a media URL on the chromecast """
@@ -143,22 +135,16 @@ class ChromeEvent:
             if media is None:
                 self.device.media_controller.play()
             else:
-                new_media = self.streams.get_channel_data(channelId=media)
-                if self.device.status.app_id is not None:
-                    x = self.state()
-                    if x.player_state == "PLAYING":
-                        if x.content == new_media.link:
-                            return
-                self.device.media_controller.play_media(new_media.link, new_media.media)
+                self.device.media_controller.play_media(media.link, media.media)
                 self.__mqtt_publish(self.state())
         except:
-            self.handle_error()
+            self.__handle_error()
 
-    def handle_error(self):
+    def __handle_error(self):
         exit(1)
 
     def __createstate(self, state):
-        self.status.update(state, self.streams)
+        self.status.update(state)
         return self.status
 
     def state(self):
@@ -171,7 +157,3 @@ class ChromeEvent:
             return self.status
         s = self.device.media_controller.status
         return self.__createstate(s)
-
-    def state_json(self):
-        """ Returns status as json encoded string """
-        return self.status.json()

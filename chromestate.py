@@ -2,8 +2,6 @@
     holds current state of the chromedevice
 """
 import json
-from dr import Dr
-from netflix import Netflix
 from logger import setup_custom_logger
 class ChromeState:
     """ Holds state of the chromecast player """
@@ -67,7 +65,7 @@ class ChromeState:
     def app(self):
         return self.__chrome_app
 
-    def update(self, player, streams):
+    def update(self, player):
         if hasattr(player, 'player_state') and player.player_state is not None:
             self.player_state = player.player_state
 
@@ -86,36 +84,17 @@ class ChromeState:
             self.skip_bck = player.supports_skip_backward
         else:
             self.skip_bck = False
-        try:
-            if player.media_metadata is not None:
-                if hasattr(player.media_metadata, 'channel'):
-                    ch = streams.get_channel_data(ch=player.media_metadata.channel)
-            if ch is None:
-                ch = streams.get_channel_data(link=player.content_id)
-        except:
-            self.log.info('"silently" thrown error away')
 
-        if ch is not None and ch.friendly is not None and ch.friendly != '':
-        # Assume that it is a streaming radio / video channel if we can resolve
-        # a friendly name for the s.content_id
-            d = Dr(ch.xmlid)
-            self.content = player.content_id
-            self.title = ch.friendly + " - " + d.title()
-            self.artist = None
-            self.album = None
-            self.media = ch.media
-            self.id = ch.id
-        else:
-            self.id = None
-            if self.__chrome_app == 'Netflix':
-                d = Netflix(player.content_id)
-                self.title = d.title()
+        self.id = None
+        if self.__chrome_app == 'Netflix':
+            d = Netflix(player.content_id)
+            self.title = d.title()
 
-            if hasattr(player, 'title'):
-                self.title = player.title
+        if hasattr(player, 'title'):
+            self.title = player.title
 
-            if hasattr(player, 'artist'):
-                self.artist = player.artist
+        if hasattr(player, 'artist'):
+            self.artist = player.artist
 
-            if hasattr(player, 'album_name'):
-                self.album = player.album_name
+        if hasattr(player, 'album_name'):
+            self.album = player.album_name
