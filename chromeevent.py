@@ -30,10 +30,6 @@ class ChromeEvent:
         self.mqtt.subscribe(controlPath)
         self.mqtt.message_callback_add(controlPath, self.mqtt_action)
         self.log = setup_custom_logger('ChromeEvent_' + self.device.cast_type)
-        try:
-            self.device.media_controller.update_status()
-        except:
-            self.log.warn('xx')
 
     def mqtt_action(self, client, userdata, message):
         parameter = message.payload.decode("utf-8")

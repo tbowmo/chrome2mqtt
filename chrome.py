@@ -25,7 +25,7 @@ if not mqtt_host:
     mqtt_host = '127.0.0.1'
 if not mqtt_port:
     mqtt_port = 1883
-
+mqtt_port = int(mqtt_port)
 mqtt = MQTT(mqtt_host, mqtt_port)
 mqtt.conn()
 mqtt.loop_start()

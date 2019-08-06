@@ -86,9 +86,6 @@ class ChromeState:
             self.skip_bck = False
 
         self.id = None
-        if self.__chrome_app == 'Netflix':
-            d = Netflix(player.content_id)
-            self.title = d.title()
 
         if hasattr(player, 'title'):
             self.title = player.title
