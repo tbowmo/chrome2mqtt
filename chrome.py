@@ -10,10 +10,12 @@
 """
 from shutil import copyfile
 import pychromecast
+from globalcontrol import GlobalControl
 from chromeevent import ChromeEvent
 from os import environ
 from mqtt import MQTT
-from time import sleep
+from time import sleep, gmtime, strftime
+from datetime import datetime
 
 mqtt_root = environ.get('MQTT_ROOT')
 mqtt_host = environ.get('MQTT_HOST')
@@ -40,6 +42,11 @@ casters = []
 for c in CASTS:
     c.wait()
     casters.append(ChromeEvent(c, mqtt, mqtt_root))
+
+gControl = GlobalControl(casters, mqtt, mqtt_root)
+
+
+mqtt.publish(mqtt_root + '/start', datetime.now().strftime('%c'), retain=True)
 
 if __name__ == '__main__':
     while True:
