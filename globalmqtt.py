@@ -1,8 +1,8 @@
 """
-    Handles events from a chromecast device, and reports these to various endpoints
+    MQTT topic for global commands (quit / pause / stop), to send the same cmd to all known chromecasts
 """
 
-class GlobalControl:
+class GlobalMQTT:
 
     def __init__(self, casters, mqtt, mqttroot):
         self.casters = casters
