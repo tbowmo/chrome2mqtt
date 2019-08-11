@@ -1,10 +1,6 @@
 #!/usr/bin/python3
 """
-    Program that handles chromecast integration, mainly with domoticz. But also implements
-    a crude rest api for controlling a chromecast, and start streaming pre-defined streams.
-
-    This can be used to create a web interface for controlling a chromecast (for example in
-    angular)
+    Program that handles chromecast integration to mqtt. 
 
     Copyright 2018: Thomas Bowman Mørch
 """
