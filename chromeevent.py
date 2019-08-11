@@ -6,7 +6,7 @@ from time import sleep
 from chromestate import ChromeState
 from os import path
 from sys import exit
-from logger import setup_custom_logger
+import logging
 
 class ChromeEvent:
     """ Chrome event handling """
@@ -32,7 +32,7 @@ class ChromeEvent:
         controlPath = self.mqttpath + '/control/#'
         self.mqtt.subscribe(controlPath)
         self.mqtt.message_callback_add(controlPath, self.mqtt_action)
-        self.log = setup_custom_logger('ChromeEvent_' + self.device.cast_type)
+        self.log = logging.getLogger('ChromeEvent_' + self.device.cast_type)
 
     def mqtt_action(self, client, userdata, message):
         parameter = message.payload.decode("utf-8")
@@ -54,8 +54,8 @@ class ChromeEvent:
                 self.play()
 
     def new_cast_status(self, status):
-        self.log.info("----------- new cast status ---------------")
-        self.log.info(status)
+        self.log.debug("----------- new cast status ---------------")
+        self.log.debug(status)
         app_name = status.display_name
         if app_name == "Backdrop":
             self.status.clear()
@@ -71,8 +71,8 @@ class ChromeEvent:
         self.mqtt.publish(self.mqttpath+'/app', app_name, retain=True)
 
     def new_media_status(self, status):
-        self.log.info("----------- new media status ---------------")
-        self.log.info(status)
+        self.log.debug("----------- new media status ---------------")
+        self.log.debug(status)
         self.__createstate(status)
         self.__mqtt_publish(self.status)
         if self.status.player_state == 'PLAYING':

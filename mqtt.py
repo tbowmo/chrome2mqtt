@@ -1,5 +1,5 @@
 import paho.mqtt.client as mqtt
-from logger import setup_custom_logger
+import logging
 
 class MQTT(mqtt.Client):
     def __init__(self, host, port):
@@ -7,7 +7,7 @@ class MQTT(mqtt.Client):
         self.subscriptions = []
         self.host = host
         self.port = port
-        self.log =setup_custom_logger('mqtt')
+        self.log = logging.getLogger('mqtt')
 
     def on_connect(self, mqttc, obj, flags, rc):
         for s in self.subscriptions:
