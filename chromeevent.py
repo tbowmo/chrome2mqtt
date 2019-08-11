@@ -24,7 +24,7 @@ class ChromeEvent:
         if self.device.cast_type != 'audio':
             self.status.setApp('Backdrop')
 
-        self.mqttpath = mqttroot + '/' + name
+        self.mqttpath = mqttroot + '/' + self.name
 
         self.mediax = ''
         self.statex = ''
