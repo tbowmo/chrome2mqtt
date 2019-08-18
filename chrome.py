@@ -26,7 +26,7 @@ if not mqtt_host:
 if not mqtt_port:
     mqtt_port = 1883
 
-logLevel = logging.DEBUG
+logLevel = logging.WARNING
 
 def parse_args(argv):
     global mqtt_host, mqtt_port, mqtt_root, logLevel
@@ -67,31 +67,34 @@ logging.basicConfig(level=logLevel,
                     handlers = [logging.StreamHandler()])
     
 start_banner()
-try:
-    mqtt_port = int(mqtt_port)
-    mqtt = MQTT(mqtt_host, mqtt_port)
-    mqtt.conn()
-    mqtt.loop_start()
-except:
-    print('Error connecting to mqtt host ' + mqtt_host + ' on port ' + str(mqtt_port))
-    sys.exit(1)
 
-CASTS = pychromecast.get_chromecasts()
+def mqtt_init(mqtt_port, mqtt_host):
+    try:
+        mqtt_port = int(mqtt_port)
+        mqtt = MQTT(mqtt_host, mqtt_port)
+        mqtt.conn()
+        mqtt.loop_start()
+        return mqtt
+    except:
+        print('Error connecting to mqtt host ' + mqtt_host + ' on port ' + str(mqtt_port))
+        sys.exit(1)
 
-if len(CASTS) == 0:
-    print("No Devices Found")
-    exit()
-
-casters = []
-for c in CASTS:
-    c.wait()
-    casters.append(ChromeEvent(c, mqtt, mqtt_root))
-
-gControl = GlobalMQTT(casters, mqtt, mqtt_root)
-
+mqtt = mqtt_init(mqtt_port, mqtt_host)
 
 mqtt.publish(mqtt_root + '/start', datetime.now().strftime('%c'), retain=True)
 
-if __name__ == '__main__':
+def main_loop():
+    casters = []
+    def callback(chromecast):
+        chromecast.connect()
+        nonlocal casters
+        casters.append(ChromeEvent(chromecast, mqtt, mqtt_root))
+        mqtt.publish(mqtt_root + '/count', len(casters))
+
+    CASTS = pychromecast.get_chromecasts(callback=callback, blocking=False)
+
     while True:
         sleep(1)
+
+if __name__ == '__main__':
+    main_loop()
