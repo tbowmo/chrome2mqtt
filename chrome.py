@@ -81,19 +81,40 @@ def mqtt_init(mqtt_port, mqtt_host):
 
 mqtt = mqtt_init(mqtt_port, mqtt_host)
 
-mqtt.publish(mqtt_root + '/start', datetime.now().strftime('%c'), retain=True)
+mqtt.publish(mqtt_root + '/debug/start', datetime.now().strftime('%c'), retain=True)
 
 def main_loop():
-    casters = []
+    casters = {}
+    castnames = []
     def callback(chromecast):
         chromecast.connect()
-        nonlocal casters
-        casters.append(ChromeEvent(chromecast, mqtt, mqtt_root))
-        mqtt.publish(mqtt_root + '/count', len(casters))
+        nonlocal casters, castnames
+        name = chromecast.device.friendly_name
+        castnames.append(name)
+def main_loop():
+    casters = {}
+    castnames = []
+    def callback(chromecast):
+        chromecast.connect()
+        nonlocal casters, castnames
+        name = chromecast.device.friendly_name
+        castnames.append(name)
+        print(name)
+        casters.update({name: ChromeEvent(chromecast, mqtt, mqtt_root)})
+        mqtt.publish(mqtt_root + '/debug/count', len(casters), retain=True)
+        mqtt.publish(mqtt_root + '/debug/names', ','.join(castnames), retain=True)
 
-    CASTS = pychromecast.get_chromecasts(callback=callback, blocking=False)
+
+        casters.update({name: ChromeEvent(chromecast, mqtt, mqtt_root)})
+        mqtt.publish(mqtt_root + '/debug/count', len(casters), retain=True)
+        mqtt.publish(mqtt_root + '/debug/names', ','.join(castnames), retain=True)
+
+
+    stop_discovery = pychromecast.get_chromecasts(callback=callback, blocking=False)
 
     while True:
+        if (len(casters) == 2):
+            stop_discovery()
         sleep(1)
 
 if __name__ == '__main__':

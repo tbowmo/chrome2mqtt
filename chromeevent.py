@@ -10,6 +10,7 @@ import logging
 
 class ChromeEvent:
     """ Chrome event handling """
+    device = None
     def __init__(self, device,  mqtt, mqttroot):
         self.device = device
         self.mqtt = mqtt
@@ -26,17 +27,12 @@ class ChromeEvent:
         if self.device.cast_type != 'audio':
             self.status.setApp('Backdrop')
 
-
         self.mediax = ''
         self.statex = ''
 
         self.mqtt.subscribe(self.controlPath)
         self.mqtt.message_callback_add(self.controlPath, self.mqtt_action)
         self.device.wait()
-
-    def __del__(self):
-        self.mqtt.unsubscribe(self.controlPath)
-        self.mqtt.message_callback_remove(self.controlPath, self.mqtt_action)
 
     def mqtt_action(self, client, userdata, message):
         parameter = message.payload.decode("utf-8")
@@ -56,10 +52,12 @@ class ChromeEvent:
                 self.stop()
             if parameter == 'play':
                 self.play()
+            if parameter == 'status':
+                self.device.media_controller.update_status()
 
     def new_cast_status(self, status):
-        self.log.debug("----------- new cast status ---------------")
-        self.log.debug(status)
+        self.log.info("----------- new cast status ---------------")
+        self.log.info(status)
         app_name = status.display_name
         if app_name == "Backdrop":
             self.status.clear()
@@ -75,8 +73,8 @@ class ChromeEvent:
         self.mqtt.publish(self.mqttpath+'/app', app_name, retain=True)
 
     def new_media_status(self, status):
-        self.log.debug("----------- new media status ---------------")
-        self.log.debug(status)
+        self.log.info("----------- new media status ---------------")
+        self.log.info(status)
         self.__createstate(status)
         self.__mqtt_publish(self.status)
         if self.status.player_state == 'PLAYING':

@@ -13,7 +13,6 @@ class GlobalMQTT:
         
     def mqtt_action(self, client, userdata, message):
         p = message.payload
-        print(p)
         if p == b'quit':
             for c in self.casters:
                 c.quit()
