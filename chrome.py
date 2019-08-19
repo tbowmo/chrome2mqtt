@@ -14,24 +14,28 @@ from datetime import datetime
 import sys
 import getopt
 import logging
+import socket
 
+print(socket.gethostname())
 mqtt_root = environ.get('MQTT_ROOT')
 mqtt_host = environ.get('MQTT_HOST')
 mqtt_port = environ.get('MQTT_PORT')
-
+mqtt_client = environ.get('MQTT_CLIENT')
 if not mqtt_root:
     mqtt_root='chromecast'
 if not mqtt_host:
     mqtt_host = '127.0.0.1'
 if not mqtt_port:
     mqtt_port = 1883
+if not mqtt_client:
+    mqtt_client = socket.gethostname()
 
 logLevel = logging.WARNING
 
 def parse_args(argv):
-    global mqtt_host, mqtt_port, mqtt_root, logLevel
+    global mqtt_host, mqtt_port, mqtt_root, logLevel, mqtt_client
     try:
-        opts, args = getopt.getopt(argv, 'hr:p:m:l:', ['port=', 'root=', 'host=', 'log='])
+        opts, args = getopt.getopt(argv, 'hr:p:m:l:c:', ['port=', 'root=', 'host=', 'log=', 'client='])
     except getopt.GetoptError:
         help()
     for opt, arg in opts:
@@ -45,6 +49,8 @@ def parse_args(argv):
             mqtt_host = arg
         elif opt in('-l','--log'):
             logLevel = int(arg)
+        elif opt in('-c','--client'):
+            mqtt_client = arg
 
 def start_banner():
     print('Chromecast2MQTT by tbowmo')
@@ -71,7 +77,7 @@ start_banner()
 def mqtt_init(mqtt_port, mqtt_host):
     try:
         mqtt_port = int(mqtt_port)
-        mqtt = MQTT(mqtt_host, mqtt_port)
+        mqtt = MQTT(host=mqtt_host, port=mqtt_port, client=mqtt_client)
         mqtt.conn()
         mqtt.loop_start()
         return mqtt
@@ -83,14 +89,6 @@ mqtt = mqtt_init(mqtt_port, mqtt_host)
 
 mqtt.publish(mqtt_root + '/debug/start', datetime.now().strftime('%c'), retain=True)
 
-def main_loop():
-    casters = {}
-    castnames = []
-    def callback(chromecast):
-        chromecast.connect()
-        nonlocal casters, castnames
-        name = chromecast.device.friendly_name
-        castnames.append(name)
 def main_loop():
     casters = {}
     castnames = []

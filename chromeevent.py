@@ -22,7 +22,6 @@ class ChromeEvent:
         self.device.register_status_listener(self)
         self.device.media_controller.register_status_listener(self)
 
-
         self.status = ChromeState(device.device)
         if self.device.cast_type != 'audio':
             self.status.setApp('Backdrop')

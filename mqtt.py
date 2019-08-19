@@ -2,12 +2,13 @@ import paho.mqtt.client as mqtt
 import logging
 
 class MQTT(mqtt.Client):
-    def __init__(self, host, port):
+    def __init__(self, host='127.0.0.1', port=1883, client='chrome'):
         super().__init__(host, port)
         self.subscriptions = []
         self.host = host
         self.port = port
         self.log = logging.getLogger('mqtt')
+        self._client_id=client
 
     def on_connect(self, mqttc, obj, flags, rc):
         for s in self.subscriptions:
