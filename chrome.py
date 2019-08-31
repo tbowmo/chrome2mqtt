@@ -21,8 +21,6 @@ __version__ = __VERSION__ = "1.0.0"
 
 mqtt_client = socket.gethostname()
 
-logLevel = logging.WARNING
-
 def parse_args(argv = None):
     import argparse
     parser = argparse.ArgumentParser(description='Chromecast 2 mqtt')
@@ -31,8 +29,10 @@ def parse_args(argv = None):
     parser.add_argument('-p', '--port', action="store", default=1883, type=int, help="MQTT port on host")
     parser.add_argument('-c', '--client', action="store", default=socket.gethostname(), help="Client name for mqtt")
     parser.add_argument('-r', '--root', action="store", default="chromecast", help="MQTT root topic")
-    parser.add_argument('-m', '--host', action="store", default="127.0.0.1", help="MQTT Host")
-    parser.add_argument('-l', '--log', action="store", default=40, type=int, help="Log level")
+    parser.add_argument('-H', '--host', action="store", default="127.0.0.1", help="MQTT Host")
+    parser.add_argument('-l', '--logfile', action="store", default=None, help="Log to filename")
+    parser.add_argument('-d', '--debug', action="store_const", dest="log", const=logging.DEBUG, help="loglevel debug")
+    parser.add_argument('-v', '--verbose', action="store_const", dest="log", const=logging.INFO, help="loglevel info")
     parser.add_argument('-V', '--version', action='version', version='%(prog)s {version}'.format(version=__VERSION__))
 
     return parser.parse_args(argv)
@@ -76,6 +76,7 @@ def main_loop():
         if (args.MAX>0 and len(casters) == args.MAX):
             stop_discovery()
             signal.pause()
+            GlobalMQTT(casters, mqtt, args.root)
         sleep(1)
 
 def lastWill():
@@ -86,9 +87,13 @@ def lastWill():
 args = parse_args()
 start_banner(args)
 
-logging.basicConfig(level=args.log,
-                    format = '%(asctime)s %(levelname)-8s %(message)s',
-                    handlers = [logging.StreamHandler()])
+if (args.logfile != None):
+    logging.basicConfig(level=args.log,
+                        filename=args.file,
+                        format = '%(asctime)s %(levelname)-8s %(message)s')
+else:
+    logging.basicConfig(level=args.log,
+                        format = '%(asctime)s %(levelname)-8s %(message)s')
     
 
 if args.MAX == 0:
