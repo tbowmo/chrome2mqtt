@@ -85,13 +85,11 @@ class ChromeEvent:
 
     def __mqtt_publish(self, msg: ChromeState):
         mqtt_msg = []
-        if (self.last_player_state != msg.player_state):
-            # Only send new state if player_state has changed
+        if (self.last_title != msg.title or self.last_player_state != msg.player_state):            
+            # Only send new update, if title or player_state has changed.
+            self.mqtt.publish(self.mqttpath + '/media', msg.json(), retain = True )
             self.mqtt.publish(self.mqttpath + '/state', msg.player_state, retain = True )
             self.last_player_state = msg.player_state
-        if (self.last_title != msg.title):            
-            # Only send new update, if title is changed.
-            self.mqtt.publish(self.mqttpath + '/media', msg.json(), retain = True )
             self.last_title = msg.title
 
     def stop(self):
