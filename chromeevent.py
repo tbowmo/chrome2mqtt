@@ -12,6 +12,8 @@ from mqtt import MQTT
 class ChromeEvent:
     """ Chrome event handling """
     device = None
+    last_media = None
+    last_state = None
     def __init__(self, device,  mqtt: MQTT, mqttroot: str):
         self.device = device
         self.mqtt = mqtt
@@ -26,9 +28,6 @@ class ChromeEvent:
         self.status = ChromeState(device.device)
         if self.device.cast_type != 'audio':
             self.status.setApp('Backdrop')
-
-        self.last_title = ''
-        self.last_player_state = ''
 
         self.mqtt.subscribe(self.controlPath)
         self.mqtt.message_callback_add(self.controlPath, self.mqtt_action)
@@ -84,13 +83,16 @@ class ChromeEvent:
                 self.device.media_controller.update_status()
 
     def __mqtt_publish(self, msg: ChromeState):
-        mqtt_msg = []
-        if (self.last_title != msg.title or self.last_player_state != msg.player_state):            
+        media = msg.json_media()
+        state = msg.json_state()
+        if (self.last_media != media):            
             # Only send new update, if title or player_state has changed.
-            self.mqtt.publish(self.mqttpath + '/media', msg.json(), retain = True )
+            self.mqtt.publish(self.mqttpath + '/media', media, retain = True )
+            self.last_media = media
+        if (self.last_state != state):
+            self.mqtt.publish(self.mqttpath + '/capabilities', state, retain = True )
             self.mqtt.publish(self.mqttpath + '/state', msg.player_state, retain = True )
-            self.last_player_state = msg.player_state
-            self.last_title = msg.title
+            self.last_state = state
 
     def stop(self):
         """ Stop playing on the chromecast """
