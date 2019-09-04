@@ -2,9 +2,11 @@
     MQTT topic for global commands (quit / pause / stop), to send the same cmd to all known chromecasts
 """
 
+from mqtt import MQTT
+
 class GlobalMQTT:
 
-    def __init__(self, casters, mqtt, mqttroot):
+    def __init__(self, casters, mqtt:MQTT, mqttroot:str):
         self.casters = casters
         self.mqtt = mqtt
         controlPath = mqttroot + '/control'
@@ -13,7 +15,6 @@ class GlobalMQTT:
         
     def mqtt_action(self, client, userdata, message):
         p = message.payload
-        print(p)
         if p == b'quit':
             for c in self.casters:
                 c.quit()

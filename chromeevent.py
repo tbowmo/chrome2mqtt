@@ -6,33 +6,32 @@ from time import sleep
 from chromestate import ChromeState
 from os import path
 from sys import exit
-from logger import setup_custom_logger
+import logging
+from mqtt import MQTT
 
 class ChromeEvent:
     """ Chrome event handling """
-    def __init__(self, device,  mqtt, mqttroot):
-
+    device = None
+    last_media = None
+    last_state = None
+    def __init__(self, device,  mqtt: MQTT, mqttroot: str):
         self.device = device
+        self.mqtt = mqtt
+        self.name = self.device.device.friendly_name.lower().replace(' ', '_')
+        self.mqttpath = mqttroot + '/' + self.name
+        self.controlPath = self.mqttpath + '/control/#'
+        self.log = logging.getLogger('ChromeEvent_' + self.device.cast_type)
+
         self.device.register_status_listener(self)
         self.device.media_controller.register_status_listener(self)
-
-        self.mqtt = mqtt
-
-        self.name = self.device.device.friendly_name.lower().replace(' ', '_')
 
         self.status = ChromeState(device.device)
         if self.device.cast_type != 'audio':
             self.status.setApp('Backdrop')
 
-        self.mqttpath = mqttroot + '/' + self.name
-
-        self.mediax = ''
-        self.statex = ''
-
-        controlPath = self.mqttpath + '/control/#'
-        self.mqtt.subscribe(controlPath)
-        self.mqtt.message_callback_add(controlPath, self.mqtt_action)
-        self.log = setup_custom_logger('ChromeEvent_' + self.device.cast_type)
+        self.mqtt.subscribe(self.controlPath)
+        self.mqtt.message_callback_add(self.controlPath, self.mqtt_action)
+        self.device.wait()
 
     def mqtt_action(self, client, userdata, message):
         parameter = message.payload.decode("utf-8")
@@ -52,6 +51,8 @@ class ChromeEvent:
                 self.stop()
             if parameter == 'play':
                 self.play()
+            if parameter == 'status':
+                self.device.media_controller.update_status()
 
     def new_cast_status(self, status):
         self.log.info("----------- new cast status ---------------")
@@ -81,14 +82,17 @@ class ChromeEvent:
                 sleep(1)
                 self.device.media_controller.update_status()
 
-    def __mqtt_publish(self, msg):
-        mqtt_msg = []
-        if (self.statex != msg.player_state):
+    def __mqtt_publish(self, msg: ChromeState):
+        media = msg.json_media()
+        state = msg.json_state()
+        if (self.last_media != media):            
+            # Only send new update, if title or player_state has changed.
+            self.mqtt.publish(self.mqttpath + '/media', media, retain = True )
+            self.last_media = media
+        if (self.last_state != state):
+            self.mqtt.publish(self.mqttpath + '/capabilities', state, retain = True )
             self.mqtt.publish(self.mqttpath + '/state', msg.player_state, retain = True )
-            self.statex = msg.player_state
-        if (self.mediax != msg.json()):            
-            self.mqtt.publish(self.mqttpath + '/media', msg.json(), retain = True )
-            self.mediax = msg.json()
+            self.last_state = state
 
     def stop(self):
         """ Stop playing on the chromecast """

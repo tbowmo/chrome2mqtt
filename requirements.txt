@@ -1,5 +1,3 @@
-bottle
 pychromecast
-lxml
 pytz
 paho-mqtt

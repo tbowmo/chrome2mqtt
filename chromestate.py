@@ -2,7 +2,8 @@
     holds current state of the chromedevice
 """
 import json
-from logger import setup_custom_logger
+import logging
+
 class ChromeState:
     """ Holds state of the chromecast player """
     __device_type = ""
@@ -22,15 +23,27 @@ class ChromeState:
             self.__device_type = 'video'
         else:
             self.__device_type = device.cast_type
-        self.log = setup_custom_logger('chromestate')
+        self.log = logging.getLogger('chromestate_' + device.cast_type)
 
-    def __repr__(self):
-        return json.dumps(self.dtodict())
+    def json_media(self):
+        media_dict = {
+            "title": self.title,
+            "artist":self.artist,
+            "album":self.album,
+        }
+        return json.dumps(media_dict).encode('utf-8')
 
-    def json(self):
-        return json.dumps(self.dtodict()).encode('utf-8')
+    def json_state(self):
+        state_dict = {
+            "skip_fwd": self.skip_fwd,
+            "skip_bck": self.skip_bck,
+            "pause": self.pause,
+            "player_state": self.player_state,
+            "chrome_app": self.__chrome_app
+        }
+        return json.dumps(state_dict).encode('utf-8')
 
-    def dtodict(self):
+    def __dtodict_(self):
         """ Returns a json interpretation of the object """
         return {
             "title": self.title,
