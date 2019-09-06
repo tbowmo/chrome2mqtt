@@ -21,7 +21,7 @@ Chromecast 2 mqtt
 
 optional arguments:
   -h, --help            show this help message and exit
-  -max MAX, --MAX MAX   IP Address of harmony Hub. (default: None)
+  -max MAX, --MAX MAX   Max number of chromecasts to expect 
   -p PORT, --port PORT  MQTT port on host
   -c CLIENT, --client CLIENT
                         Client name for mqtt
