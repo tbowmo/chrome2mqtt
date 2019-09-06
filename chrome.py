@@ -25,7 +25,7 @@ def parse_args(argv = None):
     import argparse
     parser = argparse.ArgumentParser(description='Chromecast 2 mqtt')
     required_flags = parser.add_mutually_exclusive_group(required=True)
-    required_flags.add_argument('-max', '--MAX', action="store",type=int, default=None, help="IP Address of harmony Hub. (default: None)")
+    required_flags.add_argument('-max', '--MAX', action="store",type=int, default=None, help="Max number of chromecasts to expect")
     parser.add_argument('-p', '--port', action="store", default=1883, type=int, help="MQTT port on host")
     parser.add_argument('-c', '--client', action="store", default=socket.gethostname(), help="Client name for mqtt")
     parser.add_argument('-r', '--root', action="store", default="chromecast", help="MQTT root topic")
