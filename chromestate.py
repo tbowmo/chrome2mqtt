@@ -12,13 +12,13 @@ class ChromeState:
     artist = ""
     album = ""
     content = ""
-    id = ""    
+    id = ""
     skip_fwd = False
     skip_bck = False
     pause = False
     player_state = ""
     volume = False
-    volume_level = 0.0
+    volume_level = 0
 
     def __init__(self, device):
         if device.cast_type == 'cast':
@@ -67,7 +67,6 @@ class ChromeState:
     def clear(self):
         """ Clear all fields """
         self.player_state = "STOPPED"
-        self.volume_level = 0.0
         self.__chrome_app = ""
         self.id = ""
         self.title = ""
@@ -79,7 +78,8 @@ class ChromeState:
         self.skip_fwd = False
         self.skip_bck = False
         self.volume = False
-    
+        self.volume_level = 0
+
     def setApp(self, appName):
         self.__chrome_app = appName
 
@@ -91,7 +91,7 @@ class ChromeState:
             self.player_state = player.player_state
 
         if hasattr(player, 'volume_level'):
-            self.volume_level = player.volume_level
+            self.volume_level = Math.round(player.volume_level * 100)
 
         ch = None
         if hasattr(player, 'supports_pause'):

@@ -149,7 +149,7 @@ class ChromeEvent:
     def volume(self, level):
         """ Set the volume level """
         try:
-            self.device.set_volume(float(level))
+            self.device.set_volume(int(level) / 100.0)
         except:
             self.__handle_error()
 
