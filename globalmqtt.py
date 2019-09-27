@@ -6,10 +6,10 @@ from mqtt import MQTT
 
 class GlobalMQTT:
 
-    def __init__(self, casters, mqtt:MQTT, mqttroot:str):
+    def __init__(self, casters, mqtt:MQTT):
         self.casters = casters
         self.mqtt = mqtt
-        controlPath = mqttroot + '/control'
+        controlPath = 'control'
         self.mqtt.subscribe(controlPath)
         self.mqtt.message_callback_add(controlPath, self.mqtt_action)
         

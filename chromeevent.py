@@ -14,12 +14,11 @@ class ChromeEvent:
     device = None
     last_media = None
     last_state = None
-    def __init__(self, device,  mqtt: MQTT, mqttroot: str):
+    def __init__(self, device,  mqtt: MQTT):
         self.device = device
         self.mqtt = mqtt
         self.name = self.device.device.friendly_name.lower().replace(' ', '_')
-        self.mqttpath = mqttroot + '/' + self.name
-        self.controlPath = self.mqttpath + '/control/#'
+        self.mqttpath = self.name
         self.log = logging.getLogger('ChromeEvent_' + self.device.cast_type)
 
         self.device.register_status_listener(self)
@@ -29,8 +28,9 @@ class ChromeEvent:
         if self.device.cast_type != 'audio':
             self.status.setApp('Backdrop')
 
-        self.mqtt.subscribe(self.controlPath)
-        self.mqtt.message_callback_add(self.controlPath, self.mqtt_action)
+        controlPath = self.name + '/control/#'
+        self.mqtt.subscribe(controlPath)
+        self.mqtt.message_callback_add(controlPath, self.mqtt_action)
         self.device.wait()
 
     def mqtt_action(self, client, userdata, message):

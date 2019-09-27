@@ -46,10 +46,9 @@ def mqtt_init(mqtt_port, mqtt_host, mqtt_root):
     """Initialize mqtt transport"""
     try:
         mqtt_port = int(mqtt_port)
-        mqtt = MQTT(host=mqtt_host, port=mqtt_port, client=mqtt_client)
+        mqtt = MQTT(host=mqtt_host, port=mqtt_port, client=mqtt_client, root=mqtt_root)
         mqtt.conn()
-        mqtt.loop_start()
-        mqtt.publish(mqtt_root + '/debug/start', datetime.now().strftime('%c'), retain=True)
+        mqtt.publish('debug/start', datetime.now().strftime('%c'), retain=True)
         return mqtt
     except:
         print('Error connecting to mqtt host ' + mqtt_host + ' on port ' + str(mqtt_port))
@@ -63,7 +62,7 @@ def main_loop():
         nonlocal casters
         name = chromecast.device.friendly_name
         print('Found :', name)
-        casters.update({name: ChromeEvent(chromecast, mqtt, args.root)})
+        casters.update({name: ChromeEvent(chromecast, mqtt)})
 
     stop_discovery = pychromecast.get_chromecasts(callback=callback, blocking=False)
     def signal_handler(sig, frame):
@@ -76,12 +75,12 @@ def main_loop():
         if (args.MAX>0 and len(casters) == args.MAX):
             stop_discovery()
             signal.pause()
-            GlobalMQTT(casters, mqtt, args.root)
+            GlobalMQTT(casters, mqtt)
         sleep(1)
 
 def lastWill():
     """Send a last will to the mqtt server"""
-    mqtt.publish(args.root + '/debug/stop', datetime.now().strftime('%c'), retain=True)
+    mqtt.publish('/debug/stop', datetime.now().strftime('%c'), retain=True)
 
 
 args = parse_args()
