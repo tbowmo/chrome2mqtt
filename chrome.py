@@ -65,6 +65,7 @@ def main_loop():
         casters.update({name: ChromeEvent(chromecast, mqtt)})
 
     stop_discovery = pychromecast.get_chromecasts(callback=callback, blocking=False)
+
     def signal_handler(sig, frame):
         print('Shutting down')
         sys.exit(0)
@@ -80,7 +81,7 @@ def main_loop():
 
 def lastWill():
     """Send a last will to the mqtt server"""
-    mqtt.publish('/debug/stop', datetime.now().strftime('%c'), retain=True)
+    mqtt.publish('debug/stop', datetime.now().strftime('%c'), retain=True)
 
 
 args = parse_args()
