@@ -74,8 +74,8 @@ def main_loop():
     while True:
         if (args.MAX>0 and len(casters) == args.MAX):
             stop_discovery()
-            signal.pause()
             GlobalMQTT(casters, mqtt)
+            signal.pause()
         sleep(1)
 
 def lastWill():
