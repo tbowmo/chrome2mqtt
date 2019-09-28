@@ -17,14 +17,17 @@ class MQTT(mqtt.Client):
         self._client_id=client
 
     def subscribe(self, topic, qos=0):
-        super().subscribe(self.root + topic, qos)
+        topic = self.root + topic
+        super().subscribe(topic, qos)
 
     def message_callback_add(self, sub, callback):
-        super().message_callback_add(self.root + sub, callback)
+        sub = self.root + sub
+        super().message_callback_add(sub, callback)
 
     def publish(self, topic, payload = None, qos = 0, retain=False):
+        topic = self.root + topic
         if self.is_connected:
-            super().publish(self.root + topic, payload, qos, retain)
+            super().publish(topic, payload, qos, retain)
 
     def on_connect(self, mqttc, obj, flags, rc):
         self.is_connected = True
