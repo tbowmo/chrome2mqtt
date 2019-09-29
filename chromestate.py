@@ -91,7 +91,7 @@ class ChromeState:
             self.player_state = player.player_state
 
         if hasattr(player, 'volume_level'):
-            self.volume_level = Math.round(player.volume_level * 100)
+            self.volume_level = round(player.volume_level * 100)
 
         ch = None
         if hasattr(player, 'supports_pause'):
