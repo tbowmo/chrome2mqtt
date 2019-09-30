@@ -12,11 +12,13 @@ class ChromeState:
     artist = ""
     album = ""
     content = ""
-    id = ""    
+    id = ""
     skip_fwd = False
     skip_bck = False
     pause = False
     player_state = ""
+    volume = False
+    volume_level = 0
 
     def __init__(self, device):
         if device.cast_type == 'cast':
@@ -39,6 +41,8 @@ class ChromeState:
             "skip_bck": self.skip_bck,
             "pause": self.pause,
             "player_state": self.player_state,
+            "volume": self.volume,
+            "volume_level": self.volume_level,
             "chrome_app": self.__chrome_app
         }
         return json.dumps(state_dict).encode('utf-8')
@@ -55,6 +59,8 @@ class ChromeState:
             "pause": self.pause,
             "id": self.id,
             "player_state": self.player_state,
+            "volume": self.volume,
+            "volume_level": self.volume_level,
             "chrome_app": self.__chrome_app
         }
 
@@ -71,7 +77,9 @@ class ChromeState:
         self.pause = False
         self.skip_fwd = False
         self.skip_bck = False
-    
+        self.volume = False
+        self.volume_level = 0
+
     def setApp(self, appName):
         self.__chrome_app = appName
 
@@ -81,6 +89,9 @@ class ChromeState:
     def update(self, player):
         if hasattr(player, 'player_state') and player.player_state is not None:
             self.player_state = player.player_state
+
+        if hasattr(player, 'volume_level'):
+            self.volume_level = round(player.volume_level * 100)
 
         ch = None
         if hasattr(player, 'supports_pause'):
@@ -97,6 +108,11 @@ class ChromeState:
             self.skip_bck = player.supports_skip_backward
         else:
             self.skip_bck = False
+
+        if hasattr(player, 'supports_stream_volume'):
+            self.volume = player.supports_stream_volume
+        else:
+            self.volume = False
 
         self.id = None
 

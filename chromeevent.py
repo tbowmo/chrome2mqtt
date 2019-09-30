@@ -38,6 +38,8 @@ class ChromeEvent:
         cmd = path.basename(path.normpath(message.topic))
         if cmd == 'play':
             self.play(parameter)
+        elif cmd == 'volume':
+            self.volume(parameter)
         else:
             if parameter == 'pause':
                 self.pause()
@@ -92,6 +94,7 @@ class ChromeEvent:
         if (self.last_state != state):
             self.mqtt.publish(self.mqttpath + '/capabilities', state, retain = True )
             self.mqtt.publish(self.mqttpath + '/state', msg.player_state, retain = True )
+            self.mqtt.publish(self.mqttpath + '/volume', msg.volume_level, retain = True )
             self.last_state = state
 
     def stop(self):
@@ -140,6 +143,13 @@ class ChromeEvent:
             else:
                 self.device.media_controller.play_media(media.link, media.media)
                 self.__mqtt_publish(self.state())
+        except:
+            self.__handle_error()
+
+    def volume(self, level):
+        """ Set the volume level """
+        try:
+            self.device.set_volume(int(level) / 100.0)
         except:
             self.__handle_error()
 
