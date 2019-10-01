@@ -25,9 +25,7 @@ class ChromeEvent:
         self.device.media_controller.register_status_listener(self)
 
         self.status = ChromeState(device.device)
-        if self.device.cast_type != 'audio':
-            self.status.setApp('Backdrop')
-
+        
         controlPath = self.name + '/control/#'
         self.mqtt.subscribe(controlPath)
         self.mqtt.message_callback_add(controlPath, self.mqtt_action)
@@ -59,19 +57,8 @@ class ChromeEvent:
     def new_cast_status(self, status):
         self.log.info("----------- new cast status ---------------")
         self.log.info(status)
-        app_name = status.display_name
-        if app_name == "Backdrop":
-            self.status.clear()
-        if (app_name is None) or (app_name == ""):
-            app_name = "None"
-            self.status.clear()
-
-        self.status.setApp(app_name)
-
-        if self.device.media_controller.status.player_state == "PLAYING":
-            self.log.warn('!!!!!THIS SHOULD NOT BE CALLED!!!!!')
-            self.state()
-        self.mqtt.publish(self.mqttpath+'/app', app_name, retain=True)
+        self.status.setState(status)
+        self.__mqtt_publish(self.state())
 
     def new_media_status(self, status):
         self.log.info("----------- new media status ---------------")
@@ -80,13 +67,14 @@ class ChromeEvent:
         self.__mqtt_publish(self.status)
         if self.status.player_state == 'PLAYING':
             # Netflix is not reporting nicely on play / pause state changes, so we poll it to get an up to date status
-            if self.status.app() == 'Netflix':
+            if self.status.app == 'Netflix':
                 sleep(1)
                 self.device.media_controller.update_status()
 
     def __mqtt_publish(self, msg: ChromeState):
-        media = msg.json_media()
-        state = msg.json_state()
+        media = msg.media
+        state = msg.state
+        print(state)
         if (self.last_media != media):            
             # Only send new update, if title or player_state has changed.
             self.mqtt.publish(self.mqttpath + '/media', media, retain = True )
@@ -95,6 +83,9 @@ class ChromeEvent:
             self.mqtt.publish(self.mqttpath + '/capabilities', state, retain = True )
             self.mqtt.publish(self.mqttpath + '/state', msg.player_state, retain = True )
             self.mqtt.publish(self.mqttpath + '/volume', msg.volume_level, retain = True )
+            self.mqtt.publish(self.mqttpath + '/volume1', msg.volume_level1, retain = True )
+            self.mqtt.publish(self.mqttpath + '/app', msg.app, retain=True)
+
             self.last_state = state
 
     def stop(self):
@@ -130,7 +121,7 @@ class ChromeEvent:
         """ Quit running application on chromecast """
         try:
             self.device.media_controller.stop()
-            self.device.quit_app()
+            self.device.quit_app
             self.status.clear()
         except:
             self.__handle_error()
@@ -157,7 +148,7 @@ class ChromeEvent:
         exit(1)
 
     def __createstate(self, state):
-        self.status.update(state)
+        self.status.setMedia(state)
         return self.status
 
     def state(self):
