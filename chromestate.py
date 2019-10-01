@@ -38,7 +38,6 @@ class ChromeState:
         return self.__volume_level1
 
     def __init__(self, device):
-        print(device)
         if device.cast_type == 'cast':
             self.__device_type = 'video'
         else:
@@ -96,8 +95,6 @@ class ChromeState:
             self.__player_state = mediaStatus.player_state
 
         if hasattr(mediaStatus , 'volume_level'):
-            print('xxx')
-            print(mediaStatus.volume_level)
             self.__volume_level = round(mediaStatus.volume_level * 100)
 
         ch = None

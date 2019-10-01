@@ -74,7 +74,6 @@ class ChromeEvent:
     def __mqtt_publish(self, msg: ChromeState):
         media = msg.media
         state = msg.state
-        print(state)
         if (self.last_media != media):            
             # Only send new update, if title or player_state has changed.
             self.mqtt.publish(self.mqttpath + '/media', media, retain = True )
