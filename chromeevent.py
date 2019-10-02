@@ -82,7 +82,6 @@ class ChromeEvent:
             self.mqtt.publish(self.mqttpath + '/capabilities', state, retain = True )
             self.mqtt.publish(self.mqttpath + '/state', msg.player_state, retain = True )
             self.mqtt.publish(self.mqttpath + '/volume', msg.volume_level, retain = True )
-            self.mqtt.publish(self.mqttpath + '/volume1', msg.volume_level1, retain = True )
             self.mqtt.publish(self.mqttpath + '/app', msg.app, retain=True)
 
             self.last_state = state
