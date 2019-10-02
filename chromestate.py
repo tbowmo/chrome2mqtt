@@ -19,7 +19,6 @@ class ChromeState:
     __player_state = ""
     __volume = False
     __volume_level = 0
-    __volume_level1 = 0
 
     @property
     def app(self):
@@ -32,10 +31,6 @@ class ChromeState:
     @property
     def volume_level(self):
         return self.__volume_level
-
-    @property
-    def volume_level1(self):
-        return self.__volume_level1
 
     def __init__(self, device):
         print(device)
@@ -63,7 +58,6 @@ class ChromeState:
             "player_state": self.__player_state,
             "volume": self.__volume,
             "volume_level": self.__volume_level,
-            "volume_level1": self.__volume_level1,
             "chrome_app": self.__chrome_app
         }
         return json.dumps(state_dict).encode('utf-8')
@@ -80,8 +74,6 @@ class ChromeState:
         self.__skip_bck = False
         self.__volume = False
         self.__volume_level = 0
-        self.__volume_level1 = 0
-
 
     def setState(self, status: CastStatus):
         app_name = status.display_name
@@ -89,16 +81,11 @@ class ChromeState:
             self.clear()
             app_name = "None"
         self.__chrome_app = app_name
-        self.__volume_level1 = status.volume_level * 100
+        self.__volume_level = round(status.volume_level * 100)
 
     def setMedia(self, mediaStatus: MediaStatus):
         if hasattr(mediaStatus, 'player_state') and mediaStatus.player_state is not None:
             self.__player_state = mediaStatus.player_state
-
-        if hasattr(mediaStatus , 'volume_level'):
-            print('xxx')
-            print(mediaStatus.volume_level)
-            self.__volume_level = round(mediaStatus.volume_level * 100)
 
         ch = None
         if hasattr(mediaStatus, 'supports_pause'):
