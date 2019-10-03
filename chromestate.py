@@ -33,19 +33,19 @@ class ChromeState:
         return self.__volume_level
 
     def __init__(self, device):
-        print(device)
         if device.cast_type == 'cast':
             self.__device_type = 'video'
         else:
             self.__device_type = device.cast_type
+        self.clear()
         self.log = logging.getLogger('chromestate_' + device.cast_type)
 
     @property
     def media(self):
         media_dict = {
             "title": self.__title,
-            "artist":self.__artist,
-            "album":self.__album,
+            "artist": self.__artist,
+            "album": self.__album,
         }
         return json.dumps(media_dict).encode('utf-8')
 
@@ -65,7 +65,7 @@ class ChromeState:
     def clear(self):
         """ Clear all fields """
         self.__player_state = "STOPPED"
-        self.__chrome_app = ""
+        self.__chrome_app = "None"
         self.__title = ""
         self.__artist = ""
         self.__album = ""
@@ -79,8 +79,6 @@ class ChromeState:
         app_name = status.display_name
         if app_name is None or app_name == "Backdrop" or app_name == "" :
             self.clear()
-            app_name = "None"
-        self.__chrome_app = app_name
         self.__volume_level = round(status.volume_level * 100)
 
     def setMedia(self, mediaStatus: MediaStatus):
