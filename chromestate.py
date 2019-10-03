@@ -1,13 +1,12 @@
-"""
-    holds current state of the chromedevice
-"""
 import json
 import logging
 from pychromecast.socket_client import CastStatus 
 from pychromecast.controllers.media import MediaStatus 
 
 class ChromeState:
-    """ Holds state of the chromecast mediaStatus """
+    """ 
+        Holds state of the chromecast mediaStatus 
+    """
     __device_type = ""
     __chrome_app = ""
     __title = ""

@@ -4,6 +4,11 @@ from time import sleep, strftime
 from datetime import datetime
 
 class MQTT(mqtt.Client):
+    """ Mqtt handler, takes care of adding a root topic to all topics 
+        managed by this class, so others do not have to be aware of
+        this root topic
+    """
+    
     is_connected = False
     root = ''
     def __init__(self, host='127.0.0.1', port=1883, client='chrome', root = ''):

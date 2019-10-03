@@ -1,11 +1,10 @@
-"""
-    MQTT topic for global commands (quit / pause / stop), sends the same cmd to all known chromecasts
-"""
-
 from mqtt import MQTT
 import logging
 
 class GlobalMQTT:
+    """
+        MQTT topic handler for global commands (quit / pause / stop), sends the same cmd to all known chromecasts
+    """
 
     def __init__(self, casters, mqtt:MQTT):
         self.casters = casters

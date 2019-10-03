@@ -1,7 +1,3 @@
-"""
-    Handles events from a chromecast device, and reports these to various endpoints
-"""
-
 from time import sleep
 from chromestate import ChromeState
 from os import path
@@ -10,7 +6,9 @@ import logging
 from mqtt import MQTT
 
 class ChromeEvent:
-    """ Chrome event handling """
+    """ 
+        Handles events from a chromecast device, and reports these to various endpoints
+    """
     device = None
     last_media = None
     last_state = None
