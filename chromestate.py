@@ -78,7 +78,7 @@ class ChromeState:
         app_name = status.display_name
         if app_name is None or app_name == "Backdrop" or app_name == "" :
             self.clear()
-        else
+        else:
             self.__chrome_app = app_name
         self.__volume_level = round(status.volume_level * 100)
 
