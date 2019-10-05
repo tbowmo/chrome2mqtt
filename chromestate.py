@@ -1,13 +1,12 @@
-"""
-    holds current state of the chromedevice
-"""
 import json
 import logging
 from pychromecast.socket_client import CastStatus 
 from pychromecast.controllers.media import MediaStatus 
 
 class ChromeState:
-    """ Holds state of the chromecast mediaStatus """
+    """ 
+        Holds state of the chromecast mediaStatus 
+    """
     __device_type = ""
     __chrome_app = ""
     __title = ""
@@ -79,6 +78,8 @@ class ChromeState:
         app_name = status.display_name
         if app_name is None or app_name == "Backdrop" or app_name == "" :
             self.clear()
+        else:
+            self.__chrome_app = app_name
         self.__volume_level = round(status.volume_level * 100)
 
     def setMedia(self, mediaStatus: MediaStatus):

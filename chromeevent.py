@@ -1,7 +1,3 @@
-"""
-    Handles events from a chromecast device, and reports these to various endpoints
-"""
-
 from time import sleep
 from chromestate import ChromeState
 from os import path
@@ -10,16 +6,17 @@ import logging
 from mqtt import MQTT
 
 class ChromeEvent:
-    """ Chrome event handling """
+    """ 
+        Handles events from a chromecast device, and reports these to various endpoints
+    """
     device = None
     last_media = None
     last_state = None
-    def __init__(self, device,  mqtt: MQTT, mqttroot: str):
+    def __init__(self, device,  mqtt: MQTT):
         self.device = device
         self.mqtt = mqtt
         self.name = self.device.device.friendly_name.lower().replace(' ', '_')
-        self.mqttpath = mqttroot + '/' + self.name
-        self.controlPath = self.mqttpath + '/control/#'
+        self.mqttpath = self.name
         self.log = logging.getLogger('ChromeEvent_' + self.device.cast_type)
 
         self.device.register_status_listener(self)
@@ -27,7 +24,7 @@ class ChromeEvent:
 
         self.status = ChromeState(device.device)
         
-        controlPath = self.mqttpath + '/control/#'
+        controlPath = self.name + '/control/#'
         self.mqtt.subscribe(controlPath)
         self.mqtt.message_callback_add(controlPath, self.mqtt_action)
         self.device.wait()
@@ -75,7 +72,6 @@ class ChromeEvent:
     def __mqtt_publish(self, msg: ChromeState):
         media = msg.media
         state = msg.state
-        print(state)
         if (self.last_media != media):            
             # Only send new update, if title or player_state has changed.
             self.mqtt.publish(self.mqttpath + '/media', media, retain = True )

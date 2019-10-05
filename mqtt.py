@@ -1,21 +1,54 @@
 import paho.mqtt.client as mqtt
 import logging
+from time import sleep, strftime
+from datetime import datetime
 
 class MQTT(mqtt.Client):
-    def __init__(self, host='127.0.0.1', port=1883, client='chrome'):
+    """ Mqtt handler, takes care of adding a root topic to all topics 
+        managed by this class, so others do not have to be aware of
+        this root topic
+    """
+    
+    is_connected = False
+    root = ''
+    def __init__(self, host='127.0.0.1', port=1883, client='chrome', root = ''):
         super().__init__(host, port)
         self.subscriptions = []
         self.host = host
         self.port = port
+        if root != '':
+            self.root = root + '/'
         self.log = logging.getLogger('mqtt')
         self._client_id=client
 
+    def subscribe(self, topic, qos=0):
+        topic = self.root + topic
+        super().subscribe(topic, qos)
+
+    def message_callback_add(self, sub, callback):
+        sub = self.root + sub
+        super().message_callback_add(sub, callback)
+
+    def publish(self, topic, payload = None, qos = 0, retain=False):
+        topic = self.root + topic
+        if self.is_connected:
+            super().publish(topic, payload, qos, retain)
+
     def on_connect(self, mqttc, obj, flags, rc):
+        self.is_connected = True
+        self.publish('debug/lastconnect',datetime.now().strftime('%c'), retain=True)
         for s in self.subscriptions:
             self.subscribe(s)
 
-    def on_publish(self, mqttc, obj, mid):
-        pass
+    def on_disconnect(self, client, userdata, rc):
+        self.log.warn("Disconnected, reconnecting")
+        self.publish('debug/lastdisconnect',datetime.now().strftime('%c'), retain=True)
+        self.is_connected = False
+        while not is_connected:
+            if not is_connected:
+                self.log.warn("Reconnect attempt")
+                self.conn()
+            sleep(5)
 
     def on_subscribe(self, mqttc, obj, mid, granted_qos):
         self.log.info("Subscribed: " + str(mid) + " " + str(granted_qos))
@@ -24,11 +57,12 @@ class MQTT(mqtt.Client):
         self.log.debug(string)
 
     def conn(self):
-        self.connect(self.host, self.port, 60)
+        self.connect(self.host, self.port, 30)
+        self.loop_start()
+        while not self.is_connected:
+            pass
 
     def run(self):
-        self.subscribe("$SYS/#", 0)
-
         rc = 0
         while rc == 0:
             rc = self.loop()
