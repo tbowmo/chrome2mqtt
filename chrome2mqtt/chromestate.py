@@ -18,6 +18,7 @@ class ChromeState:
     __player_state = ""
     __volume = False
     __volume_level = 0
+    __muted = False
 
     @property
     def app(self):
@@ -30,6 +31,10 @@ class ChromeState:
     @property
     def volume_level(self):
         return self.__volume_level
+
+    @property
+    def muted(self):
+        return self.__muted
 
     def __init__(self, device):
         if device.cast_type == 'cast':
@@ -57,6 +62,7 @@ class ChromeState:
             "player_state": self.__player_state,
             "volume": self.__volume,
             "volume_level": self.__volume_level,
+            "muted": self.__muted,
             "chrome_app": self.__chrome_app
         }
         return json.dumps(state_dict).encode('utf-8')
@@ -81,6 +87,9 @@ class ChromeState:
         else:
             self.__chrome_app = app_name
         self.__volume_level = round(status.volume_level * 100)
+        self.__muted = status.volume_muted
+        if (status.volume_muted):
+            self.__volume_level = 0
 
     def setMedia(self, mediaStatus: MediaStatus):
         if hasattr(mediaStatus, 'player_state') and mediaStatus.player_state is not None:
