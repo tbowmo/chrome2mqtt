@@ -4,15 +4,16 @@ from os import path
 from sys import exit
 import logging
 from chrome2mqtt.mqtt import MQTT
+from pychromecast import Chromecast
 
 class ChromeEvent:
     """ 
         Handles events from a chromecast device, and reports these to various endpoints
     """
-    device = None
+    device: Chromecast = None
     last_media = None
     last_state = None
-    def __init__(self, device,  mqtt: MQTT):
+    def __init__(self, device: Chromecast,  mqtt: MQTT):
         self.device = device
         self.mqtt = mqtt
         self.name = self.device.device.friendly_name.lower().replace(' ', '_')
@@ -36,6 +37,8 @@ class ChromeEvent:
             self.play(parameter)
         elif cmd == 'volume':
             self.volume(parameter)
+        elif cmd == 'mute':
+            self.mute(parameter)
         else:
             if parameter == 'pause':
                 self.pause()
@@ -137,6 +140,20 @@ class ChromeEvent:
         """ Set the volume level """
         try:
             self.device.set_volume(int(level) / 100.0)
+        except:
+            self.__handle_error()
+
+    def mute(self, p):
+        p = p.lower()
+        try:
+            if (p == '' or p == None):
+                self.device.set_volume_muted(not self.status.muted)
+            elif (p == '1' or p == 'true'):
+                self.device.set_volume_muted(True)
+            elif (p == '0' or p == 'false'):
+                self.device.set_volume_muted(False)
+            else:
+                print('no match')
         except:
             self.__handle_error()
 
