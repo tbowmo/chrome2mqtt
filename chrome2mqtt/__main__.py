@@ -5,10 +5,11 @@
     Copyright 2018: Thomas Bowman Morch
 """
 import pychromecast
-from globalmqtt import GlobalMQTT
-from chromeevent import ChromeEvent
+from chrome2mqtt.mqtt import MQTT
+from chrome2mqtt.chromeevent import ChromeEvent
+from chrome2mqtt.globalmqtt import GlobalMQTT
+
 from os import environ
-from mqtt import MQTT
 from time import sleep, strftime
 from datetime import datetime
 import sys

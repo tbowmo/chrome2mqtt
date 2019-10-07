@@ -1,9 +1,9 @@
 from time import sleep
-from chromestate import ChromeState
+from chrome2mqtt.chromestate import ChromeState
 from os import path
 from sys import exit
 import logging
-from mqtt import MQTT
+from chrome2mqtt.mqtt import MQTT
 
 class ChromeEvent:
     """ 

@@ -52,3 +52,6 @@ if you want to start playing a new media, then you can use the endpoint `<root t
 if you want to set the volume, then you can use the endpoint `<MQTT_ROOT>/friendly_name/control/volume`, send a value between 0 and 100 as the payload
 
 a simple global mqtt topic is also present, at `<MQTT_ROOT>/control`, this accepts the following commands: pause, play, stop, quit. The command will be sent to all registered chromecasts. This makes it possible to pause ALL chromecasts with one command.
+
+## Docker container
+If you wish to run inside a docker container, you can build your own image with `docker build . --tag chrome2mqtt` and then run it with `docker run chrome2mqtt <options go here>` 

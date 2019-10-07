@@ -1,4 +1,4 @@
-from mqtt import MQTT
+from chrome2mqtt.mqtt import MQTT
 import logging
 
 class GlobalMQTT:
