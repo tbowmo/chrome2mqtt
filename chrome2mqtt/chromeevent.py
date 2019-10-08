@@ -37,10 +37,17 @@ class ChromeEvent:
         self.action(command, parameter)
         
     def action(self, command, parameter):
-        if self.__command.execute(command, parameter) == CommandResult.NoCommand:
+        cmdResult = self.__command.execute(command, parameter)
+        if cmdResult.result == CommandResult.Result.NoCommand:
             self.log.warn('Fallback to command via payload, or command "{0}'.format(command))
-            if self.__command.execute(parameter, None) == CommandResult.NoCommand:
+            cmdResult = self.__command.execute(parameter, None)
+            if cmdResult.result == CommandResult.Result.NoCommand:
                 self.log.error('Control command not supported "{0}" with parameter "{1}"'.format(command, parameter))
+        if cmdResult.result == CommandResult.Result.WrongUse:
+            self.log.warn('Wrong use of command {0}'.format(cmdResult.error))
+            self.mqtt.publish('debug/commandresult', cmdResult.error)
+        if cmdResult.result == CommandResult.Result.Success:
+            self.mqtt.publish('debug/commandresult', 'Success')
 
     def new_cast_status(self, status):
         self.log.info("----------- new cast status ---------------")
