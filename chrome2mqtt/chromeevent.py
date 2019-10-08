@@ -1,10 +1,10 @@
 from time import sleep
 from chrome2mqtt.chromestate import ChromeState
 from os import path
-from sys import exit
 import logging
 from chrome2mqtt.mqtt import MQTT
 from pychromecast import Chromecast
+from chrome2mqtt.command import Command, CommandResult
 
 class ChromeEvent:
     """ 
@@ -27,33 +27,20 @@ class ChromeEvent:
         
         controlPath = self.name + '/control/#'
         self.mqtt.subscribe(controlPath)
-        self.mqtt.message_callback_add(controlPath, self.mqtt_action)
+        self.mqtt.message_callback_add(controlPath, self.__mqtt_action)
         self.device.wait()
+        self.__command = Command(self.device, self.status)
 
-    def mqtt_action(self, client, userdata, message):
+    def __mqtt_action(self, client, userdata, message):
         parameter = message.payload.decode("utf-8")
-        cmd = path.basename(path.normpath(message.topic))
-        if cmd == 'play':
-            self.play(parameter)
-        elif cmd == 'volume':
-            self.volume(parameter)
-        elif cmd == 'mute':
-            self.mute(parameter)
-        else:
-            if parameter == 'pause':
-                self.pause()
-            if parameter == 'fwd':
-                self.fwd()
-            if parameter == 'rev':
-                self.rev()
-            if parameter == 'quit':
-                self.quit()
-            if parameter == 'stop':
-                self.stop()
-            if parameter == 'play':
-                self.play()
-            if parameter == 'status':
-                self.device.media_controller.update_status()
+        command = path.basename(path.normpath(message.topic))
+        self.action(command, parameter)
+        
+    def action(self, command, parameter):
+        if self.__command.execute(command, parameter) == CommandResult.NoCommand:
+            self.log.warn('Fallback to command via payload, or command "{0}'.format(command))
+            if self.__command.execute(parameter, None) == CommandResult.NoCommand:
+                self.log.error('Control command not supported "{0}" with parameter "{1}"'.format(command, parameter))
 
     def new_cast_status(self, status):
         self.log.info("----------- new cast status ---------------")
@@ -87,79 +74,6 @@ class ChromeEvent:
 
             self.last_state = state
 
-    def stop(self):
-        """ Stop playing on the chromecast """
-        try:
-            self.device.media_controller.stop()
-            self.status.clear()
-        except:
-            self.__handle_error()
-
-    def pause(self):
-        """ Pause playback """
-        try:
-            self.device.media_controller.pause()
-        except:
-            self.__handle_error()           
-
-    def fwd(self):
-        """ Skip to next track """
-        try:
-            self.device.media_controller.skip()
-        except:
-            self.__handle_error()
-
-    def rev(self):
-        """ Rewind to previous track """
-        try: 
-            self.device.media_controller.rewind()
-        except:
-            self.__handle_error()
-
-    def quit(self):
-        """ Quit running application on chromecast """
-        try:
-            self.device.media_controller.stop()
-            self.device.quit_app
-            self.status.clear()
-        except:
-            self.__handle_error()
-
-    def play(self, media=None):
-        """ Play a media URL on the chromecast """
-        try:
-            if media is None:
-                self.device.media_controller.play()
-            else:
-                self.device.media_controller.play_media(media.link, media.media)
-                self.__mqtt_publish(self.state())
-        except:
-            self.__handle_error()
-
-    def volume(self, level):
-        """ Set the volume level """
-        try:
-            self.device.set_volume(int(level) / 100.0)
-        except:
-            self.__handle_error()
-
-    def mute(self, p):
-        p = p.lower()
-        try:
-            if (p == '' or p == None):
-                self.device.set_volume_muted(not self.status.muted)
-            elif (p == '1' or p == 'true'):
-                self.device.set_volume_muted(True)
-            elif (p == '0' or p == 'false'):
-                self.device.set_volume_muted(False)
-            else:
-                print('no match')
-        except:
-            self.__handle_error()
-
-    def __handle_error(self):
-        exit(1)
-
     def __createstate(self, state):
         self.status.setMedia(state)
         return self.status
@@ -174,3 +88,4 @@ class ChromeEvent:
             return self.status
         s = self.device.media_controller.status
         return self.__createstate(s)
+
