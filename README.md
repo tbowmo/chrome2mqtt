@@ -24,7 +24,8 @@ and finally start your python script with
 
 `python -m chrome2mqtt <options>`
 
-See [on docker](#docker-container), if you want to run this in a docker container, instead of using a virtual environment.
+## Start in a docker container
+If you wish to run inside a docker container, you can build your own image with `docker build . --tag chrome2mqtt` and then run it with `docker run chrome2mqtt <options>` 
 
 ## Configuration
 Configure through command line parameters, as shown below
@@ -50,18 +51,19 @@ optional arguments:
 Each chromecast will be configured with a separate mqtt topic, consisting of `<MQTT_ROOT>//friendly_name`, where friendly name, is a normalized version of the friendly name given to each chromecast, where the name is converted to lower cases, and spaces have been replaced with underscores.
 
 The following topics will be used:
-| topic | payload |
-|---|---|
-| <MQTT_ROOT>/<FRIENDLY_NAME>/app|Name of the currently running app (netflix, spotify, hbo, tidal etc).
-|<MQTT_ROOT>/<FRIENDLY_NAME>/state|Current state of the chromecast (playing, paused, buffering)
-|<MQTT_ROOT>/<FRIENDLY_NAME>/volume|Current volume level (an integer value between 0 and 100)
-|<MQTT_ROOT>/<FRIENDLY_NAME>/media|Returns a json object containing detailed information about the stream that is playing. Depending on the information from the app vendor.
-|<MQTT_ROOT>/<FRIENDLY_NAME>/capabilities|Json object containing the capabilities of the current activated app
+
+| Topic | Payload |
+| ----- | ------- |
+| <MQTT_ROOT>/<FRIENDLY_NAME>/app | Name of the currently running app (netflix, spotify, hbo, tidal etc). |
+| <MQTT_ROOT>/<FRIENDLY_NAME>/state | Current state of the chromecast (playing, paused, buffering) |
+| <MQTT_ROOT>/<FRIENDLY_NAME>/volume | Current volume level (an integer value between 0 and 100) |
+| <MQTT_ROOT>/<FRIENDLY_NAME>/media | Returns a json object containing detailed information about the stream that is playing. Depending on the information from the app vendor. |
+| <MQTT_ROOT>/<FRIENDLY_NAME>/capabilities | Json object containing the capabilities of the current activated app |
 
 json formats for media and capabilities are as follows:
 
 media object:
-```json
+```javascript
 {
   "title": string,
   "artist": string,
@@ -70,7 +72,7 @@ media object:
 ```
 
 capabilities object:
-```json
+```javascript
 {
   "skip_fwd": boolean, // indicates if skip_fwd is available
   "skip_bck": boolean, // indicates if skip_bck is available
@@ -86,19 +88,17 @@ capabilities object:
 ## Controlling your chromecast via mqtt
 It's possible to control the chromecasts, by sending a message to the `<MQTT_ROOT>/friendly_name/control/<action>` endpoint for each device, where `<action>` is one of the following list, some takes a payload as well:
 
-|action|payload|value for payload|
-|--|--|--|--|---|
-|play|Optional|If no payload, just starts from a pause condition, otherwise send a content URL to play|
-|pause|No|
-|stop|No|
-|next|No|
-|prev|No|
-|mute|Optional| If no payload is supplied it will toggle mute state, otherwise send 1/True to mute or 0/False to unmute
-|volume|Required|Integer 0 - 100 specifying volume level
+| Action | Payload required | Value for payload |
+| ------ | ------- | ----------------- |
+| play | Optional | If no payload, just starts from a pause condition, otherwise send a content URL to play |
+| pause | No | |
+| stop | No | |
+| next | No | |
+| prev | No | |
+| mute | Optional| If no payload is supplied it will toggle mute state, otherwise send 1/True to mute or 0/False to unmute |
+| volume | Required|Integer 0 - 100 specifying volume level |
 
-An extra listening endpoint is created on `<MQTT_ROOT>/control`, which will send the command (from table above) to all registered chromecast devices.
+## Send command to all registered chromecasts
+An extra listening endpoint is created on `<MQTT_ROOT>/control/<action>`, which will send the command (from table above) to all registered chromecast devices.
 
-*Please note The above command layout breaks from the earlier type, where some commands where sent as payload to `<MQTT_ROOT>/friendly_name/control`, the old method is enabled as a fallback solution, to keep existing mqtt implementations working. The script will log a warning though, to let you know that you are using a deprecated method. It is strongly advicable ot upgrade flows*
-
-## Docker container
-If you wish to run inside a docker container, you can build your own image with `docker build . --tag chrome2mqtt` and then run it with `docker run chrome2mqtt <options go here>` 
+*Please note The above command layout breaks compability with earlier incarnations, where some commands where sent as payload to `<MQTT_ROOT>/friendly_name/control`, the old method is enabled as a fallback solution, to keep existing mqtt implementations working. The script will log a warning though, to let you know that you are using a deprecated method. It is strongly advicable to upgrade your mqtt setup to use the new endpoints*
