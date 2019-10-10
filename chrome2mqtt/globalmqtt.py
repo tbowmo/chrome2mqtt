@@ -6,7 +6,7 @@ class GlobalMQTT:
     """
         MQTT topic handler for global commands (quit / pause / stop), sends the same cmd to all known chromecasts
     """
-
+    
     def __init__(self, casters, mqtt:MQTT):
         self.casters = casters
         controlPath = 'control/#'
@@ -19,14 +19,4 @@ class GlobalMQTT:
         cmd = path.basename(path.normpath(message.topic))
         for c in self.casters.keys():
             caster = self.casters[c]
-            if cmd == 'volume':
-                caster.volume(p)
-            elif cmd == 'mute':
-                caster.mute(p)
-            else:
-                if p == 'quit':
-                    caster.quit()
-                if p == 'pause':
-                    caster.pause()
-                if p == 'stop':
-                    caster.stop()
+            caster.action(cmd, p)
