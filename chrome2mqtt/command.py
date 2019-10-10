@@ -4,6 +4,8 @@ from enum import Enum
 import logging
 import sys
 import json
+from inspect import signature
+from collections import namedtuple
 
 class CommandResult:
     class Result(Enum):
@@ -47,12 +49,16 @@ class Command:
             payload {[string]}
         
         Returns:
-            CommandResult -- Enum that describes how the execution went
+            CommandResult -- result object from the command execution
         """
         method=getattr(self, cmd, lambda x : False)
-
+        sig = signature(method)
         try:
-            result = method(payload)
+            result = False
+            if len(sig.parameters) == 0:
+                result = method()
+            else:
+                result = method(payload)
             if result == True:
                 return CommandResult(CommandResult.Result.Success)
             elif result == False:
@@ -62,36 +68,35 @@ class Command:
             self.log.error('Unexpected error : ', sys.exc_info())
             return CommandResult(CommandResult.Result.Failed, sys.exc_info()[0])
 
-    def stop(self, payload = None):
+    def stop(self):
         """ Stop playing on the chromecast """
         self.device.media_controller.stop()
         self.status.clear()
         return True
 
-    def pause(self, payload = None):
+    def pause(self):
         """ Pause playback """
         self.device.media_controller.pause()
-        return 'Test'
+        return True
 
-    def fwd(self, payload = None):
+    def fwd(self):
         self.log.warn('fwd is a deprecated function, use next instead')
         return self.next(payload)
 
-    def next(self, payload = None):
+    def next(self):
         """ Skip to next track """
         self.device.media_controller.queue_next()
         return True
         
-    def rev(self, payload = None):
+    def rev(self):
         self.log.warn('rev is a deprecated function, use prev instead')
         return self.prev(payload)
 
-    def prev(self, payload = None):
         """ Rewind to previous track """
         self.device.media_controller.queue_prev()
         return True
 
-    def quit(self, payload = None):
+    def quit(self):
         """ Quit running application on chromecast """
         self.device.media_controller.stop()
         self.device.quit_app
@@ -103,11 +108,11 @@ class Command:
         if media is None or media == '':
             self.device.media_controller.play()
         else:
-            media = json.loads(media)
-            if hasattr(media, 'link') and hasattr(media, 'type'):
-                self.device.media_controller.play_media(media.link, media.type)
+            mediaObj = json.loads(media, object_hook=lambda d: namedtuple('Media', d.keys())(*d.values()))
+            if hasattr(mediaObj, 'link') and hasattr(mediaObj, 'type'):
+                self.device.media_controller.play_media(mediaObj.link, mediaObj.type)
             else:
-                return 'Wrong media type, should be json: {link: string, type: string}'
+                return 'Wrong patameter, it should be json object with: {{link: string, type: string}}, you sent {0}'.format(media)
         return True
 
     def volume(self, level):
@@ -117,15 +122,15 @@ class Command:
         self.device.set_volume(int(level) / 100.0)
         return True
 
-    def mute(self, p):
+    def mute(self, mute):
         """ Mute device """
-        p = p.lower()
-        if (p == '' or p == None):
+        mute = mute.lower()
+        if (mute is None or mute == ''):
             self.device.set_volume_muted(not self.status.muted)
-        elif (p == '1' or p == 'true'):
+        elif (mute == '1' or mute == 'true'):
             self.device.set_volume_muted(True)
-        elif (p == '0' or p == 'false'):
+        elif (mute == '0' or mute == 'false'):
             self.device.set_volume_muted(False)
         else:
-            print('no match')
+            return 'mute could not match "{0}" as a parameter'.format(mute)
         return True

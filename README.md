@@ -90,13 +90,23 @@ It's possible to control the chromecasts, by sending a message to the `<MQTT_ROO
 
 | Action | Payload required | Value for payload |
 | ------ | ------- | ----------------- |
-| play | Optional | If no payload, just starts from a pause condition, otherwise send a content URL to play |
+| play | Optional | If no payload, just starts from a pause condition, otherwise send a json object {"link":string, "type": string} |
 | pause | No | |
 | stop | No | |
 | next | No | |
 | prev | No | |
 | mute | Optional| If no payload is supplied it will toggle mute state, otherwise send 1/True to mute or 0/False to unmute |
 | volume | Required|Integer 0 - 100 specifying volume level |
+
+The json object for the play command contains a link to the media file you want to play, and a mime type for the content:
+
+```javascript
+ { "link": "https://link.to/awesome.mp3", "type": "audio/mp3" } // Start playing a mp3 audio file
+
+ { "link": "https://link.to/awesome.mp4", "type": "video/mp4" } // Start playing a mp4 video file
+```
+
+if a command fails for some reason, a mqtt message will be posted to the debug topic `<MQTT_ROOT>/debug/commandresult`
 
 ## Send command to all registered chromecasts
 An extra listening endpoint is created on `<MQTT_ROOT>/control/<action>`, which will send the command (from table above) to all registered chromecast devices.
