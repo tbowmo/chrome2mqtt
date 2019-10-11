@@ -5,7 +5,8 @@ import logging
 import sys
 import json
 from inspect import signature
-from collections import namedtuple
+from types import SimpleNamespace as Namespace
+from pychromecast.controllers.youtube import YouTubeController
 
 class CommandResult:
     class Result(Enum):
@@ -40,6 +41,8 @@ class Command:
         self.device = device
         self.status = status
         self.log = logging.getLogger('Command_' + self.device.cast_type)
+        self.youtube = YouTubeController()
+        self.device.register_handler(self.youtube)
 
     def execute(self, cmd, payload) -> CommandResult:
         """execute command on the chromecast
@@ -108,9 +111,16 @@ class Command:
         if media is None or media == '':
             self.device.media_controller.play()
         else:
-            mediaObj = json.loads(media, object_hook=lambda d: namedtuple('Media', d.keys())(*d.values()))
+            mediaObj = "Failed"
+            try:
+                mediaObj = json.loads(media, object_hook=lambda d: Namespace(**d))
+            except:
+                return "Seems that {0} isn't a valid json objct".format(media)
             if hasattr(mediaObj, 'link') and hasattr(mediaObj, 'type'):
-                self.device.media_controller.play_media(mediaObj.link, mediaObj.type)
+                if mediaObj.type.lower() == 'youtube':
+                    self.youtube.play_video(mediaObj.link)
+                else:
+                    self.device.media_controller.play_media(mediaObj.link, mediaObj.type)
             else:
                 return 'Wrong patameter, it should be json object with: {{link: string, type: string}}, you sent {0}'.format(media)
         return True
