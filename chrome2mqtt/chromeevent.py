@@ -4,7 +4,7 @@ from os import path
 import logging
 from chrome2mqtt.mqtt import MQTT
 from pychromecast import Chromecast
-from chrome2mqtt.command import Command, CommandResult
+from chrome2mqtt.command import Command, Status, Result
 
 class ChromeEvent:
     """ 
@@ -38,15 +38,14 @@ class ChromeEvent:
         
     def action(self, command, parameter):
         cmdResult = self.__command.execute(command, parameter)
-        if cmdResult.result == CommandResult.Result.NoCommand:
+        if cmdResult.status == Status.NoCommand:
             self.log.warn('Fallback to command via payload, or command "{0}'.format(command))
             cmdResult = self.__command.execute(parameter, None)
-            if cmdResult.result == CommandResult.Result.NoCommand:
+            if cmdResult.status == Status.NoCommand:
                 self.log.error('Control command not supported "{0}" with parameter "{1}"'.format(command, parameter))
-        if cmdResult.result == CommandResult.Result.WrongUse:
-            self.log.warn('Wrong use of command {0}'.format(cmdResult.error))
+        if cmdResult.status == Status.WrongUse:
             self.mqtt.publish('debug/commandresult', cmdResult.error)
-        if cmdResult.result == CommandResult.Result.Success:
+        if cmdResult.status == Status.Success:
             self.mqtt.publish('debug/commandresult', 'Success')
 
     def new_cast_status(self, status):
