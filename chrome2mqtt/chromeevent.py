@@ -4,7 +4,7 @@ from os import path
 import logging
 from chrome2mqtt.mqtt import MQTT
 from pychromecast import Chromecast
-from chrome2mqtt.command import Command, CommandError
+from chrome2mqtt.command import Command, CommandException
 
 class ChromeEvent:
     """ 
@@ -46,7 +46,7 @@ class ChromeEvent:
                     self.mqtt.publish('Unknown command "{0}"'.format(command))
             if result == True:
                 self.mqtt.publish('debug/commandresult', 'Success')
-        except CommandError as e:
+        except CommandException as e:
             self.log.warning(e)
             self.mqtt.publish('debug/commandresult ', str(e))
         except Exception as e:

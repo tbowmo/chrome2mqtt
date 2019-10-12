@@ -8,7 +8,7 @@ from inspect import signature
 from types import SimpleNamespace as Namespace
 from pychromecast.controllers.youtube import YouTubeController
 
-class CommandError(Exception):
+class CommandException(Exception):
     pass
 
 class Command:
@@ -82,19 +82,19 @@ class Command:
             try:
                 mediaObj = json.loads(media, object_hook=lambda d: Namespace(**d))
             except:
-                raise CommandError("Seems that {0} isn't a valid json object".format(media))
+                raise CommandException("Seems that {0} isn't a valid json object".format(media))
             if hasattr(mediaObj, 'link') and hasattr(mediaObj, 'type'):
                 if mediaObj.type.lower() == 'youtube':
                     self.youtube.play_video(mediaObj.link)
                 else:
                     self.device.media_controller.play_media(mediaObj.link, mediaObj.type)
             else:
-                raise CommandError('Wrong patameter, it should be json object with: {{link: string, type: string}}, you sent {0}'.format(media))
+                raise CommandException('Wrong patameter, it should be json object with: {{link: string, type: string}}, you sent {0}'.format(media))
 
     def volume(self, level):
         """ Set the volume level """
         if level is None or level == '':
-            raise CommandError('You need to specify volume level')
+            raise CommandException('You need to specify volume level')
         self.device.set_volume(int(level) / 100.0)
 
     def mute(self, mute):
@@ -107,4 +107,4 @@ class Command:
         elif (mute == '0' or mute == 'false'):
             self.device.set_volume_muted(False)
         else:
-            raise CommandError('Mute could not match "{0}" as a parameter'.format(mute))
+            raise CommandException('Mute could not match "{0}" as a parameter'.format(mute))
