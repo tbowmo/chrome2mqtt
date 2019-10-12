@@ -91,7 +91,7 @@ It's possible to control the chromecasts, by sending a message to the `<MQTT_ROO
 | Action | Payload required | Value for payload |
 | ------ | ------- | ----------------- |
 | play | Optional | If no payload, just starts from a pause condition, otherwise send a json object {"link":string, "type": string} |
-| pause | No | |
+| pause | Optional | If no payload is supplied it will toggle pause state, otherwise send 1/True to pause or 0/False to play |
 | stop | No | |
 | next | No | |
 | prev | No | |
