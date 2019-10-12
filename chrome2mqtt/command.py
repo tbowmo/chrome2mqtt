@@ -8,30 +8,6 @@ from inspect import signature
 from types import SimpleNamespace as Namespace
 from pychromecast.controllers.youtube import YouTubeController
 
-class Status(Enum):
-    """
-    Status enum for command execution
-    """
-    Success = 1
-    Failed = 2
-    WrongUse = 3
-    NoCommand = 4
-
-class Result:
-
-    @property
-    def status(self):
-        return self.__status
-    
-    @property
-    def error(self):
-        return self.__error
-
-    def __init__(self, status = Status.Failed, error = None):
-        self.__status = status
-        self.__error = error
-
-
 class CommandError(Exception):
     pass
 
@@ -46,7 +22,7 @@ class Command:
         self.youtube = YouTubeController()
         self.device.register_handler(self.youtube)
 
-    def execute(self, cmd, payload) -> Result:
+    def execute(self, cmd, payload):
         """execute command on the chromecast
         
         Arguments:
@@ -59,20 +35,13 @@ class Command:
         method=getattr(self, cmd, lambda x : False)
         sig = signature(method)
         if str(sig) == '(x)':
-            return Result(Status.NoCommand)
+            return False
 
-        try:
-            if len(sig.parameters) == 0:
-                method()
-            else:
-                method(payload)
-            return Result(Status.Success)
-        except CommandError as e:
-            self.log.warning(str(e))
-            return Result(Status.WrongUse, str(e))
-        except Exception as e:
-            self.log.error('Unexpected error : ', str(e))
-            return Result(Status.Failed, e)
+        if len(sig.parameters) == 0:
+            method()
+        else:
+            method(payload)
+        return True
 
     def stop(self):
         """ Stop playing on the chromecast """
@@ -113,7 +82,7 @@ class Command:
             try:
                 mediaObj = json.loads(media, object_hook=lambda d: Namespace(**d))
             except:
-                raise CommandError("Seems that {0} isn't a valid json objct".format(media))
+                raise CommandError("Seems that {0} isn't a valid json object".format(media))
             if hasattr(mediaObj, 'link') and hasattr(mediaObj, 'type'):
                 if mediaObj.type.lower() == 'youtube':
                     self.youtube.play_video(mediaObj.link)
