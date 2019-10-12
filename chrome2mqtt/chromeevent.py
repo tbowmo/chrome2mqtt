@@ -4,7 +4,7 @@ from os import path
 import logging
 from chrome2mqtt.mqtt import MQTT
 from pychromecast import Chromecast
-from chrome2mqtt.command import Command, CommandResult
+from chrome2mqtt.command import Command, CommandException
 
 class ChromeEvent:
     """ 
@@ -37,17 +37,21 @@ class ChromeEvent:
         self.action(command, parameter)
         
     def action(self, command, parameter):
-        cmdResult = self.__command.execute(command, parameter)
-        if cmdResult.result == CommandResult.Result.NoCommand:
-            self.log.warn('Fallback to command via payload, or command "{0}'.format(command))
-            cmdResult = self.__command.execute(parameter, None)
-            if cmdResult.result == CommandResult.Result.NoCommand:
-                self.log.error('Control command not supported "{0}" with parameter "{1}"'.format(command, parameter))
-        if cmdResult.result == CommandResult.Result.WrongUse:
-            self.log.warn('Wrong use of command {0}'.format(cmdResult.error))
-            self.mqtt.publish('debug/commandresult', cmdResult.error)
-        if cmdResult.result == CommandResult.Result.Success:
-            self.mqtt.publish('debug/commandresult', 'Success')
+        try:
+            result = self.__command.execute(command, parameter)
+            if result == False:
+                result = self.__command.execute(parameter, None)
+                if result == False:
+                    self.log.error('Control command "{0}" not supported with parameter "{1}"'.format(command, parameter))
+                    self.mqtt.publish('Unknown command "{0}"'.format(command))
+            if result == True:
+                self.mqtt.publish('debug/commandresult', 'Success')
+        except CommandException as e:
+            self.log.warning(e)
+            self.mqtt.publish('debug/commandresult ', str(e))
+        except Exception as e:
+            self.log.error(e)
+            
 
     def new_cast_status(self, status):
         self.log.info("----------- new cast status ---------------")
