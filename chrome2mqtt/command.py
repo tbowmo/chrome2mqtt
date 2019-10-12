@@ -1,14 +1,15 @@
-from pychromecast import Chromecast
 from chrome2mqtt.chromestate import ChromeState
-from enum import Enum
-import logging
-import sys
-import json
 from inspect import signature
-from types import SimpleNamespace as Namespace
+from pychromecast import Chromecast
 from pychromecast.controllers.youtube import YouTubeController
+from types import SimpleNamespace as Namespace
+import json
+import logging
 
 class CommandException(Exception):
+    """
+    Exception class for command errors
+    """
     pass
 
 class Command:
@@ -89,7 +90,7 @@ class Command:
                 else:
                     self.device.media_controller.play_media(mediaObj.link, mediaObj.type)
             else:
-                raise CommandException('Wrong patameter, it should be json object with: {{link: string, type: string}}, you sent {0}'.format(media))
+                raise CommandException('Wrong parameter, it should be json object with: {{link: string, type: string}}, you sent {0}'.format(media))
 
     def volume(self, level):
         """ Set the volume level """
