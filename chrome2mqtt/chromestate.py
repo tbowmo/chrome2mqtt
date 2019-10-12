@@ -30,6 +30,8 @@ class ChromeState:
     
     @property
     def volume_level(self):
+        if (self.__muted):
+            return 0
         return self.__volume_level
 
     @property
@@ -87,9 +89,9 @@ class ChromeState:
         else:
             self.__chrome_app = app_name
         self.__volume_level = round(status.volume_level * 100)
-        self.__muted = status.volume_muted
-        if (status.volume_muted):
-            self.__volume_level = 0
+        self.__muted = False
+        if (status.volume_muted == 1):
+            self.__muted = True
 
     def setMedia(self, mediaStatus: MediaStatus):
         if hasattr(mediaStatus, 'player_state') and mediaStatus.player_state is not None:
