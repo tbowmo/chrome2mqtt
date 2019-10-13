@@ -49,9 +49,20 @@ class Command:
         self.device.media_controller.stop()
         self.status.clear()
 
-    def pause(self):
+    def pause(self, pause):
         """ Pause playback """
-        self.device.media_controller.pause()
+        pause = pause.lower()
+        if (pause is None or pause == ''):
+            if (self.status.pause):
+                self.device.media_controller.play()
+            else:
+                self.device.media_controller.pause()
+        elif (pause == '1' or pause == 'true'):
+            self.device.media_controller.pause()
+        elif (pause == '0' or pause == 'false'):
+            self.device.media_controller.play()
+        else:
+            raise CommandException('Pause could not match "{0}" as a parameter'.format(pause))
 
     def fwd(self):
         self.log.warn('fwd is a deprecated function, use next instead')
