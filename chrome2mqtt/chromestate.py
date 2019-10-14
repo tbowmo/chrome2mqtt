@@ -18,7 +18,7 @@ class ChromeState:
     __state = ""
     __supports_volume = False
     __supports_mute = False
-    __volume_level = 0
+    __volume = 0
     __muted = False
 
     @property
@@ -30,10 +30,10 @@ class ChromeState:
         return self.__state
     
     @property
-    def volume_level(self):
+    def volume(self):
         if (self.__muted):
             return 0
-        return self.__volume_level
+        return self.__volume
 
     @property
     def muted(self):
@@ -57,7 +57,7 @@ class ChromeState:
         return json.dumps(media_dict).encode('utf-8')
 
     @property
-    def state(self):
+    def capabilities(self):
         supports = {
             "skip_fwd": self.__supports_skip_fwd,
             "skip_bck": self.__supports_skip_bck,
@@ -66,14 +66,14 @@ class ChromeState:
             "mute": self.__supports_mute
         }
 
-        state_dict = {
+        capabilities = {
             "state": self.__state,
-            "volume": self.__volume_level,
+            "volume": self.__volume,
             "muted": self.__muted,
             "app": self.__chrome_app,
             "supported_features": supports
         }
-        return json.dumps(state_dict).encode('utf-8')
+        return json.dumps(capabilities).encode('utf-8')
 
     def clear(self):
         """ Clear all fields """
@@ -86,7 +86,7 @@ class ChromeState:
         self.__skip_fwd = False
         self.__skip_bck = False
         self.__volume = False
-        self.__volume_level = 0
+        self.__volume = 0
 
     def setState(self, status: CastStatus):
         app_name = status.display_name
@@ -94,7 +94,7 @@ class ChromeState:
             self.clear()
         else:
             self.__chrome_app = app_name
-        self.__volume_level = round(status.volume_level * 100)
+        self.__volume = round(status.volume_level * 100)
         self.__muted = False
         if (status.volume_muted == 1):
             self.__muted = True
