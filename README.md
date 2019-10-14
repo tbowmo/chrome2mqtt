@@ -71,11 +71,10 @@ media object:
 }
 ```
 
-capabilities object:
+capabilities object, this is a json containing state and feature capabilities of the current stream playing:
 ```javascript
 {
   "state": string, // same as sent to <mqtt_root>/<friendly_name>/state
-  "volume": boolean,   // indicates if volume control is avaliable
   "volume": integer, // same as sent to <mqtt_root>/<friendly_name>/volume
   "muted": boolean,    // indicates if device is muted
   "app": string, // same as sent to <mqtt_root>/<friendly_name>/app
