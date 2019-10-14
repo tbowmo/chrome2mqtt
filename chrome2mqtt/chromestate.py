@@ -12,11 +12,12 @@ class ChromeState:
     __title = ""
     __artist = ""
     __album = ""
-    __skip_fwd = False
-    __skip_bck = False
-    __pause = False
-    __player_state = ""
-    __volume = False
+    __supports_skip_fwd = False
+    __supports_skip_bck = False
+    __supports_pause = False
+    __state = ""
+    __supports_volume = False
+    __supports_mute = False
     __volume_level = 0
     __muted = False
 
@@ -25,8 +26,8 @@ class ChromeState:
         return self.__chrome_app
     
     @property
-    def player_state(self):
-        return self.__player_state
+    def state(self):
+        return self.__state
     
     @property
     def volume_level(self):
@@ -57,21 +58,26 @@ class ChromeState:
 
     @property
     def state(self):
+        supports = {
+            "skip_fwd": self.__supports_skip_fwd,
+            "skip_bck": self.__supports_skip_bck,
+            "pause": self.__supports_pause,
+            "volume": self.__supports_volume,
+            "mute": self.__supports_mute
+        }
+
         state_dict = {
-            "skip_fwd": self.__skip_fwd,
-            "skip_bck": self.__skip_bck,
-            "pause": self.__pause,
-            "player_state": self.__player_state,
-            "volume": self.__volume,
-            "volume_level": self.__volume_level,
+            "state": self.__state,
+            "volume": self.__volume_level,
             "muted": self.__muted,
-            "chrome_app": self.__chrome_app
+            "app": self.__chrome_app,
+            "supported_features": supports
         }
         return json.dumps(state_dict).encode('utf-8')
 
     def clear(self):
         """ Clear all fields """
-        self.__player_state = "STOPPED"
+        self.__state = "STOPPED"
         self.__chrome_app = "None"
         self.__title = ""
         self.__artist = ""
@@ -95,28 +101,33 @@ class ChromeState:
 
     def setMedia(self, mediaStatus: MediaStatus):
         if hasattr(mediaStatus, 'player_state') and mediaStatus.player_state is not None:
-            self.__player_state = mediaStatus.player_state
+            self.__state = mediaStatus.player_state
 
         ch = None
         if hasattr(mediaStatus, 'supports_pause'):
-            self.__pause = mediaStatus.supports_pause
+            self.__supports_pause = mediaStatus.supports_pause
         else:
-            self.__pause = False
+            self.__supports_pause = False
 
         if hasattr(mediaStatus, 'supports_skip_forward'):
-            self.__skip_fwd = mediaStatus.supports_skip_forward
+            self.__supports_skip_fwd = mediaStatus.supports_skip_forward
         else:
-            self.__skip_fwd = False
+            self.__supports_skip_fwd = False
 
         if hasattr(mediaStatus, 'supports_skip_backward'):
-            self.__skip_bck = mediaStatus.supports_skip_backward
+            self.__supports_skip_bck = mediaStatus.supports_skip_backward
         else:
-            self.__skip_bck = False
+            self.__supports_skip_bck = False
 
         if hasattr(mediaStatus, 'supports_stream_volume'):
-            self.__volume = mediaStatus.supports_stream_volume
+            self.__supports_volume = mediaStatus.supports_stream_volume
         else:
-            self.__volume = False
+            self.__supports_volume = False
+
+        if hasattr(mediaStatus, 'supports_stream_mute'):
+            self.__supports_mute = mediaStatus.supports_stream_mute
+        else:
+            self.__supports_mute = False
 
         if hasattr(mediaStatus, 'title'):
             self.__title = mediaStatus.title

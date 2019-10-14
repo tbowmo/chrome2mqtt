@@ -74,14 +74,18 @@ media object:
 capabilities object:
 ```javascript
 {
-  "skip_fwd": boolean, // indicates if skip_fwd is available
-  "skip_bck": boolean, // indicates if skip_bck is available
-  "pause": boolean,    // indicates if pause is available
-  "player_state": string, // same as sent to <mqtt_root>/<friendly_name>/state
+  "state": string, // same as sent to <mqtt_root>/<friendly_name>/state
   "volume": boolean,   // indicates if volume control is avaliable
-  "volume_level": integer, // same as sent to <mqtt_root>/<friendly_name>/volume
+  "volume": integer, // same as sent to <mqtt_root>/<friendly_name>/volume
   "muted": boolean,    // indicates if device is muted
-  "chrome_app": string // same as sent to <mqtt_root>/<friendly_name>/app
+  "app": string, // same as sent to <mqtt_root>/<friendly_name>/app
+  "supported_features": {
+    "skip_fwd": boolean, // indicates if skip_fwd is available
+    "skip_bck": boolean, // indicates if skip_bck is available
+    "pause": boolean,    // indicates if pause is available
+    "volume": boolean,   // indicates if volume control is available
+    "mute": boolean,     // indicates if audio stream can be muted
+  }
 }
 ```
 

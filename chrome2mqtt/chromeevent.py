@@ -64,7 +64,7 @@ class ChromeEvent:
         self.log.info(status)
         self.__createstate(status)
         self.__mqtt_publish(self.status)
-        if self.status.player_state == 'PLAYING':
+        if self.status.state == 'PLAYING':
             # Netflix is not reporting nicely on play / pause state changes, so we poll it to get an up to date status
             if self.status.app == 'Netflix':
                 sleep(1)
@@ -74,12 +74,12 @@ class ChromeEvent:
         media = msg.media
         state = msg.state
         if (self.last_media != media):            
-            # Only send new update, if title or player_state has changed.
+            # Only send new update, if title or state has changed.
             self.mqtt.publish(self.mqttpath + '/media', media, retain = True )
             self.last_media = media
         if (self.last_state != state):
             self.mqtt.publish(self.mqttpath + '/capabilities', state, retain = True )
-            self.mqtt.publish(self.mqttpath + '/state', msg.player_state, retain = True )
+            self.mqtt.publish(self.mqttpath + '/state', msg.state, retain = True )
             self.mqtt.publish(self.mqttpath + '/volume', msg.volume_level, retain = True )
             self.mqtt.publish(self.mqttpath + '/app', msg.app, retain=True)
 
