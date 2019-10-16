@@ -12,7 +12,7 @@ class ChromeEvent:
     """
     device: Chromecast = None
     last_media = None
-    last_state = None
+    last_capabilities = None
     def __init__(self, device: Chromecast,  mqtt: MQTT):
         self.device = device
         self.mqtt = mqtt
@@ -64,7 +64,7 @@ class ChromeEvent:
         self.log.info(status)
         self.__createstate(status)
         self.__mqtt_publish(self.status)
-        if self.status.player_state == 'PLAYING':
+        if self.status.state == 'PLAYING':
             # Netflix is not reporting nicely on play / pause state changes, so we poll it to get an up to date status
             if self.status.app == 'Netflix':
                 sleep(1)
@@ -72,18 +72,17 @@ class ChromeEvent:
 
     def __mqtt_publish(self, msg: ChromeState):
         media = msg.media
-        state = msg.state
+        capabilities = msg.capabilities
         if (self.last_media != media):            
-            # Only send new update, if title or player_state has changed.
+            # Only send new update, if title or state has changed.
             self.mqtt.publish(self.mqttpath + '/media', media, retain = True )
             self.last_media = media
-        if (self.last_state != state):
-            self.mqtt.publish(self.mqttpath + '/capabilities', state, retain = True )
-            self.mqtt.publish(self.mqttpath + '/state', msg.player_state, retain = True )
-            self.mqtt.publish(self.mqttpath + '/volume', msg.volume_level, retain = True )
+        if (self.last_capabilities != capabilities):
+            self.mqtt.publish(self.mqttpath + '/capabilities', capabilities, retain = True )
+            self.mqtt.publish(self.mqttpath + '/state', msg.state, retain = True )
+            self.mqtt.publish(self.mqttpath + '/volume', msg.volume, retain = True )
             self.mqtt.publish(self.mqttpath + '/app', msg.app, retain=True)
-
-            self.last_state = state
+            self.last_capabilities = capabilities
 
     def __createstate(self, state):
         self.status.setMedia(state)

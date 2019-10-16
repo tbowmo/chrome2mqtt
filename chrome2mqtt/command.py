@@ -53,7 +53,7 @@ class Command:
         """ Pause playback """
         pause = pause.lower()
         if (pause is None or pause == ''):
-            if (self.status.pause):
+            if (self.status.state == 'PAUSED'):
                 self.device.media_controller.play()
             else:
                 self.device.media_controller.pause()
