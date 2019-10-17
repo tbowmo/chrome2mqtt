@@ -2,7 +2,7 @@
 
 ## Features
 
-Small python program, to enable MQTT control endpoints for chromecasts. 
+Python program, to enable MQTT control endpoints for chromecasts (both audio and video). 
 
 It listens to events from the connected chromecasts, and send their status to MQTT, on the following events:
 * Change in which app is running
