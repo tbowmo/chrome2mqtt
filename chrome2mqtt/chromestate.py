@@ -110,7 +110,7 @@ class ChromeState:
         if hasattr(mediaStatus, 'player_state') and mediaStatus.player_state is not None:
             self.__state = mediaStatus.player_state
 
-        if hasattr(mediaStatus, 'images'):
+        if hasattr(mediaStatus, 'images') and len(mediaStatus.images) > 0:
             images = mediaStatus.images
             self.__album_art = images[0].url
         else:
