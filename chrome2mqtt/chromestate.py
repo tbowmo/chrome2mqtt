@@ -62,7 +62,6 @@ class Capabilities(BaseHelper):
         self.volume = 0
         self.muted = False
         self.app_icon = ''
-        self.album_art = ''
         self.supported_features = SupportedFeatures()
     
     def setCastState(self, status: CastStatus):
