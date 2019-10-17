@@ -68,6 +68,7 @@ media object:
   "title": string,
   "artist": string,
   "album": string,
+  "album_art": string, // URL to a static image for the current playing track
 }
 ```
 
@@ -78,6 +79,7 @@ capabilities object, this is a json containing state and feature capabilities of
   "volume": integer, // same as sent to <mqtt_root>/<friendly_name>/volume
   "muted": boolean,    // indicates if device is muted
   "app": string, // same as sent to <mqtt_root>/<friendly_name>/app
+  "app_icon": string, // url to a icon / image representing the current running app (Netflix, spotify etc. logo)
   "supported_features": {
     "skip_fwd": boolean, // indicates if skip_fwd is available
     "skip_bck": boolean, // indicates if skip_bck is available
