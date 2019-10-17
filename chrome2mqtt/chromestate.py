@@ -46,8 +46,8 @@ class Capabilities(Helper):
         Helper class holding information about current state of the chromecast
     """
     def __init__(self):
-        self.app = ''
-        self.state = ''
+        self.app = 'None'
+        self.state = 'STOPPED'
         self.volume = 0
         self.muted = False
         self.app_icon = ''
