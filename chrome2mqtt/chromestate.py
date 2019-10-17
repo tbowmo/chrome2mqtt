@@ -3,10 +3,17 @@ import logging
 from pychromecast.socket_client import CastStatus 
 from pychromecast.controllers.media import MediaStatus 
 
-class Helper:
+class BaseHelper:
     def json(self):
         return json.dumps(self, default=lambda o: o.__dict__)
-class Media(Helper):
+
+    def setCastState(self, status: CastStatus):
+        pass
+
+    def setMediaState(self, mediaStatus: MediaStatus):
+        pass
+
+class Media(BaseHelper):
     """
         Helper class for holding information about the current playing media
     """
@@ -15,9 +22,6 @@ class Media(Helper):
         self.artist = artist
         self.album = album
         self.album_art = album_art
-
-    def setState(self, status: CastStatus):
-        pass
 
     def setMediaState(self, mediaStatus: MediaStatus):
         self.title = mediaStatus.title
@@ -29,7 +33,7 @@ class Media(Helper):
         else:
             self.album_art = ''
 
-class SupportedFeatures(Helper):
+class SupportedFeatures(BaseHelper):
     """
         Helper class for holding information about supported features of the current stream / app
     """
@@ -39,9 +43,16 @@ class SupportedFeatures(Helper):
         self.pause = False
         self.volume = False
         self.mute = False
-        
 
-class Capabilities(Helper):
+    def setMediaState(self, mediaStatus: MediaStatus):
+        self.skip_fwd = mediaStatus.supports_skip_forward
+        self.skip_bck = mediaStatus.supports_skip_backward
+        self.pause = mediaStatus.supports_pause
+        self.volume = mediaStatus.supports_stream_volume
+        self.mute = mediaStatus.supports_stream_mute
+   
+
+class Capabilities(BaseHelper):
     """
         Helper class holding information about current state of the chromecast
     """
@@ -54,19 +65,16 @@ class Capabilities(Helper):
         self.album_art = ''
         self.supported_features = SupportedFeatures()
     
-    def setState(self, status: CastStatus):
+    def setCastState(self, status: CastStatus):
         self.app = status.display_name or 'None'
         self.volume = round(status.volume_level * 100)
         self.muted = status.volume_muted == 1
         self.app_icon = status.icon_url
+        self.supported_features.setCastState(status)
 
     def setMediaState(self, mediaStatus: MediaStatus):
         self.state = mediaStatus.player_state
-        self.supported_features.skip_fwd = mediaStatus.supports_skip_forward
-        self.supported_features.skip_bck = mediaStatus.supports_skip_backward
-        self.supported_features.pause = mediaStatus.supports_pause
-        self.supported_features.volume = mediaStatus.supports_stream_volume
-        self.supported_features.mute = mediaStatus.supports_stream_mute
+        self.supported_features.setMediaState(mediaStatus)
 
 class ChromeState:
     """ 
@@ -112,14 +120,14 @@ class ChromeState:
         self.__capabilities = Capabilities()
         self.__media = Media()
 
-    def setState(self, status: CastStatus):
+    def setCastState(self, status: CastStatus):
         app_name = status.display_name
         if app_name is None or app_name == 'Backdrop' or app_name == '' :
             self.clear()
         else:
-            self.__media.setState(status)
-            self.__capabilities.setState(status)
+            self.__media.setCastState(status)
+            self.__capabilities.setCastState(status)
 
-    def setMedia(self, mediaStatus: MediaStatus):
+    def setMediaState(self, mediaStatus: MediaStatus):
         self.__capabilities.setMediaState(mediaStatus)
         self.__media.setMediaState(mediaStatus)

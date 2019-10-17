@@ -56,7 +56,7 @@ class ChromeEvent:
     def new_cast_status(self, status):
         self.log.info("----------- new cast status ---------------")
         self.log.info(status)
-        self.status.setState(status)
+        self.status.setCastState(status)
         self.__mqtt_publish(self.state())
 
     def new_media_status(self, status):
@@ -85,7 +85,7 @@ class ChromeEvent:
             self.last_capabilities = capabilities
 
     def __createstate(self, state):
-        self.status.setMedia(state)
+        self.status.setMediaState(state)
         return self.status
 
     def state(self):
