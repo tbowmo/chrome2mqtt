@@ -66,6 +66,8 @@ class Capabilities(BaseHelper):
     
     def setCastState(self, status: CastStatus):
         self.app = status.display_name or 'None'
+        if self.app == 'Backdrop':
+            self.app = 'None'
         self.volume = round(status.volume_level * 100)
         self.muted = status.volume_muted == 1
         self.app_icon = status.icon_url
