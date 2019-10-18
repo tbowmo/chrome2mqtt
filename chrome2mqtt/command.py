@@ -66,14 +66,15 @@ class Command:
         self.log.warn('fwd is a deprecated function, use next instead')
         return self.next(payload)
 
-    def next(self):
-        """ Skip to next track """
-        self.device.media_controller.queue_next()
-        
     def rev(self):
         self.log.warn('rev is a deprecated function, use prev instead')
         return self.prev(payload)
 
+    def next(self):
+        """ Skip to next track """
+        self.device.media_controller.queue_next()
+        
+    def prev(self):
         """ Rewind to previous track """
         self.device.media_controller.queue_prev()
 
