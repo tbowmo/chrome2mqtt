@@ -16,9 +16,8 @@ class Command:
     """
     Class that handles dispatching of commands to a chromecast device   
     """
-    def __init__(self, device: Chromecast, status: ChromeState):
+    def __init__(self, device: Chromecast):
         self.device = device
-        self.status = status
         self.log = logging.getLogger('Command_' + self.device.name)
         self.youtube = YouTubeController()
         self.device.register_handler(self.youtube)
@@ -47,13 +46,12 @@ class Command:
     def stop(self):
         """ Stop playing on the chromecast """
         self.device.media_controller.stop()
-        self.status.clear()
 
     def pause(self, pause):
         """ Pause playback """
         pause = pause.lower()
         if (pause is None or pause == ''):
-            if (self.status.state == 'PAUSED'):
+            if self.device.media_controller.is_paused:
                 self.device.media_controller.play()
             else:
                 self.device.media_controller.pause()
@@ -68,14 +66,15 @@ class Command:
         self.log.warn('fwd is a deprecated function, use next instead')
         return self.next(payload)
 
-    def next(self):
-        """ Skip to next track """
-        self.device.media_controller.queue_next()
-        
     def rev(self):
         self.log.warn('rev is a deprecated function, use prev instead')
         return self.prev(payload)
 
+    def next(self):
+        """ Skip to next track """
+        self.device.media_controller.queue_next()
+        
+    def prev(self):
         """ Rewind to previous track """
         self.device.media_controller.queue_prev()
 
@@ -83,7 +82,6 @@ class Command:
         """ Quit running application on chromecast """
         self.device.media_controller.stop()
         self.device.quit_app
-        self.status.clear()
 
     def play(self, media=None):
         """ Play a media URL on the chromecast """
@@ -107,13 +105,17 @@ class Command:
         """ Set the volume level """
         if level is None or level == '':
             raise CommandException('You need to specify volume level')
+        if (int(level) > 100):
+            level = 100
+        if (int(level) < 0):
+            level = 0
         self.device.set_volume(int(level) / 100.0)
 
     def mute(self, mute):
         """ Mute device """
         mute = mute.lower()
         if (mute is None or mute == ''):
-            self.device.set_volume_muted(not self.status.muted)
+            self.device.set_volume_muted(not self.device.status.volume_muted)
         elif (mute == '1' or mute == 'true'):
             self.device.set_volume_muted(True)
         elif (mute == '0' or mute == 'false'):

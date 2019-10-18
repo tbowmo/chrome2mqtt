@@ -12,7 +12,7 @@ class ChromeEvent:
     """
     device: Chromecast = None
     last_media = None
-    last_capabilities = None
+    last_state = None
     def __init__(self, device: Chromecast,  mqtt: MQTT):
         self.device = device
         self.mqtt = mqtt
@@ -29,7 +29,7 @@ class ChromeEvent:
         self.mqtt.subscribe(controlPath)
         self.mqtt.message_callback_add(controlPath, self.__mqtt_action)
         self.device.wait()
-        self.__command = Command(self.device, self.status)
+        self.__command = Command(self.device)
 
     def __mqtt_action(self, client, userdata, message):
         parameter = message.payload.decode("utf-8")
@@ -56,13 +56,13 @@ class ChromeEvent:
     def new_cast_status(self, status):
         self.log.info("----------- new cast status ---------------")
         self.log.info(status)
-        self.status.setState(status)
-        self.__mqtt_publish(self.state())
+        self.status.setCastState(status)
+        self.__mqtt_publish(self.status)
 
     def new_media_status(self, status):
         self.log.info("----------- new media status ---------------")
         self.log.info(status)
-        self.__createstate(status)
+        self.status.setMediaState(status)
         self.__mqtt_publish(self.status)
         if self.status.state == 'PLAYING':
             # Netflix is not reporting nicely on play / pause state changes, so we poll it to get an up to date status
@@ -71,31 +71,15 @@ class ChromeEvent:
                 self.device.media_controller.update_status()
 
     def __mqtt_publish(self, msg: ChromeState):
-        media = msg.media
-        capabilities = msg.capabilities
+        media = msg.media_json
+        state = msg.state_json
         if (self.last_media != media):            
             # Only send new update, if title or state has changed.
             self.mqtt.publish(self.mqttpath + '/media', media, retain = True )
             self.last_media = media
-        if (self.last_capabilities != capabilities):
-            self.mqtt.publish(self.mqttpath + '/capabilities', capabilities, retain = True )
+        if (self.last_state != state):
+            self.mqtt.publish(self.mqttpath + '/capabilities', state, retain = True )
             self.mqtt.publish(self.mqttpath + '/state', msg.state, retain = True )
             self.mqtt.publish(self.mqttpath + '/volume', msg.volume, retain = True )
             self.mqtt.publish(self.mqttpath + '/app', msg.app, retain=True)
-            self.last_capabilities = capabilities
-
-    def __createstate(self, state):
-        self.status.setMedia(state)
-        return self.status
-
-    def state(self):
-        """ Return state of the player """
-        if self.device.status.app_id is None:
-            self.status.clear()
-            return self.status
-        if self.device.status.app_id == 'E8C28D3C':
-            self.status.clear()
-            return self.status
-        s = self.device.media_controller.status
-        return self.__createstate(s)
-
+            self.last_state = state
