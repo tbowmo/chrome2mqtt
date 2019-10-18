@@ -2,14 +2,14 @@
 
 ## Features
 
-Python program, to enable MQTT control endpoints for chromecasts (both audio and video). 
+Python program to enable MQTT control endpoints for chromecasts (both audio and video). 
 
-It listens to events from the connected chromecasts, and send their status to MQTT, on the following events:
+It listens to events from the connected chromecasts, and send their status to MQTT on the following events:
 * Change in which app is running
 * Media events (play, pause, stop etc.)
 * Media information (title, artist, album etc)
 
-It also listens to a MQTT topic, for commands. So you can send commands to your chromecasts, like play, pause, stop etc.
+It also listens to a MQTT topic, for commands. So you can send commands to your chromecasts like play, pause, stop etc.
 
 ## Starting python script with virtual-environment
 First ensure that you have at least python3.6 and venv installed, then create a new virtual environment for your python script:
@@ -122,3 +122,8 @@ if a command fails for some reason, a mqtt message will be posted to the debug t
 An extra listening endpoint is created on `<MQTT_ROOT>/control/<action>`, which will send the command (from table above) to all registered chromecast devices.
 
 *Please note The above command layout breaks compability with earlier incarnations, where some commands where sent as payload to `<MQTT_ROOT>/friendly_name/control`, the old method is enabled as a fallback solution, to keep existing mqtt implementations working. The script will log a warning though, to let you know that you are using a deprecated method. It is strongly advicable to upgrade your mqtt setup to use the new endpoints*
+
+
+# Thanks to
+
+I would like to thank [Paulus Schoutsen](https://github.com/balloob) for his excelent work on [pychromecast](https://github.com/balloob/pychromecast), without his library this project couldn't have been made.
