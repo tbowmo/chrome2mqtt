@@ -1,5 +1,4 @@
 import json
-import logging
 from pychromecast.socket_client import CastStatus 
 from pychromecast.controllers.media import MediaStatus 
 
@@ -17,11 +16,11 @@ class Media(BaseHelper):
     """
         Helper class for holding information about the current playing media
     """
-    def __init__(self, title='', artist='', album='', album_art=''):
-        self.title = title
-        self.artist = artist
-        self.album = album
-        self.album_art = album_art
+    def __init__(self):
+        self.title = ''
+        self.artist = ''
+        self.album = ''
+        self.album_art = ''
 
     def setMediaState(self, mediaStatus: MediaStatus):
         self.title = mediaStatus.title
@@ -52,7 +51,7 @@ class SupportedFeatures(BaseHelper):
         self.mute = mediaStatus.supports_stream_mute
    
 
-class Capabilities(BaseHelper):
+class State(BaseHelper):
     """
         Helper class holding information about current state of the chromecast
     """
@@ -79,46 +78,43 @@ class Capabilities(BaseHelper):
 
 class ChromeState:
     """ 
-        Holds state of the chromecast __mediaStatus 
+        Holds state of the chromecast mediaStatus 
     """
-    __capabilities = Capabilities()
+    __state = State()
     __media = Media()
 
     def __init__(self, device):
         self.clear()
-        self.log = logging.getLogger('chromestate_' + device.cast_type)
-        self.__media = Media()
-        self.__capabilities = Capabilities()
 
     @property
     def app(self):
-        return self.__capabilities.app
+        return self.__state.app
     
     @property
     def state(self):
-        return self.__capabilities.state
+        return self.__state.state
     
     @property
     def volume(self):
-        if self.__capabilities.muted:
+        if self.__state.muted:
             return 0
-        return self.__capabilities.volume
+        return self.__state.volume
 
     @property
     def muted(self):
-        return self.__capabilities.muted
+        return self.__state.muted
 
     @property
-    def media(self):
+    def media_json(self):
         return self.__media.json()
 
     @property
-    def capabilities(self):
-        return self.__capabilities.json()
+    def state_json(self):
+        return self.__state.json()
 
     def clear(self):
         """ Clear all fields """
-        self.__capabilities = Capabilities()
+        self.__state = State()
         self.__media = Media()
 
     def setCastState(self, status: CastStatus):
@@ -127,8 +123,8 @@ class ChromeState:
             self.clear()
         else:
             self.__media.setCastState(status)
-            self.__capabilities.setCastState(status)
+            self.__state.setCastState(status)
 
     def setMediaState(self, mediaStatus: MediaStatus):
-        self.__capabilities.setMediaState(mediaStatus)
+        self.__state.setMediaState(mediaStatus)
         self.__media.setMediaState(mediaStatus)
