@@ -1,6 +1,5 @@
-# Chromecast to MQTT
-
-## Features
+Chromecast to MQTT
+==================
 
 Python program to enable MQTT control endpoints for chromecasts (both audio and video). 
 
@@ -11,7 +10,31 @@ It listens to events from the connected chromecasts, and send their status to MQ
 
 It also listens to a MQTT topic, for commands. So you can send commands to your chromecasts like play, pause, stop etc.
 
-## Starting python script with virtual-environment
+Table of contents
+===
+<!--ts-->
+   * [Chromecast to MQTT](#chromecast-to-mqtt)
+   * [Table of contents](#table-of-contents)
+   * [Installation](#installation)
+      * [Starting python script with virtual-environment](#starting-python-script-with-virtual-environment)
+      * [Start in a docker container](#start-in-a-docker-container)
+      * [Configuration](#configuration)
+   * [MQTT topics](#mqtt-topics)
+      * [Topics reported on by chromecast2mqtt](#topics-reported-on-by-chromecast2mqtt)
+      * [Controlling your chromecast via mqtt](#controlling-your-chromecast-via-mqtt)
+      * [Send command to all registered chromecasts](#send-command-to-all-registered-chromecasts)
+   * [Thanks to](#thanks-to)
+
+<!-- Added by: thomas, at: fre 18 okt 13:18:10 CEST 2019 -->
+
+<!--te-->
+
+Installation
+============
+
+Starting python script with virtual-environment
+-----------------------------------------------
+
 First ensure that you have at least python3.6 and venv installed, then create a new virtual environment for your python script:
 
 `python3 -m venv <path to chrome2mqtt folder>`
@@ -24,10 +47,12 @@ and finally start your python script with
 
 `python -m chrome2mqtt <options>`
 
-## Start in a docker container
+Start in a docker container
+---------------------------
 If you wish to run inside a docker container, you can build your own image with `docker build . --tag chrome2mqtt` and then run it with `docker run chrome2mqtt <options>` 
 
-## Configuration
+Configuration
+-------------
 Configure through command line parameters, as shown below
 ```
 usage: chrome.py [-h] -max MAX [-p PORT] [-c CLIENT] [-r ROOT] [-m HOST]
@@ -46,8 +71,10 @@ optional arguments:
   -l LOG, --log LOG     Log level
   -V, --version         show program's version number and exit
 ```
-# MQTT topics
-## Topics reported on by chromecast2mqtt
+MQTT topics
+===========
+Topics reported on by chromecast2mqtt
+-------------------------------------
 Each chromecast will be configured with a separate mqtt topic, consisting of `<MQTT_ROOT>//friendly_name`, where friendly name, is a normalized version of the friendly name given to each chromecast, where the name is converted to lower cases, and spaces have been replaced with underscores.
 
 The following topics will be used:
@@ -90,7 +117,8 @@ capabilities object, this is a json containing state and feature capabilities of
 }
 ```
 
-## Controlling your chromecast via mqtt
+Controlling your chromecast via mqtt
+------------------------------------
 It's possible to control the chromecasts, by sending a message to the `<MQTT_ROOT>/friendly_name/control/<action>` endpoint for each device, where `<action>` is one of the following list, some takes a payload as well:
 
 | Action | Payload required | Value for payload |
@@ -118,12 +146,13 @@ The json object for the play command contains a link to the media file you want 
 
 if a command fails for some reason, a mqtt message will be posted to the debug topic `<MQTT_ROOT>/debug/commandresult`
 
-## Send command to all registered chromecasts
+Send command to all registered chromecasts
+------------------------------------------
 An extra listening endpoint is created on `<MQTT_ROOT>/control/<action>`, which will send the command (from table above) to all registered chromecast devices.
 
 *Please note The above command layout breaks compability with earlier incarnations, where some commands where sent as payload to `<MQTT_ROOT>/friendly_name/control`, the old method is enabled as a fallback solution, to keep existing mqtt implementations working. The script will log a warning though, to let you know that you are using a deprecated method. It is strongly advicable to upgrade your mqtt setup to use the new endpoints*
 
 
-# Thanks to
-
+Thanks to
+=========
 I would like to thank [Paulus Schoutsen](https://github.com/balloob) for his excelent work on [pychromecast](https://github.com/balloob/pychromecast), without his library this project couldn't have been made.
