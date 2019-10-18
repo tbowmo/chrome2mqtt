@@ -29,7 +29,7 @@ class ChromeEvent:
         self.mqtt.subscribe(controlPath)
         self.mqtt.message_callback_add(controlPath, self.__mqtt_action)
         self.device.wait()
-        self.__command = Command(self.device, self.status)
+        self.__command = Command(self.device)
 
     def __mqtt_action(self, client, userdata, message):
         parameter = message.payload.decode("utf-8")
