@@ -107,7 +107,7 @@ class Command:
             raise CommandException('You need to specify volume level')
         if (int(level) > 100):
             level = 100
-        if (int(level) < 0)
+        if (int(level) < 0):
             level = 0
         self.device.set_volume(int(level) / 100.0)
 
