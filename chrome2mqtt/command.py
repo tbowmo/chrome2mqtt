@@ -49,18 +49,19 @@ class Command:
 
     def pause(self, pause):
         """ Pause playback """
-        pause = pause.lower()
         if (pause is None or pause == ''):
             if self.device.media_controller.is_paused:
                 self.device.media_controller.play()
             else:
                 self.device.media_controller.pause()
-        elif (pause == '1' or pause == 'true'):
-            self.device.media_controller.pause()
-        elif (pause == '0' or pause == 'false'):
-            self.device.media_controller.play()
         else:
-            raise CommandException('Pause could not match "{0}" as a parameter'.format(pause))
+            pause = str(pause).lower()
+            if (pause == '1' or pause == 'true'):
+                self.device.media_controller.pause()
+            elif (pause == '0' or pause == 'false'):
+                self.device.media_controller.play()
+            else:
+                raise CommandException('Pause could not match "{0}" as a parameter'.format(pause))
 
     def fwd(self):
         self.log.warn('fwd is a deprecated function, use next instead')
@@ -113,12 +114,13 @@ class Command:
 
     def mute(self, mute):
         """ Mute device """
-        mute = mute.lower()
         if (mute is None or mute == ''):
             self.device.set_volume_muted(not self.device.status.volume_muted)
-        elif (mute == '1' or mute == 'true'):
-            self.device.set_volume_muted(True)
-        elif (mute == '0' or mute == 'false'):
-            self.device.set_volume_muted(False)
         else:
-            raise CommandException('Mute could not match "{0}" as a parameter'.format(mute))
+            mute = str(mute).lower()
+            if (mute == '1' or mute == 'true'):
+                self.device.set_volume_muted(True)
+            elif (mute == '0' or mute == 'false'):
+                self.device.set_volume_muted(False)
+            else:
+                raise CommandException('Mute could not match "{0}" as a parameter'.format(mute))
