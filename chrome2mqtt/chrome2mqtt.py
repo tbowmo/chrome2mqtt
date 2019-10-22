@@ -20,8 +20,6 @@ import signal
 
 __version__ = __VERSION__ = "1.0.0"
 
-mqtt_client = socket.gethostname()
-
 def parse_args(argv = None):
     import argparse
     parser = argparse.ArgumentParser(description='Chromecast 2 mqtt')
@@ -35,6 +33,7 @@ def parse_args(argv = None):
     parser.add_argument('-d', '--debug', action="store_const", dest="log", const=logging.DEBUG, help="loglevel debug")
     parser.add_argument('-v', '--verbose', action="store_const", dest="log", const=logging.INFO, help="loglevel info")
     parser.add_argument('-V', '--version', action='version', version='%(prog)s {version}'.format(version=__VERSION__))
+    parser.add_argument('-C', '--cleanup', action="store_true", dest="cleanup", help="Cleanup mqtt topic on exit")
 
     return parser.parse_args(argv)
 
@@ -43,7 +42,7 @@ def start_banner(args):
     print('Connecting to mqtt host ' + args.host + ' port ' + str(args.port))
     print('Using mqtt root ' + args.root)
 
-def mqtt_init(mqtt_port, mqtt_host, mqtt_root):
+def mqtt_init(mqtt_port, mqtt_host, mqtt_root, mqtt_client):
     """Initialize mqtt transport"""
     try:
         mqtt_port = int(mqtt_port)
@@ -55,15 +54,47 @@ def mqtt_init(mqtt_port, mqtt_host, mqtt_root):
         print('Error connecting to mqtt host ' + mqtt_host + ' on port ' + str(mqtt_port))
         sys.exit(1)
 
+def setup_logging(file = None, level=logging.WARNING):
+    if (file != None):
+        logging.basicConfig(level=level,
+                            filename=file,
+                            format = '%(asctime)s %(levelname)-8s %(message)s')
+    else:
+        logging.basicConfig(level=level,
+                            format = '%(asctime)s %(levelname)-8s %(message)s')
+
 def main_loop():
     """Main operating loop, discovers chromecasts, and run forever until ctrl-c is received"""
+
+    args = parse_args()
+    start_banner(args)
+
+    setup_logging(args.logfile, args.log)
+
+    if args.MAX == 0:
+        print('WARNING! max casters is set to 0, which means the script will never stop listening for new casters')
+        print('specify --max= to set the maximum number of chromecasts to expect')
+
+    mqtt = mqtt_init(args.port, args.host, args.root, args.client)
+
     casters = {}
+
+    def lastWill():
+        """Send a last will to the mqtt server"""
+        mqtt.publish('debug/stop', datetime.now().strftime('%c'), retain=True)
+        if args.cleanup:
+            for c in casters.keys():
+                caster = casters[c]
+                caster.shutdown()
+    
     def callback(chromecast):
         chromecast.connect()
         nonlocal casters
         name = chromecast.device.friendly_name
         print('Found :', name)
         casters.update({name: ChromeEvent(chromecast, mqtt)})
+
+    atexit.register(lastWill)
 
     stop_discovery = pychromecast.get_chromecasts(callback=callback, blocking=False)
 
@@ -79,27 +110,4 @@ def main_loop():
             GlobalMQTT(casters, mqtt)
             signal.pause()
         sleep(1)
-
-def lastWill():
-    """Send a last will to the mqtt server"""
-    mqtt.publish('debug/stop', datetime.now().strftime('%c'), retain=True)
-
-
-args = parse_args()
-start_banner(args)
-
-if (args.logfile != None):
-    logging.basicConfig(level=args.log,
-                        filename=args.file,
-                        format = '%(asctime)s %(levelname)-8s %(message)s')
-else:
-    logging.basicConfig(level=args.log,
-                        format = '%(asctime)s %(levelname)-8s %(message)s')
-    
-
-if args.MAX == 0:
-    print('WARNING! max casters is set to 0, which means the script will never stop listening for new casters')
-    print('specify --max= to set the maximum number of chromecasts to expect')
-
-mqtt = mqtt_init(args.port, args.host, args.root)
-atexit.register(lastWill)
+        
