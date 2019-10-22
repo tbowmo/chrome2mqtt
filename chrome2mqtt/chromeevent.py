@@ -35,7 +35,7 @@ class ChromeEvent:
         parameter = message.payload.decode("utf-8")
         command = path.basename(path.normpath(message.topic))
         self.action(command, parameter)
-        
+
     def action(self, command, parameter):
         try:
             result = self.__command.execute(command, parameter)
@@ -83,3 +83,10 @@ class ChromeEvent:
             self.mqtt.publish(self.mqttpath + '/volume', msg.volume, retain = True )
             self.mqtt.publish(self.mqttpath + '/app', msg.app, retain=True)
             self.last_state = state
+
+    def shutdown(self):
+        self.mqtt.publish(self.mqttpath + '/capabilities', None, retain=False)
+        self.mqtt.publish(self.mqttpath + '/media', None, retain=False)
+        self.mqtt.publish(self.mqttpath + '/state', None, retain=False)
+        self.mqtt.publish(self.mqttpath + '/volume', None, retain=False)
+        self.mqtt.publish(self.mqttpath + '/app', None, retain=False)

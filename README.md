@@ -37,13 +37,14 @@ Starting python script with virtual-environment
 
 First ensure that you have at least python3.6 and venv installed, then create a new virtual environment for your python script:
 
-`python3 -m venv <path to chrome2mqtt folder>`
+```shell
+$ python3 -m venv ~/chrome2mqtt
+$ source ~/chrome2mqtt/bin/activate
+cd ~/chrome2mqtt
+$ pip install --no-cache-dir -r requirements.txt
+```
 
-then switch to the new virtual environment:
-
-`source <path to chrome2mqtt folder>/bin/activate`
-
-and finally start your python script with
+You are now ready to start the script with
 
 `python -m chrome2mqtt <options>`
 
@@ -51,9 +52,9 @@ Start in a docker container
 ---------------------------
 If you wish to run inside a docker container, you can build your own image with `docker build . --tag chrome2mqtt` and then run it with `docker run chrome2mqtt <options>` 
 
-Configuration
+Command line options
 -------------
-Configure through command line parameters, as shown below
+Configure through command line options, as shown below
 ```
 usage: chrome.py [-h] -max MAX [-p PORT] [-c CLIENT] [-r ROOT] [-m HOST]
                  [-l LOG] [-V]
@@ -62,17 +63,23 @@ Chromecast 2 mqtt
 
 optional arguments:
   -h, --help            show this help message and exit
-  -max MAX, --MAX MAX   Max number of chromecasts to expect 
+  -max MAX, --MAX MAX   Max number of chromecasts to expect
   -p PORT, --port PORT  MQTT port on host
   -c CLIENT, --client CLIENT
                         Client name for mqtt
   -r ROOT, --root ROOT  MQTT root topic
-  -m HOST, --host HOST  MQTT Host
-  -l LOG, --log LOG     Log level
+  -H HOST, --host HOST  MQTT Host
+  -l LOGFILE, --logfile LOGFILE
+                        Log to filename
+  -d, --debug           loglevel debug
+  -v, --verbose         loglevel info
   -V, --version         show program's version number and exit
+  -C, --cleanup         Cleanup mqtt topic on exit
 ```
+
 MQTT topics
 ===========
+
 Topics reported on by chromecast2mqtt
 -------------------------------------
 Each chromecast will be configured with a separate mqtt topic, consisting of `<MQTT_ROOT>//friendly_name`, where friendly name, is a normalized version of the friendly name given to each chromecast, where the name is converted to lower cases, and spaces have been replaced with underscores.
