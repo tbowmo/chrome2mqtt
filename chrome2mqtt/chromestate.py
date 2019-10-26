@@ -21,11 +21,13 @@ class Media(BaseHelper):
         self.artist = ''
         self.album = ''
         self.album_art = ''
+        self.metadata_type = None
 
     def setMediaState(self, mediaStatus: MediaStatus):
         self.title = mediaStatus.title
         self.artist = mediaStatus.artist
         self.album = mediaStatus.album_name
+        self.metadata_type = mediaStatus.metadata_type
         if len(mediaStatus.images) > 0:
             images = mediaStatus.images
             self.album_art = images[0].url
@@ -44,12 +46,11 @@ class SupportedFeatures(BaseHelper):
         self.mute = False
 
     def setMediaState(self, mediaStatus: MediaStatus):
-        self.skip_fwd = mediaStatus.supports_skip_forward
-        self.skip_bck = mediaStatus.supports_skip_backward
+        self.skip_fwd = mediaStatus.supports_queue_next or mediaStatus.supports_skip_forward
+        self.skip_bck = mediaStatus.supports_queue_prev or mediaStatus.supports_skip_backward
         self.pause = mediaStatus.supports_pause
         self.volume = mediaStatus.supports_stream_volume
         self.mute = mediaStatus.supports_stream_mute
-   
 
 class State(BaseHelper):
     """
