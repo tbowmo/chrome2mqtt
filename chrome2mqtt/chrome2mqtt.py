@@ -9,15 +9,16 @@ from chrome2mqtt.mqtt import MQTT
 from chrome2mqtt.chromeevent import ChromeEvent
 from chrome2mqtt.globalmqtt import GlobalMQTT
 
-from os import environ
+from os import environ, path
 from time import sleep, strftime
 from datetime import datetime
 import sys
+import logging.config
 import logging
 import socket
 import atexit
 import signal
-
+import json
 __version__ = __VERSION__ = "1.0.0"
 
 def parse_args(argv = None):
@@ -54,14 +55,21 @@ def mqtt_init(mqtt_port, mqtt_host, mqtt_root, mqtt_client):
         print('Error connecting to mqtt host ' + mqtt_host + ' on port ' + str(mqtt_port))
         sys.exit(1)
 
-def setup_logging(file = None, level=logging.WARNING):
-    if (file != None):
+def setup_logging(
+        file = None, 
+        level=logging.WARNING
+    ):
+    if (path.isfile('./logsetup.json')):
+        with open('./logsetup.json', 'rt') as f:
+            config = json.load(f)
+        logging.config.dictConfig(config)
+    elif (file != None):
         logging.basicConfig(level=level,
                             filename=file,
-                            format = '%(asctime)s %(levelname)-8s %(message)s')
+                            format = '%(asctime)s %(name)-16s %(levelname)-8s %(message)s')
     else:
         logging.basicConfig(level=level,
-                            format = '%(asctime)s %(levelname)-8s %(message)s')
+                            format = '%(asctime)s %(name)-16s %(levelname)-8s %(message)s')
 
 def main_loop():
     """Main operating loop, discovers chromecasts, and run forever until ctrl-c is received"""

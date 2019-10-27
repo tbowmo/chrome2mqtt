@@ -18,7 +18,7 @@ class ChromeEvent:
         self.mqtt = mqtt
         self.name = self.device.device.friendly_name.lower().replace(' ', '_')
         self.mqttpath = self.name
-        self.log = logging.getLogger('ChromeEvent_' + self.device.cast_type)
+        self.log = logging.getLogger('chromevent_{0}'.format(self.device.cast_type))
 
         self.device.register_status_listener(self)
         self.device.media_controller.register_status_listener(self)
@@ -54,13 +54,11 @@ class ChromeEvent:
             
 
     def new_cast_status(self, status):
-        self.log.info("----------- new cast status ---------------")
         self.log.info(status)
         self.status.setCastState(status)
         self.__mqtt_publish(self.status)
 
     def new_media_status(self, status):
-        self.log.info("----------- new media status ---------------")
         self.log.info(status)
         self.status.setMediaState(status)
         self.__mqtt_publish(self.status)

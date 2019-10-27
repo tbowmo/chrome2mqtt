@@ -8,3 +8,5 @@ lib64
 share
 lib
 pyvenv.cfg
+logsetup.json
+*.log
