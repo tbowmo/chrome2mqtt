@@ -17,15 +17,17 @@ Table of contents
    * [Table of contents](#table-of-contents)
    * [Installation](#installation)
       * [Starting python script with virtual-environment](#starting-python-script-with-virtual-environment)
+      * [Starting with systemd](#starting-with-systemd)
       * [Start in a docker container](#start-in-a-docker-container)
-      * [Configuration](#configuration)
+      * [Command line options](#command-line-options)
    * [MQTT topics](#mqtt-topics)
       * [Topics reported on by chromecast2mqtt](#topics-reported-on-by-chromecast2mqtt)
       * [Controlling your chromecast via mqtt](#controlling-your-chromecast-via-mqtt)
       * [Send command to all registered chromecasts](#send-command-to-all-registered-chromecasts)
+   * [Logging](#logging)
    * [Thanks to](#thanks-to)
 
-<!-- Added by: thomas, at: fre 18 okt 13:18:10 CEST 2019 -->
+<!-- Added by: thomas, at: lør  2 nov 13:25:18 CET 2019 -->
 
 <!--te-->
 
