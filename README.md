@@ -30,7 +30,7 @@ Table of contents
 <!--te-->
 
 Installation
-============
+===
 
 Starting python script with virtual-environment
 -----------------------------------------------
@@ -48,8 +48,34 @@ You are now ready to start the script with
 
 `python -m chrome2mqtt <options>`
 
+Starting with systemd
+---
+Start by following the description for enabling a virtual environment for python
+
+Then create a file named .service in /etc/systemd/system, with the following content (update paths and hosts as desired)
+```
+[Unit]
+Description=Chrome2mqtt
+Wants=network.target
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/pi/chrome2mqtt
+ExecStart=/home/pi/chrome2mqtt/bin/python -m chrome2mqtt -max 2 
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Then in a terminal, execute the following two commands to enable your new service
+```shell
+# systemctl enable chrome2mqtt.service
+# systemctl start chrome2mqtt.service
+```
+
 Start in a docker container
----------------------------
+---
 If you wish to run inside a docker container, you can build your own image with `docker build . --tag chrome2mqtt` and then run it with `docker run chrome2mqtt <options>` 
 
 Command line options

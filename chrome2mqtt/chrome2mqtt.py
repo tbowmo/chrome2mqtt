@@ -9,7 +9,7 @@ from chrome2mqtt.mqtt import MQTT
 from chrome2mqtt.chromeevent import ChromeEvent
 from chrome2mqtt.globalmqtt import GlobalMQTT
 
-from os import environ, path
+from os import path
 from time import sleep, strftime
 from datetime import datetime
 import sys
@@ -19,6 +19,7 @@ import socket
 import atexit
 import signal
 import json
+
 __version__ = __VERSION__ = "1.0.0"
 
 def parse_args(argv = None):
@@ -26,10 +27,12 @@ def parse_args(argv = None):
     parser = argparse.ArgumentParser(description='Chromecast 2 mqtt')
     required_flags = parser.add_mutually_exclusive_group(required=True)
     required_flags.add_argument('-max', '--MAX', action="store",type=int, default=None, help="Max number of chromecasts to expect")
-    parser.add_argument('-p', '--port', action="store", default=1883, type=int, help="MQTT port on host")
-    parser.add_argument('-c', '--client', action="store", default=socket.gethostname(), help="Client name for mqtt")
-    parser.add_argument('-r', '--root', action="store", default="chromecast", help="MQTT root topic")
-    parser.add_argument('-H', '--host', action="store", default="127.0.0.1", help="MQTT Host")
+    parser.add_argument('--mqttport', action="store", default=1883, type=int, help="MQTT port on host")
+    parser.add_argument('--mqttclient', action="store", default=socket.gethostname(), help="Client name for mqtt")
+    parser.add_argument('--mqttroot', action="store", default="chromecast", help="MQTT root topic")
+    parser.add_argument('--mqttuser', action="store", default=None, help="MQTT user (if authentication is enabled for your broker)")
+    parser.add_argument('--mqttpass', action="store", default=None, help="MQTT password (if authentication is enabled for your broker)")
+    parser.add_argument('-H', '--mqtthost', action="store", default="127.0.0.1", help="MQTT Host")
     parser.add_argument('-l', '--logfile', action="store", default=None, help="Log to filename")
     parser.add_argument('-d', '--debug', action="store_const", dest="log", const=logging.DEBUG, help="loglevel debug")
     parser.add_argument('-v', '--verbose', action="store_const", dest="log", const=logging.INFO, help="loglevel info")
@@ -40,20 +43,8 @@ def parse_args(argv = None):
 
 def start_banner(args):
     print('Chromecast2MQTT by tbowmo')
-    print('Connecting to mqtt host ' + args.host + ' port ' + str(args.port))
-    print('Using mqtt root ' + args.root)
-
-def mqtt_init(mqtt_port, mqtt_host, mqtt_root, mqtt_client):
-    """Initialize mqtt transport"""
-    try:
-        mqtt_port = int(mqtt_port)
-        mqtt = MQTT(host=mqtt_host, port=mqtt_port, client=mqtt_client, root=mqtt_root)
-        mqtt.conn()
-        mqtt.publish('debug/start', datetime.now().strftime('%c'), retain=True)
-        return mqtt
-    except:
-        print('Error connecting to mqtt host ' + mqtt_host + ' on port ' + str(mqtt_port))
-        sys.exit(1)
+    print('Connecting to mqtt host ' + args.mqtthost + ' port ' + str(args.mqttport))
+    print('Using mqtt root ' + args.mqttroot)
 
 def setup_logging(
         file = None, 
@@ -73,6 +64,8 @@ def setup_logging(
 
 def main_loop():
     """Main operating loop, discovers chromecasts, and run forever until ctrl-c is received"""
+    
+    assert sys.version_info >= (3, 6), "You need at least python 3.6 to run this program"
 
     args = parse_args()
     start_banner(args)
@@ -83,7 +76,20 @@ def main_loop():
         print('WARNING! max casters is set to 0, which means the script will never stop listening for new casters')
         print('specify --max= to set the maximum number of chromecasts to expect')
 
-    mqtt = mqtt_init(args.port, args.host, args.root, args.client)
+    try:
+        mqtt = MQTT(
+            host=args.mqtthost, 
+            port=args.mqttport,
+            client=args.mqttclient,
+            root=args.mqttroot,
+            user=args.mqttuser, 
+            password=args.mqttpass
+            )
+    except:
+        print('Error connecting to mqtt host ' + mqtt_host + ' on port ' + str(mqtt_port))
+        sys.exit(1)
+
+    mqtt.publish('debug/start', datetime.now().strftime('%c'), retain=True)
 
     casters = {}
 
