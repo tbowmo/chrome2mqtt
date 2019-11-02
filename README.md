@@ -103,6 +103,7 @@ media object:
   "artist": string,
   "album": string,
   "album_art": string, // URL to a static image for the current playing track
+  "metadata_type": number,
 }
 ```
 
@@ -159,6 +160,11 @@ An extra listening endpoint is created on `<MQTT_ROOT>/control/<action>`, which 
 
 *Please note The above command layout breaks compability with earlier incarnations, where some commands where sent as payload to `<MQTT_ROOT>/friendly_name/control`, the old method is enabled as a fallback solution, to keep existing mqtt implementations working. The script will log a warning though, to let you know that you are using a deprecated method. It is strongly advicable to upgrade your mqtt setup to use the new endpoints*
 
+Logging
+=======
+Logging can be configured in two ways, either simple with commandline options, -v for verbose (loglevel INFO and higher) or -d for debug (loglevel DEBUG or higher). You can also specify a file to dump your logs to with -l / --logfile.
+
+A more advanced setup is to make a json file in your root project with the name logsetup.json, an example file (logsetup.json-example) is included, that you can rename and use as a basis for your own setup. This file will take precedence over the commandline arguments, which will be ignored if the file is found.
 
 Thanks to
 =========
