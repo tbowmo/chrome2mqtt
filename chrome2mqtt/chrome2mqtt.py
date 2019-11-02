@@ -24,7 +24,11 @@ __version__ = __VERSION__ = "1.0.0"
 
 def parse_args(argv = None):
     import argparse
-    parser = argparse.ArgumentParser(description='Chromecast 2 mqtt')
+    parser = argparse.ArgumentParser(prog='chrome2mqtt',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description='chrome2mqtt\n\nConnects your chromecasts to your mqtt-broker',
+        epilog='See more on https://github.com/tbowmo/chrome2mqtt/README.md'
+        )
     required_flags = parser.add_mutually_exclusive_group(required=True)
     required_flags.add_argument('-max', '--MAX', action="store",type=int, default=None, help="Max number of chromecasts to expect")
     parser.add_argument('--mqttport', action="store", default=1883, type=int, help="MQTT port on host")

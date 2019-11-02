@@ -1,4 +1,4 @@
-Chromecast to MQTT
+Chrome2MQTT
 ==================
 
 Python program to enable MQTT control endpoints for chromecasts (both audio and video). 
@@ -84,25 +84,36 @@ Command line options
 -------------
 Configure through command line options, as shown below
 ```
-usage: chrome.py [-h] -max MAX [-p PORT] [-c CLIENT] [-r ROOT] [-m HOST]
-                 [-l LOG] [-V]
+usage: chrome2mqtt [-h] -max MAX [--mqttport MQTTPORT]
+                   [--mqttclient MQTTCLIENT] [--mqttroot MQTTROOT]
+                   [--mqttuser MQTTUSER] [--mqttpass MQTTPASS] [-H MQTTHOST]
+                   [-l LOGFILE] [-d] [-v] [-V] [-C]
 
-Chromecast 2 mqtt
+chrome2mqtt
+
+Connects your chromecasts to your mqtt-broker
 
 optional arguments:
   -h, --help            show this help message and exit
   -max MAX, --MAX MAX   Max number of chromecasts to expect
-  -p PORT, --port PORT  MQTT port on host
-  -c CLIENT, --client CLIENT
+  --mqttport MQTTPORT   MQTT port on host
+  --mqttclient MQTTCLIENT
                         Client name for mqtt
-  -r ROOT, --root ROOT  MQTT root topic
-  -H HOST, --host HOST  MQTT Host
+  --mqttroot MQTTROOT   MQTT root topic
+  --mqttuser MQTTUSER   MQTT user (if authentication is enabled for your
+                        broker)
+  --mqttpass MQTTPASS   MQTT password (if authentication is enabled for your
+                        broker)
+  -H MQTTHOST, --mqtthost MQTTHOST
+                        MQTT Host
   -l LOGFILE, --logfile LOGFILE
                         Log to filename
   -d, --debug           loglevel debug
   -v, --verbose         loglevel info
   -V, --version         show program's version number and exit
   -C, --cleanup         Cleanup mqtt topic on exit
+
+See more on https://github.com/tbowmo/chrome2mqtt
 ```
 
 MQTT topics
