@@ -1,4 +1,4 @@
-Chromecast to MQTT
+Chrome2MQTT
 ==================
 
 Python program to enable MQTT control endpoints for chromecasts (both audio and video). 
@@ -17,20 +17,22 @@ Table of contents
    * [Table of contents](#table-of-contents)
    * [Installation](#installation)
       * [Starting python script with virtual-environment](#starting-python-script-with-virtual-environment)
+      * [Starting with systemd](#starting-with-systemd)
       * [Start in a docker container](#start-in-a-docker-container)
-      * [Configuration](#configuration)
+      * [Command line options](#command-line-options)
    * [MQTT topics](#mqtt-topics)
       * [Topics reported on by chromecast2mqtt](#topics-reported-on-by-chromecast2mqtt)
       * [Controlling your chromecast via mqtt](#controlling-your-chromecast-via-mqtt)
       * [Send command to all registered chromecasts](#send-command-to-all-registered-chromecasts)
+   * [Logging](#logging)
    * [Thanks to](#thanks-to)
 
-<!-- Added by: thomas, at: fre 18 okt 13:18:10 CEST 2019 -->
+<!-- Added by: thomas, at: lør  2 nov 13:25:18 CET 2019 -->
 
 <!--te-->
 
 Installation
-============
+===
 
 Starting python script with virtual-environment
 -----------------------------------------------
@@ -48,33 +50,70 @@ You are now ready to start the script with
 
 `python -m chrome2mqtt <options>`
 
+Starting with systemd
+---
+Start by following the description for enabling a virtual environment for python
+
+Then create a file named .service in /etc/systemd/system, with the following content (update paths and hosts as desired)
+```
+[Unit]
+Description=Chrome2mqtt
+Wants=network.target
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/pi/chrome2mqtt
+ExecStart=/home/pi/chrome2mqtt/bin/python -m chrome2mqtt -max 2 
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Then in a terminal, execute the following two commands to enable your new service
+```shell
+# systemctl enable chrome2mqtt.service
+# systemctl start chrome2mqtt.service
+```
+
 Start in a docker container
----------------------------
+---
 If you wish to run inside a docker container, you can build your own image with `docker build . --tag chrome2mqtt` and then run it with `docker run chrome2mqtt <options>` 
 
 Command line options
 -------------
 Configure through command line options, as shown below
 ```
-usage: chrome.py [-h] -max MAX [-p PORT] [-c CLIENT] [-r ROOT] [-m HOST]
-                 [-l LOG] [-V]
+usage: chrome2mqtt [-h] -max MAX [--mqttport MQTTPORT]
+                   [--mqttclient MQTTCLIENT] [--mqttroot MQTTROOT]
+                   [--mqttuser MQTTUSER] [--mqttpass MQTTPASS] [-H MQTTHOST]
+                   [-l LOGFILE] [-d] [-v] [-V] [-C]
 
-Chromecast 2 mqtt
+chrome2mqtt
+
+Connects your chromecasts to your mqtt-broker
 
 optional arguments:
   -h, --help            show this help message and exit
   -max MAX, --MAX MAX   Max number of chromecasts to expect
-  -p PORT, --port PORT  MQTT port on host
-  -c CLIENT, --client CLIENT
+  --mqttport MQTTPORT   MQTT port on host
+  --mqttclient MQTTCLIENT
                         Client name for mqtt
-  -r ROOT, --root ROOT  MQTT root topic
-  -H HOST, --host HOST  MQTT Host
+  --mqttroot MQTTROOT   MQTT root topic
+  --mqttuser MQTTUSER   MQTT user (if authentication is enabled for your
+                        broker)
+  --mqttpass MQTTPASS   MQTT password (if authentication is enabled for your
+                        broker)
+  -H MQTTHOST, --mqtthost MQTTHOST
+                        MQTT Host
   -l LOGFILE, --logfile LOGFILE
                         Log to filename
   -d, --debug           loglevel debug
   -v, --verbose         loglevel info
   -V, --version         show program's version number and exit
   -C, --cleanup         Cleanup mqtt topic on exit
+
+See more on https://github.com/tbowmo/chrome2mqtt
 ```
 
 MQTT topics

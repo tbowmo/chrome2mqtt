@@ -11,15 +11,18 @@ class MQTT(mqtt.Client):
     
     is_connected = False
     root = ''
-    def __init__(self, host='127.0.0.1', port=1883, client='chrome', root = ''):
+    def __init__(self, host='127.0.0.1', port=1883, client='chrome', root='', user=None, password=None):
         super().__init__(host, port)
         self.subscriptions = []
         self.host = host
-        self.port = port
+        self.port = int(port)
         if root != '':
             self.root = root + '/'
         self.log = logging.getLogger('mqtt')
         self._client_id=client
+        if (user is not None):
+            self.username_pw_set(user, password)
+        self.conn()
 
     def subscribe(self, topic, qos=0):
         topic = self.root + topic
@@ -35,10 +38,12 @@ class MQTT(mqtt.Client):
             super().publish(topic, payload, qos, retain)
 
     def on_connect(self, mqttc, obj, flags, rc):
-        self.is_connected = True
-        self.publish('debug/lastconnect',datetime.now().strftime('%c'), retain=True)
-        for s in self.subscriptions:
-            self.subscribe(s)
+        if (rc == 0):
+            self.is_connected = True
+            self.publish('debug/lastconnect',datetime.now().strftime('%c'), retain=True)
+            for s in self.subscriptions:
+                self.subscribe(s)
+        raise Exception('Connection failed')
 
     def on_disconnect(self, client, userdata, rc):
         self.log.warn("Disconnected, reconnecting")
@@ -50,20 +55,11 @@ class MQTT(mqtt.Client):
                 self.conn()
             sleep(5)
 
-    def on_subscribe(self, mqttc, obj, mid, granted_qos):
-        self.log.info("Subscribed: " + str(mid) + " " + str(granted_qos))
-
-    def on_log(self, mqttc, obj, level, string):
-        self.log.debug(string)
+    def on_log(self, mqttc, obj, level, buf):
+        self.log.debug(buf)
 
     def conn(self):
         self.connect(self.host, self.port, 30)
         self.loop_start()
         while not self.is_connected:
             pass
-
-    def run(self):
-        rc = 0
-        while rc == 0:
-            rc = self.loop()
-        return rc
