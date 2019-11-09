@@ -16,7 +16,8 @@ class Command:
     """
     Class that handles dispatching of commands to a chromecast device   
     """
-    def __init__(self, device: Chromecast):
+    def __init__(self, device: Chromecast, status: ChromeState):
+        self.chromestate = ChromeState
         self.device = device
         self.log = logging.getLogger('Command_' + self.device.name)
         self.youtube = YouTubeController()
@@ -81,6 +82,7 @@ class Command:
 
     def quit(self):
         """ Quit running application on chromecast """
+        self.chromestate.clear()
         self.device.quit_app()
 
     def play(self, media=None):

@@ -29,7 +29,7 @@ class ChromeEvent:
         self.mqtt.subscribe(controlPath)
         self.mqtt.message_callback_add(controlPath, self.__mqtt_action)
         self.device.wait()
-        self.__command = Command(self.device)
+        self.__command = Command(self.device, self.status)
 
     def __mqtt_action(self, client, userdata, message):
         parameter = message.payload.decode("utf-8")
@@ -51,7 +51,6 @@ class ChromeEvent:
             self.mqtt.publish('debug/commandresult ', str(e))
         except Exception as e:
             self.log.error(e)
-            
 
     def new_cast_status(self, status):
         self.log.info(status)
