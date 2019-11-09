@@ -81,7 +81,6 @@ class Command:
 
     def quit(self):
         """ Quit running application on chromecast """
-        self.device.media_controller.stop()
         self.device.quit_app()
 
     def play(self, media=None):
