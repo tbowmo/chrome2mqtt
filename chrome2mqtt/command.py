@@ -17,7 +17,7 @@ class Command:
     Class that handles dispatching of commands to a chromecast device   
     """
     def __init__(self, device: Chromecast, status: ChromeState):
-        self.chromestate = ChromeState
+        self.chromestate = status
         self.device = device
         self.log = logging.getLogger('Command_' + self.device.name)
         self.youtube = YouTubeController()
