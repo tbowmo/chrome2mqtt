@@ -143,6 +143,9 @@ media object:
   "album": string,
   "album_art": string, // URL to a static image for the current playing track
   "metadata_type": number,
+  "duration": number, // Total duration of the current media track
+  "current_time": number, // current time index for the playing media
+  "start_time": number, // Start time in unix timestamp (GMT) for the current media, calculate playing time in seconds with (currentTimeStamp) - start_time
 }
 ```
 
