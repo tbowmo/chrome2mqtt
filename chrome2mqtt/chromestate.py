@@ -24,6 +24,8 @@ class Media(BaseHelper):
         self.metadata_type = None
         self.content_id = None
         self.duration = None
+        self.current_time = None
+
 
     def setMediaState(self, mediaStatus: MediaStatus):
         self.title = mediaStatus.title
@@ -31,6 +33,7 @@ class Media(BaseHelper):
         self.album = mediaStatus.album_name
         self.metadata_type = mediaStatus.metadata_type
         self.duration = mediaStatus.duration
+        self.current_time = mediaStatus.current_time
         if len(mediaStatus.images) > 0:
             images = mediaStatus.images
             self.album_art = images[0].url
