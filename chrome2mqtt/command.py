@@ -5,6 +5,7 @@ from pychromecast.controllers.youtube import YouTubeController
 from types import SimpleNamespace as Namespace
 import json
 import logging
+from time import sleep
 
 class CommandException(Exception):
     """
@@ -96,10 +97,16 @@ class Command:
             except:
                 raise CommandException("Seems that {0} isn't a valid json object".format(media))
             if hasattr(mediaObj, 'link') and hasattr(mediaObj, 'type'):
-                if mediaObj.type.lower() == 'youtube':
-                    self.youtube.play_video(mediaObj.link)
-                else:
-                    self.device.media_controller.play_media(mediaObj.link, mediaObj.type)
+                i = 1
+                while True:
+                    if mediaObj.type.lower() == 'youtube':
+                        self.youtube.play_video(mediaObj.link)
+                    else:
+                        self.device.media_controller.play_media(mediaObj.link, mediaObj.type)
+                    sleep(0.5)
+                    if self.device.media_controller.is_playing or i > 3:
+                        break
+                    i = i + 1
             else:
                 raise CommandException('Wrong parameter, it should be json object with: {{link: string, type: string}}, you sent {0}'.format(media))
 

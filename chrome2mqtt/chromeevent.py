@@ -38,6 +38,9 @@ class ChromeEvent:
 
     def action(self, command, parameter):
         try:
+            if command == 'ping':
+                self.__mqtt_publish(self.status, True)
+                return
             result = self.__command.execute(command, parameter)
             if result == False:
                 result = self.__command.execute(parameter, None)
@@ -67,14 +70,14 @@ class ChromeEvent:
                 sleep(1)
                 self.device.media_controller.update_status()
 
-    def __mqtt_publish(self, msg: ChromeState):
+    def __mqtt_publish(self, msg: ChromeState, force=False):
         media = msg.media_json
         state = msg.state_json
-        if (self.last_media != media):            
+        if (force or self.last_media != media):            
             # Only send new update, if title or state has changed.
             self.mqtt.publish(self.mqttpath + '/media', media, retain = True )
             self.last_media = media
-        if (self.last_state != state):
+        if (force or self.last_state != state):
             self.mqtt.publish(self.mqttpath + '/capabilities', state, retain = True )
             self.mqtt.publish(self.mqttpath + '/state', msg.state, retain = True )
             self.mqtt.publish(self.mqttpath + '/volume', msg.volume, retain = True )
