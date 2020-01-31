@@ -8,6 +8,7 @@ import pychromecast
 from chrome2mqtt.mqtt import MQTT
 from chrome2mqtt.chromeevent import ChromeEvent
 from chrome2mqtt.globalmqtt import GlobalMQTT
+from chrome2mqtt.devicecoordinator import DeviceCoordinator
 
 from os import path
 from time import sleep, strftime
@@ -42,7 +43,7 @@ def parse_args(argv = None):
     parser.add_argument('-v', '--verbose', action="store_const", dest="log", const=logging.INFO, help="loglevel info")
     parser.add_argument('-V', '--version', action='version', version='%(prog)s {version}'.format(version=__VERSION__))
     parser.add_argument('-C', '--cleanup', action="store_true", dest="cleanup", help="Cleanup mqtt topic on exit")
-
+    parser.add_argument('-S', '--split', action="store_true", dest="split", help="Split into separate devices")
     return parser.parse_args(argv)
 
 def start_banner(args):
@@ -96,36 +97,21 @@ def main_loop():
     mqtt.publish('debug/start', datetime.now().strftime('%c'), retain=True)
 
     casters = {}
+    coordinator = DeviceCoordinator(mqtt, args.split)
 
     def lastWill():
         """Send a last will to the mqtt server"""
         mqtt.publish('debug/stop', datetime.now().strftime('%c'), retain=True)
         if args.cleanup:
-            for c in casters.keys():
-                caster = casters[c]
-                caster.shutdown()
-    
-    def callback(chromecast):
-        chromecast.connect()
-        nonlocal casters
-        name = chromecast.device.friendly_name
-        print('Found :', name)
-        casters.update({name: ChromeEvent(chromecast, mqtt)})
+            conc.cleanup()
 
     atexit.register(lastWill)
-
-    stop_discovery = pychromecast.get_chromecasts(callback=callback, blocking=False)
 
     def signal_handler(sig, frame):
         print('Shutting down')
         sys.exit(0)
     
     signal.signal(signal.SIGINT, signal_handler)
-
     while True:
-        if (args.MAX>0 and len(casters) == args.MAX):
-            stop_discovery()
-            GlobalMQTT(casters, mqtt)
-            signal.pause()
-        sleep(1)
-        
+        coordinator.discover(args.MAX)
+        signal.pause()

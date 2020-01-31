@@ -93,8 +93,13 @@ class ChromeState:
     __state = State()
     __media = Media()
 
-    def __init__(self, device):
+    def __init__(self, name):
+        self.__name = name
         self.clear()
+
+    @property
+    def name(self):
+        return self.__name
 
     @property
     def app(self):
