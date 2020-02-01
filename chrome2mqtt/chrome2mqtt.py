@@ -103,7 +103,7 @@ def main_loop():
         """Send a last will to the mqtt server"""
         mqtt.publish('debug/stop', datetime.now().strftime('%c'), retain=True)
         if args.cleanup:
-            conc.cleanup()
+            coordinator.cleanup()
 
     atexit.register(lastWill)
 
