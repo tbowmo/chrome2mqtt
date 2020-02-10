@@ -68,7 +68,7 @@ class RoomState:
     def add_device(self, chromeDevice, name):
         self.__devices.update({name: chromeDevice})
     
-    def action(self, command, parameter):
+    def action(self, command, parameter, allDevices = False):
         if command == 'play': 
             try:
                 media = json.loads(parameter, object_hook=lambda d: Namespace(**d))
@@ -82,4 +82,8 @@ class RoomState:
             except:
                 pass
         else:
-            self.__devices[self.__active].action(command, parameter)
+            if allDevices:
+                for dev in self.__devices.items():
+                    dev.action(command, parameter)
+            else:
+                self.__devices[self.__active].action(command, parameter)

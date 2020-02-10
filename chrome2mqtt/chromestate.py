@@ -17,7 +17,8 @@ class Media(BaseHelper):
     """
         Helper class for holding information about the current playing media
     """
-    def __init__(self):
+    def __init__(self, device):
+        self.device = device
         self.title = ''
         self.artist = ''
         self.album = ''
@@ -65,7 +66,8 @@ class State(BaseHelper):
     """
         Helper class holding information about current state of the chromecast
     """
-    def __init__(self):
+    def __init__(self, device):
+        self.device = device
         self.app = 'None'
         self.state = 'STOPPED'
         self.volume = 0
@@ -90,8 +92,8 @@ class ChromeState:
     """ 
         Holds state of the chromecast mediaStatus 
     """
-    __state = State()
-    __media = Media()
+    __state = State('')
+    __media = Media('')
 
     def __init__(self, name):
         self.__name = name
@@ -129,8 +131,8 @@ class ChromeState:
 
     def clear(self):
         """ Clear all fields """
-        self.__state = State()
-        self.__media = Media()
+        self.__state = State(self.__name)
+        self.__media = Media(self.__name)
 
     def setCastState(self, status: CastStatus):
         app_name = status.display_name
