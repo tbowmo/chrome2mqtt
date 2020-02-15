@@ -67,11 +67,11 @@ class Command:
 
     def fwd(self):
         self.log.warn('fwd is a deprecated function, use next instead')
-        return self.next(payload)
+        return self.next()
 
     def rev(self):
         self.log.warn('rev is a deprecated function, use prev instead')
-        return self.prev(payload)
+        return self.prev()
 
     def next(self):
         """ Skip to next track """

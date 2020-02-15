@@ -91,7 +91,7 @@ def main_loop():
             password=args.mqttpass
             )
     except:
-        print('Error connecting to mqtt host ' + mqtt_host + ' on port ' + str(mqtt_port))
+        print('Error connecting to mqtt host {0} on port {1}'.format(args.mqtthost, args.mqttport))
         sys.exit(1)
 
     mqtt.publish('debug/start', datetime.now().strftime('%c'), retain=True)

@@ -7,10 +7,12 @@ class BaseHelper:
     def json(self):
         return json.dumps(self, default=lambda o: o.__dict__)
 
+    # Dummy method should be implemented in descendants
     def setCastState(self, status: CastStatus):
         pass
 
-    def setMediaState(self, mediaStatus: MediaStatus):
+    # Dummy method should be implemented in descendants
+    def setMediaState(self, media_status: MediaStatus):
         pass
 
 class Media(BaseHelper):
@@ -29,20 +31,20 @@ class Media(BaseHelper):
         self.current_time = None
         self.start_time = None
 
-    def setMediaState(self, mediaStatus: MediaStatus):
-        self.title = mediaStatus.title
-        self.artist = mediaStatus.artist
-        self.album = mediaStatus.album_name
-        self.metadata_type = mediaStatus.metadata_type
-        self.duration = mediaStatus.duration
-        self.current_time = mediaStatus.current_time
+    def setMediaState(self, media_status: MediaStatus):
+        self.title = media_status.title
+        self.artist = media_status.artist
+        self.album = media_status.album_name
+        self.metadata_type = media_status.metadata_type
+        self.duration = media_status.duration
+        self.current_time = media_status.current_time
         self.start_time = time.time() - self.current_time
-        if len(mediaStatus.images) > 0:
-            images = mediaStatus.images
+        if len(media_status.images) > 0:
+            images = media_status.images
             self.album_art = images[0].url
         else:
             self.album_art = ''
-        self.content_id = mediaStatus.content_id
+        self.content_id = media_status.content_id
 
 class SupportedFeatures(BaseHelper):
     """
@@ -55,12 +57,12 @@ class SupportedFeatures(BaseHelper):
         self.volume = False
         self.mute = False
 
-    def setMediaState(self, mediaStatus: MediaStatus):
-        self.skip_fwd = mediaStatus.supports_queue_next or mediaStatus.supports_skip_forward
-        self.skip_bck = mediaStatus.supports_queue_prev or mediaStatus.supports_skip_backward
-        self.pause = mediaStatus.supports_pause
-        self.volume = mediaStatus.supports_stream_volume
-        self.mute = mediaStatus.supports_stream_mute
+    def setMediaState(self, media_status: MediaStatus):
+        self.skip_fwd = media_status.supports_queue_next or media_status.supports_skip_forward
+        self.skip_bck = media_status.supports_queue_prev or media_status.supports_skip_backward
+        self.pause = media_status.supports_pause
+        self.volume = media_status.supports_stream_volume
+        self.mute = media_status.supports_stream_mute
 
 class State(BaseHelper):
     """
@@ -84,13 +86,13 @@ class State(BaseHelper):
         self.app_icon = status.icon_url
         self.supported_features.setCastState(status)
 
-    def setMediaState(self, mediaStatus: MediaStatus):
-        self.state = mediaStatus.player_state
-        self.supported_features.setMediaState(mediaStatus)
+    def setMediaState(self, media_status: MediaStatus):
+        self.state = media_status.player_state
+        self.supported_features.setMediaState(media_status)
 
 class ChromeState:
     """ 
-        Holds state of the chromecast mediaStatus 
+        Holds state of the chromecast media_status 
     """
     __state = State('')
     __media = Media('')
@@ -142,6 +144,6 @@ class ChromeState:
             self.__media.setCastState(status)
             self.__state.setCastState(status)
 
-    def setMediaState(self, mediaStatus: MediaStatus):
-        self.__state.setMediaState(mediaStatus)
-        self.__media.setMediaState(mediaStatus)
+    def setMediaState(self, media_status: MediaStatus):
+        self.__state.setMediaState(media_status)
+        self.__media.setMediaState(media_status)
