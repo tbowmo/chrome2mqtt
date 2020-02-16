@@ -15,7 +15,6 @@ class GlobalMQTT: #pylint: disable=too-few-public-methods
     def __init__(self, casters, mqtt: MQTT):
         self.casters = casters
         control_path = 'control/#'
-        mqtt.subscribe(control_path)
         mqtt.message_callback_add(control_path, self.mqtt_action)
         self.log = logging.getLogger('mqttglobal')
 

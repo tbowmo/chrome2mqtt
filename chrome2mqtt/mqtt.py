@@ -24,10 +24,10 @@ class MQTT(mqtt.Client):
         self._client_id = client
         if user is not None:
             self.username_pw_set(user, password)
-        self.connect()
+        self.__connect()
 
     def subscribe(self, topic, qos=0):
-        ''' subscribe to a topi '''
+        ''' subscribe to a topic '''
         if topic not in self.subscriptions:
             self.subscriptions.append(topic)
         topic = self.root + topic
@@ -36,6 +36,7 @@ class MQTT(mqtt.Client):
 
     def message_callback_add(self, topic, callback):
         ''' Add message callbacks, is called when a message matching topic is received '''
+        self.subscribe(topic)
         topic = self.root + topic
         super().message_callback_add(topic, callback)
 
@@ -67,7 +68,7 @@ class MQTT(mqtt.Client):
         ''' Log handler function '''
         self.log.debug(buf)
 
-    def connnect(self):
+    def __connect(self):
         ''' Connect to the mqtt broker '''
         self.connect(self.host, self.port, 30)
         self.loop_start()

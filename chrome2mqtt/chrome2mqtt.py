@@ -41,7 +41,7 @@ def parse_args(argv=None):
     parser.add_argument('-v', '--verbose', action="store_const", dest="log", const=logging.INFO, help="loglevel info")
     parser.add_argument('-V', '--version', action='version', version='%(prog)s {version}'.format(version=__VERSION__))
     parser.add_argument('-C', '--cleanup', action="store_true", dest="cleanup", help="Cleanup mqtt topic on exit")
-    parser.add_argument('-S', '--split', action="store_true", dest="split", help="Split into separate devices")
+    parser.add_argument('-S', '--standalone', action="store_true", dest="split", help="Split into separate devices")
     return parser.parse_args(argv)
 
 def start_banner(args):
@@ -90,8 +90,9 @@ def main_loop():
             user=args.mqttuser,
             password=args.mqttpass
             )
-    except: #pylint: disable=bare-except
+    except ConnectionError as exception:
         print('Error connecting to mqtt host {0} on port {1}'.format(args.mqtthost, args.mqttport))
+        print(exception)
         sys.exit(1)
 
     mqtt.publish('debug/start', datetime.now().strftime('%c'), retain=True)

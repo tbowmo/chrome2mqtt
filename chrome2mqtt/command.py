@@ -41,7 +41,7 @@ class Command:
         if str(sig) == '(x)':
             return False
 
-        if sig.parameters:
+        if len(sig.parameters) == 0: #pylint: disable=len-as-condition
             method()
         else:
             method(payload)

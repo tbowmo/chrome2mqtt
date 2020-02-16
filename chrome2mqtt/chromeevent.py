@@ -39,9 +39,6 @@ class ChromeEvent:
     def action(self, command, parameter):
         ''' Handle action to the chromecast device '''
         try:
-            if command == 'ping':
-                self.__callback(self.status)
-                return
             result = self.__command.execute(command, parameter)
             if not result:
                 result = self.__command.execute(parameter, None)
@@ -59,13 +56,13 @@ class ChromeEvent:
     def new_cast_status(self, status):
         ''' Receives updates on new casts '''
         self.log.info(status)
-        self.status.setCastState(status)
+        self.status.set_cast_state(status)
         self.__callback(self.status)
 
     def new_media_status(self, status):
         ''' Receives updates when new media is playing '''
         self.log.info(status)
-        self.status.setMediaState(status)
+        self.status.set_media_state(status)
         self.__callback(self.status)
         if self.status.state == 'PLAYING':
             # Netflix is not reporting nicely on play / pause state changes,
