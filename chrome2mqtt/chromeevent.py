@@ -1,19 +1,28 @@
+'''
+Handles events from a chromecast device, and reports these to various endpoints
+'''
 from time import sleep
-from chrome2mqtt.chromestate import ChromeState
-from os import path
 import logging
 from pychromecast import Chromecast
 from chrome2mqtt.command import Command, CommandException
+from chrome2mqtt.chromestate import ChromeState
 
 class ChromeEvent:
-    """ 
-        Handles events from a chromecast device, and reports these to various endpoints
+    """
+        Handle events to and from registered chromecast devices.
+
+        Internally it listens for new media and / or cast messages from
+        the chromecast it handles. and calls the callback specified in order
+        to update status.
+
+        Also handles actions destined for the specific device, by calling
+        the action method
     """
     device: Chromecast = None
     last_media = None
     last_state = None
     callback = None
-    def __init__(self, device: Chromecast, status: ChromeState, callback = None, name = None):
+    def __init__(self, device: Chromecast, status: ChromeState, callback=None, name=None):
         self.callback = callback
         self.device = device
         self.name = name
@@ -23,38 +32,44 @@ class ChromeEvent:
         self.device.media_controller.register_status_listener(self)
 
         self.status = status
-        
+
         self.device.wait()
         self.__command = Command(self.device, self.status)
 
     def action(self, command, parameter):
+        ''' Handle action to the chromecast device '''
         try:
             if command == 'ping':
                 self.__callback(self.status)
                 return
             result = self.__command.execute(command, parameter)
-            if result == False:
+            if not result:
                 result = self.__command.execute(parameter, None)
-                if result == False:
-                    self.log.error('Control command "{0}" not supported with parameter "{1}"'.format(command, parameter))
-            if result == True:
+                if not result:
+                    self.log.error('Control command %s not supported with parameter %s',
+                                   command,
+                                   parameter)
+            if result:
                 self.log.info('Success')
-        except CommandException as e:
-            self.log.warning(e)
-        except Exception as e:
-            self.log.error(e)
+        except CommandException as exception:
+            self.log.warning(exception)
+        except Exception as exception: #pylint: disable=broad-except
+            self.log.error(exception)
 
     def new_cast_status(self, status):
+        ''' Receives updates on new casts '''
         self.log.info(status)
         self.status.setCastState(status)
         self.__callback(self.status)
 
     def new_media_status(self, status):
+        ''' Receives updates when new media is playing '''
         self.log.info(status)
         self.status.setMediaState(status)
         self.__callback(self.status)
         if self.status.state == 'PLAYING':
-            # Netflix is not reporting nicely on play / pause state changes, so we poll it to get an up to date status
+            # Netflix is not reporting nicely on play / pause state changes,
+            # so we poll it to get an up to date status
             if self.status.app == 'Netflix':
                 sleep(1)
                 self.device.media_controller.update_status()
