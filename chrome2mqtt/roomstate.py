@@ -61,9 +61,11 @@ class RoomState:
     @state.setter
     def state(self, new_state: ChromeState):
         ''' Update room state from chromecast devices '''
-        if self.state is not None and new_state.name != self.__active:
-            if self.state.app != 'None' and new_state.app == 'None':
-                return
+        if self.state is not None \
+           and new_state.name != self.__active \
+           and self.state.app != 'None' \
+           and new_state.app == 'None':
+            return
 
         self.__state = new_state
         self.__active = new_state.name
