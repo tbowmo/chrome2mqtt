@@ -95,26 +95,29 @@ class Command:
         if media is None or media == '':
             self.device.media_controller.play()
         else:
-            media_obj = "Failed"
-            try:
-                media_obj = json.loads(media, object_hook=lambda d: Namespace(**d))
-            except:
-                raise CommandException("Seems that {0} isn't a valid json object".format(media))
-            if hasattr(media_obj, 'link') and hasattr(media_obj, 'type'):
-                i = 1
-                while True:
-                    if media_obj.type.lower() == 'youtube':
-                        self.youtube.play_video(media_obj.link)
-                    else:
-                        self.device.media_controller.play_media(media_obj.link, media_obj.type)
-                    sleep(0.5)
-                    if self.device.media_controller.is_playing or i > 3:
-                        break
-                    i = i + 1
-            else:
-                raise CommandException(
-                    'Wrong parameter, it should be json object with: {{link: string, type: string}}, you sent {0}'.format(media) #pylint: disable=line-too-long
-                    )
+            self.__play_content(media)
+
+    def __play_content(self, media):
+        media_obj = "Failed"
+        try:
+            media_obj = json.loads(media, object_hook=lambda d: Namespace(**d))
+        except:
+            raise CommandException("{0} is not a valid json object".format(media))
+        if hasattr(media_obj, 'link') and hasattr(media_obj, 'type'):
+            retry = 1
+            while True:
+                if media_obj.type.lower() == 'youtube':
+                    self.youtube.play_video(media_obj.link)
+                else:
+                    self.device.media_controller.play_media(media_obj.link, media_obj.type)
+                sleep(0.5)
+                if self.device.media_controller.is_playing or retry > 3:
+                    break
+                retry = retry + 1
+        else:
+            raise CommandException(
+                'Wrong parameter, it should be json object with: {{link: string, type: string}}, you sent {0}'.format(media) #pylint: disable=line-too-long
+                )
 
     def volume(self, level):
         """ Set the volume level """

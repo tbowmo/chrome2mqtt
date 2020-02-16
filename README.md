@@ -1,6 +1,8 @@
 Chrome2MQTT
 ==================
 
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=tbowmo_chrome2mqtt&metric=alert_status)](https://sonarcloud.io/dashboard?id=tbowmo_chrome2mqtt)
+
 Python program to enable MQTT control endpoints for chromecasts (both audio and video).
 
 It listens to events from the connected chromecasts, and send their status to MQTT on the following events:
