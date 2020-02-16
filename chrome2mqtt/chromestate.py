@@ -57,6 +57,7 @@ class Media(BaseHelper):
         self.content_id = media_status.content_id
 
     def set_cast_state(self, status: CastStatus):
+        # Empty as we do not use any info on the CastStatus object
         pass
 
 class SupportedFeatures(BaseHelper):
@@ -78,6 +79,7 @@ class SupportedFeatures(BaseHelper):
         self.mute = media_status.supports_stream_mute
 
     def set_cast_state(self, status: CastStatus):
+        # Empty as we do not use any info on the CastStatus object
         pass
 
 class State(BaseHelper):
