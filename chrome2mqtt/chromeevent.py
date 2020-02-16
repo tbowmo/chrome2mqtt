@@ -1,92 +1,76 @@
+'''
+Handles events from a chromecast device, and reports these to various endpoints
+'''
 from time import sleep
-from chrome2mqtt.chromestate import ChromeState
-from os import path
 import logging
-from chrome2mqtt.mqtt import MQTT
 from pychromecast import Chromecast
 from chrome2mqtt.command import Command, CommandException
+from chrome2mqtt.chromestate import ChromeState
 
 class ChromeEvent:
-    """ 
-        Handles events from a chromecast device, and reports these to various endpoints
+    """
+        Handle events to and from registered chromecast devices.
+
+        Internally it listens for new media and / or cast messages from
+        the chromecast it handles. and calls the callback specified in order
+        to update status.
+
+        Also handles actions destined for the specific device, by calling
+        the action method
     """
     device: Chromecast = None
     last_media = None
     last_state = None
-    def __init__(self, device: Chromecast,  mqtt: MQTT):
+    callback = None
+    def __init__(self, device: Chromecast, status: ChromeState, callback=None, name=None):
+        self.callback = callback
         self.device = device
-        self.mqtt = mqtt
-        self.name = self.device.device.friendly_name.lower().replace(' ', '_')
-        self.mqttpath = self.name
-        self.log = logging.getLogger('chromevent_{0}'.format(self.device.cast_type))
+        self.name = name
+        self.log = logging.getLogger('chromevent_{0}_{1}'.format(self.device.cast_type, self.name))
 
         self.device.register_status_listener(self)
         self.device.media_controller.register_status_listener(self)
 
-        self.status = ChromeState(device.device)
-        
-        controlPath = self.name + '/control/#'
-        self.mqtt.subscribe(controlPath)
-        self.mqtt.message_callback_add(controlPath, self.__mqtt_action)
+        self.status = status
+
         self.device.wait()
         self.__command = Command(self.device, self.status)
 
-    def __mqtt_action(self, client, userdata, message):
-        parameter = message.payload.decode("utf-8")
-        command = path.basename(path.normpath(message.topic))
-        self.action(command, parameter)
-
     def action(self, command, parameter):
+        ''' Handle action to the chromecast device '''
         try:
-            if command == 'ping':
-                self.__mqtt_publish(self.status, True)
-                return
             result = self.__command.execute(command, parameter)
-            if result == False:
+            if not result:
                 result = self.__command.execute(parameter, None)
-                if result == False:
-                    self.log.error('Control command "{0}" not supported with parameter "{1}"'.format(command, parameter))
-                    self.mqtt.publish('Unknown command "{0}"'.format(command))
-            if result == True:
-                self.mqtt.publish('debug/commandresult', 'Success')
-        except CommandException as e:
-            self.log.warning(e)
-            self.mqtt.publish('debug/commandresult ', str(e))
-        except Exception as e:
-            self.log.error(e)
+                if not result:
+                    self.log.error('Control command %s not supported with parameter %s',
+                                   command,
+                                   parameter)
+            if result:
+                self.log.info('Success')
+        except CommandException as exception:
+            self.log.warning(exception)
+        except Exception as exception: #pylint: disable=broad-except
+            self.log.error(exception)
 
     def new_cast_status(self, status):
+        ''' Receives updates on new casts '''
         self.log.info(status)
-        self.status.setCastState(status)
-        self.__mqtt_publish(self.status)
+        self.status.set_cast_state(status)
+        self.__callback(self.status)
 
     def new_media_status(self, status):
+        ''' Receives updates when new media is playing '''
         self.log.info(status)
-        self.status.setMediaState(status)
-        self.__mqtt_publish(self.status)
+        self.status.set_media_state(status)
+        self.__callback(self.status)
         if self.status.state == 'PLAYING':
-            # Netflix is not reporting nicely on play / pause state changes, so we poll it to get an up to date status
+            # Netflix is not reporting nicely on play / pause state changes,
+            # so we poll it to get an up to date status
             if self.status.app == 'Netflix':
                 sleep(1)
                 self.device.media_controller.update_status()
 
-    def __mqtt_publish(self, msg: ChromeState, force=False):
-        media = msg.media_json
-        state = msg.state_json
-        if (force or self.last_media != media):            
-            # Only send new update, if title or state has changed.
-            self.mqtt.publish(self.mqttpath + '/media', media, retain = True )
-            self.last_media = media
-        if (force or self.last_state != state):
-            self.mqtt.publish(self.mqttpath + '/capabilities', state, retain = True )
-            self.mqtt.publish(self.mqttpath + '/state', msg.state, retain = True )
-            self.mqtt.publish(self.mqttpath + '/volume', msg.volume, retain = True )
-            self.mqtt.publish(self.mqttpath + '/app', msg.app, retain=True)
-            self.last_state = state
-
-    def shutdown(self):
-        self.mqtt.publish(self.mqttpath + '/capabilities', None, retain=False)
-        self.mqtt.publish(self.mqttpath + '/media', None, retain=False)
-        self.mqtt.publish(self.mqttpath + '/state', None, retain=False)
-        self.mqtt.publish(self.mqttpath + '/volume', None, retain=False)
-        self.mqtt.publish(self.mqttpath + '/app', None, retain=False)
+    def __callback(self, msg: ChromeState):
+        if self.callback is not None:
+            self.callback(msg, self.name)

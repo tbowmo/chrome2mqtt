@@ -1,7 +1,7 @@
 Chrome2MQTT
 ==================
 
-Python program to enable MQTT control endpoints for chromecasts (both audio and video). 
+Python program to enable MQTT control endpoints for chromecasts (both audio and video).
 
 It listens to events from the connected chromecasts, and send their status to MQTT on the following events:
 * Change in which app is running
@@ -9,6 +9,8 @@ It listens to events from the connected chromecasts, and send their status to MQ
 * Media information (title, artist, album etc)
 
 It also listens to a MQTT topic, for commands. So you can send commands to your chromecasts like play, pause, stop etc.
+
+*** NOTE! Chromecast devices are collected into rooms, old operation where devices are treated seperately is available with option ```--standalone```
 
 Table of contents
 ===
@@ -112,6 +114,7 @@ optional arguments:
   -v, --verbose         loglevel info
   -V, --version         show program's version number and exit
   -C, --cleanup         Cleanup mqtt topic on exit
+  -S, --standalone      Do not collect devices into rooms, and treat them all as standalone devices.
 
 See more on https://github.com/tbowmo/chrome2mqtt
 ```
