@@ -34,11 +34,11 @@ class MQTT(mqtt.Client):
         self.log.info('subscribing - %s : %s', topic, len(self.subscriptions))
         super().subscribe(topic, qos)
 
-    def message_callback_add(self, topic, callback):
+    def message_callback_add(self, sub, callback):
         ''' Add message callbacks, is called when a message matching topic is received '''
-        self.subscribe(topic)
-        topic = self.root + topic
-        super().message_callback_add(topic, callback)
+        self.subscribe(sub)
+        sub = self.root + sub
+        super().message_callback_add(sub, callback)
 
     def publish(self, topic, payload=None, qos=0, retain=False):
         ''' publish on mqtt, adding root topic to the topic '''
@@ -46,7 +46,7 @@ class MQTT(mqtt.Client):
         if self.is_connected:
             super().publish(topic, payload, qos, retain)
 
-    def on_connect(self, mqttc, obj, flags, rc): # pylint: disable=unused-argument, invalid-name
+    def on_connect(self, mqttc, obj, flags, rc): # pylint: disable=unused-argument, invalid-name, arguments-differ
         ''' handle connection established '''
         self.log.warning('Connect %s', rc)
         if rc == 0:
@@ -57,14 +57,14 @@ class MQTT(mqtt.Client):
         else:
             raise Exception('Connection failed')
 
-    def on_disconnect(self, client, userdata, rc): # pylint: disable=unused-argument, invalid-name
+    def on_disconnect(self, client, userdata, rc): # pylint: disable=unused-argument, invalid-name, arguments-differ
         ''' handle disconnects '''
         self.log.warning('Disconnected, reconnecting')
         self.publish('debug/lastdisconnect', datetime.now().strftime('%c'), retain=True)
         self.is_connected = False
         self.reconnect()
 
-    def on_log(self, mqttc, obj, level, buf): # pylint: disable=unused-argument
+    def on_log(self, mqttc, obj, level, buf): # pylint: disable=unused-argument, arguments-differ
         ''' Log handler function '''
         self.log.debug(buf)
 

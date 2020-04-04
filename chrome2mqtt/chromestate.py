@@ -4,7 +4,6 @@ Stores state of a chromedevice in a more MQTT friendly maner.
 use ChromeState from this module, to handle the chromecast states.
 '''
 import json
-import time
 import abc
 from pychromecast.socket_client import CastStatus
 from pychromecast.controllers.media import MediaStatus
