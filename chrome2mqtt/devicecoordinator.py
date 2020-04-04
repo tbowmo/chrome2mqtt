@@ -20,6 +20,7 @@ class DeviceCoordinator:
     rooms = {}
     mqtt: MQTT = None
     device_count = 0
+    device_split_char = '_'
 
     def __init__(self, mqtt: MQTT, devicesplit=False):
         self.devicesplit = devicesplit
@@ -58,17 +59,18 @@ class DeviceCoordinator:
         assert matches is not None, 'Can not extract room name from topic "{0}"'.format(message.topic) #pylint: disable=line-too-long
         return matches.group(1)
 
-    @classmethod
-    def __room(cls, device):
-        return device.split('_')[1]
-    @classmethod
-    def __device(cls, device):
-        return device.split('_')[0]
+    def __room(self, device):
+        if self.devicesplit:
+            return device
+        return device.split(self.device_split_char)[1]
+
+    def __device(self, device):
+        if self.devicesplit:
+            return device
+        return device.split(self.device_split_char)[0]
 
     def __event_handler(self, state: ChromeState, device=None):
         room_name = self.__room(device)
-        if self.devicesplit:
-            room_name = device
         self.rooms[room_name].state = state
 
         self.__mqtt_publish(self.rooms[room_name])
@@ -76,10 +78,8 @@ class DeviceCoordinator:
     def __search_callback(self, chromecast):
         chromecast.connect()
         self.device_count += 1
-        name = chromecast.device.friendly_name.lower().replace(' ', '_')
+        name = chromecast.device.friendly_name.lower().replace(' ', self.device_split_char)
         room_name = self.__room(name)
-        if self.devicesplit:
-            room_name = name
         device = self.__device(name)
         if room_name not in self.rooms:
             self.rooms.update({room_name : RoomState(room_name)})
