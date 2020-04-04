@@ -55,7 +55,7 @@ class MQTT(mqtt.Client):
             for subscription in self.subscriptions:
                 self.subscribe(subscription)
         else:
-            raise Exception('Connection failed')
+            raise ConnectionError('Connection failed')
 
     def on_disconnect(self, client, userdata, rc): # pylint: disable=unused-argument, invalid-name, arguments-differ
         ''' handle disconnects '''
