@@ -20,8 +20,8 @@ class StateChanged:
     def update(self, state):
         '''Updates internal state, and check if it is changed from last update'''
         if self.__last_state != state:
-            __last_state = state
-            __changed = True
+            self.__last_state = state
+            self.__changed = True
 
 class RoomState:
     ''' Handles state of a room, with multiple chromecast devices. '''
