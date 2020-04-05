@@ -19,7 +19,7 @@ class GlobalMQTT: #pylint: disable=too-few-public-methods
         self.log = logging.getLogger('mqttglobal')
 
     def mqtt_action(self, client, userdata, message): #pylint: disable=unused-argument
-        ''' handles action from mqtt topic on all devices registrered '''
+        ''' handles action from mqtt topic on all devices registered '''
         payload = message.payload.decode("utf-8")
         cmd = path.basename(path.normpath(message.topic))
         for cast in self.casters.keys():

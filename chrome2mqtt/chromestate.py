@@ -4,7 +4,6 @@ Stores state of a chromedevice in a more MQTT friendly maner.
 use ChromeState from this module, to handle the chromecast states.
 '''
 import json
-import time
 import abc
 from pychromecast.socket_client import CastStatus
 from pychromecast.controllers.media import MediaStatus
@@ -39,7 +38,6 @@ class Media(BaseHelper):
         self.content_id = None
         self.duration = None
         self.current_time = None
-        self.start_time = None
 
     def set_media_state(self, media_status: MediaStatus):
         self.title = media_status.title
@@ -48,7 +46,6 @@ class Media(BaseHelper):
         self.metadata_type = media_status.metadata_type
         self.duration = media_status.duration
         self.current_time = media_status.current_time
-        self.start_time = time.time() - self.current_time
         if media_status.images:
             images = media_status.images
             self.album_art = images[0].url
