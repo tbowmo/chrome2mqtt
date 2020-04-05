@@ -96,13 +96,7 @@ class RoomState:
             try:
                 device = self.__active
                 if not self.__device_split:
-                    media = json.loads(parameter, object_hook=lambda d: Namespace(**d))
-                    device = 'tv'
-                    if hasattr(media, 'type') and media.type.lower().startswith('audio/'):
-                        device = 'audio'
-                    if device != self.__active:
-                        self.__devices[self.__active].action('quit', '')
-                        sleep(0.5)
+                    device = self.__determine_playable_device(parameter)
                 self.__devices[device].action('play', parameter)
             except ValueError:
                 pass
@@ -112,3 +106,13 @@ class RoomState:
                     dev.action(command, parameter)
             else:
                 self.__devices[self.__active].action(command, parameter)
+
+    def __determine_playable_device(self, parameter):
+        media = json.loads(parameter, object_hook=lambda d: Namespace(**d))
+        device = 'tv'
+        if hasattr(media, 'type') and media.type.lower().startswith('audio/'):
+            device = 'audio'
+        if device != self.__active:
+            self.__devices[self.__active].action('quit', '')
+            sleep(0.5)
+        return device
