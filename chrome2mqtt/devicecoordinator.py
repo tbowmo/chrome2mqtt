@@ -15,15 +15,15 @@ from chrome2mqtt.roomstate import RoomState
 class DeviceCoordinator:
     '''
     Handles chromecasts devices, organizing them into rooms (normal behavior),
-    or as standalone devices (devicesplit=true)
+    or as standalone devices (device_split=true)
     '''
     rooms = {}
     mqtt: MQTT = None
     device_count = 0
     device_split_char = '_'
 
-    def __init__(self, mqtt: MQTT, devicesplit=False):
-        self.devicesplit = devicesplit
+    def __init__(self, mqtt: MQTT, device_split=False):
+        self.__device_split = device_split
         self.mqtt = mqtt
         control_path = '+/control/#'
         self.mqtt.message_callback_add(control_path, self.__mqtt_action)
@@ -60,12 +60,12 @@ class DeviceCoordinator:
         return matches.group(1)
 
     def __room(self, device):
-        if self.devicesplit:
+        if self.__device_split:
             return device
         return device.split(self.device_split_char)[1]
 
     def __device(self, device):
-        if self.devicesplit:
+        if self.__device_split:
             return device
         return device.split(self.device_split_char)[0]
 
@@ -82,7 +82,7 @@ class DeviceCoordinator:
         room_name = self.__room(name)
         device = self.__device(name)
         if room_name not in self.rooms:
-            self.rooms.update({room_name : RoomState(room_name)})
+            self.rooms.update({room_name : RoomState(room_name, self.__device_split)})
         room = self.rooms[room_name]
         room.add_device(ChromeEvent(chromecast,
                                     ChromeState(device),
