@@ -144,3 +144,7 @@ class Command:
                 self.device.set_volume_muted(False)
             else:
                 raise CommandException('Mute could not match "{0}" as a parameter'.format(mute))
+
+    def update(self):
+        """ Request an update from the chromecast """
+        self.device.media_controller.update_status()

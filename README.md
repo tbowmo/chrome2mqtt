@@ -185,12 +185,13 @@ It's possible to control the chromecasts, by sending a message to the `<MQTT_ROO
 | prev | No | |
 | mute | Optional| If no payload is supplied it will toggle mute state, otherwise send 1/True to mute or 0/False to unmute |
 | volume | Required|Integer 0 - 100 specifying volume level |
+| update | No | Requests the chromecast to send a media status update
 
 The json object for the play command contains a link to the media file you want to play, and a mime type for the content:
 
 ```javascript
 // Start playing a mp3 audio file
- { "link": "https://link.to/awesome.mp3", "type": "audio/mp3" } 
+ { "link": "https://link.to/awesome.mp3", "type": "audio/mp3" }
 
 // Start playing a mp4 video file
  { "link": "https://link.to/awesome.mp4", "type": "video/mp4" } 
