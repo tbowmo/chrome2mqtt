@@ -64,9 +64,7 @@ class ChromeEvent:
         self.log.info(status)
         self.status.set_media_state(status)
         self.__callback(self.status)
-        if self.status.state == 'PLAYING' and self.status.app == 'Netflix':
-            # Netflix is not reporting nicely on play / pause state changes,
-            # so we poll it to get an up to date status
+        if self.status.state == 'PLAYING':
             sleep(1)
             self.device.media_controller.update_status()
 
