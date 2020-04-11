@@ -51,7 +51,6 @@ class MQTT(mqtt.Client):
         self.log.warning('Connect %s', rc)
         if rc == 0:
             self.is_connected = True
-            self.publish('debug/lastconnect', datetime.now().strftime('%c'), retain=True)
             for subscription in self.subscriptions:
                 self.subscribe(subscription)
         else:
@@ -60,7 +59,6 @@ class MQTT(mqtt.Client):
     def on_disconnect(self, client, userdata, rc): # pylint: disable=unused-argument, invalid-name, arguments-differ
         ''' handle disconnects '''
         self.log.warning('Disconnected, reconnecting')
-        self.publish('debug/lastdisconnect', datetime.now().strftime('%c'), retain=True)
         self.is_connected = False
         self.reconnect()
 

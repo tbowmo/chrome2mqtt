@@ -95,13 +95,10 @@ def main_loop():
         print(exception)
         sys.exit(1)
 
-    mqtt.publish('debug/start', datetime.now().strftime('%c'), retain=True)
-
     coordinator = DeviceCoordinator(mqtt, args.split)
 
     def last_will():
         """Send a last will to the mqtt server"""
-        mqtt.publish('debug/stop', datetime.now().strftime('%c'), retain=True)
         if args.cleanup:
             coordinator.cleanup()
 
