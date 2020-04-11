@@ -22,6 +22,7 @@ class MQTT(mqtt.Client):
                 self.root = root + '/'
             else:
                 self.root = root
+
         self.log = logging.getLogger('mqtt')
         self._client_id = client
         if user is not None:

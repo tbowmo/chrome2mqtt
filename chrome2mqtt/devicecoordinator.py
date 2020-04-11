@@ -10,6 +10,7 @@ from chrome2mqtt.chromeevent import ChromeEvent
 from chrome2mqtt.chromestate import ChromeState
 from chrome2mqtt.mqtt import MQTT
 from chrome2mqtt.roomstate import RoomState
+from chrome2mqtt.alias import Alias
 
 class DeviceCoordinator:
     '''
@@ -21,11 +22,12 @@ class DeviceCoordinator:
     device_count = 0
     device_split_char = '_'
 
-    def __init__(self, mqtt: MQTT, device_split=False):
+    def __init__(self, mqtt: MQTT, alias: Alias, device_split=False):
         self.__device_split = device_split
         self.mqtt = mqtt
-        control_path = '+/control/#'
-        self.mqtt.message_callback_add(control_path, self.__mqtt_action)
+        self.alias = alias
+        # control_path = '+/control/#'
+        # self.mqtt.message_callback_add(control_path, self.__mqtt_action)
 
     def discover(self, max_devices=0):
         '''
@@ -66,9 +68,10 @@ class DeviceCoordinator:
         return matches.group(1)
 
     def __room(self, device):
-        if self.__device_split:
-            return device
-        return device.split(self.device_split_char)[1]
+        room = device
+        if not self.__device_split:
+            room = device.split(self.device_split_char)[1]
+        return self.alias.get_alias(room)
 
     def __device(self, device):
         if self.__device_split:
@@ -89,6 +92,9 @@ class DeviceCoordinator:
         device = self.__device(name)
         if room_name not in self.rooms:
             self.rooms.update({room_name : RoomState(room_name, self.__device_split)})
+            control_path = '{0}/control/#'.format(room_name)
+            self.mqtt.message_callback_add(control_path, self.__mqtt_action)
+
         room = self.rooms[room_name]
         room.add_device(ChromeEvent(chromecast,
                                     ChromeState(device),
