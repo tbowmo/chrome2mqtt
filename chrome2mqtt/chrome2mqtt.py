@@ -42,7 +42,7 @@ def parse_args(argv=None):
     parser.add_argument('-V', '--version', action='version', version='%(prog)s {version}'.format(version=__VERSION__))
     parser.add_argument('-C', '--cleanup', action="store_true", dest="cleanup", help="Cleanup mqtt topic on exit")
     parser.add_argument('-S', '--standalone', action="store_true", dest="split", help="Split into separate devices")
-    parser.add_argument('--alias', action="store", dest="alias", help="topic aliases for devices")
+    parser.add_argument('--alias', action="store", help="topic aliases for devices")
     return parser.parse_args(argv)
 
 def start_banner(args):

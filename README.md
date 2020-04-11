@@ -17,7 +17,7 @@ It also listens to a MQTT topic, for commands. So you can send commands to your 
 Table of contents
 ===
 <!--ts-->
-   * [Chromecast to MQTT](#chromecast-to-mqtt)
+   * [Chrome2MQTT](#chrome2mqtt)
    * [Table of contents](#table-of-contents)
    * [Installation](#installation)
       * [Starting python script with virtual-environment](#starting-python-script-with-virtual-environment)
@@ -25,13 +25,15 @@ Table of contents
       * [Start in a docker container](#start-in-a-docker-container)
       * [Command line options](#command-line-options)
    * [MQTT topics](#mqtt-topics)
+      * [Rooms or single devices](#rooms-or-single-devices)
       * [Topics reported on by chromecast2mqtt](#topics-reported-on-by-chromecast2mqtt)
-      * [Controlling your chromecast via mqtt](#controlling-your-chromecast-via-mqtt)
-      * [Send command to all registered chromecasts](#send-command-to-all-registered-chromecasts)
+      * [Aliasing device topics](#aliasing-device-topics)
+   * [JSON types](#json-types)
+   * [Controlling your chromecast via mqtt](#controlling-your-chromecast-via-mqtt)
    * [Logging](#logging)
    * [Thanks to](#thanks-to)
 
-<!-- Added by: thomas, at: lør  2 nov 13:25:18 CET 2019 -->
+<!-- Added by: thomas, at: søn 12 apr 00:38:35 CEST 2020 -->
 
 <!--te-->
 
@@ -117,6 +119,7 @@ optional arguments:
   -V, --version         show program's version number and exit
   -C, --cleanup         Cleanup mqtt topic on exit
   -S, --standalone      Do not collect devices into rooms, and treat them all as standalone devices.
+  --alias ALIAS         Alias list for devices
 
 See more on https://github.com/tbowmo/chrome2mqtt
 ```
@@ -124,20 +127,33 @@ See more on https://github.com/tbowmo/chrome2mqtt
 MQTT topics
 ===========
 
+Rooms or single devices
+-----------------------
+Normal behavior is that devices are grouped into rooms, which is then published as topics. In a room, you can have two devices: one audio and one video device. This limit is imposed as it's impossible to know which video device you want to send a stream, if you ask a room to play a mpeg4 stream.
+
+The alternative behavior is that all devices are treated as seperate topics in the mqtt tree. You need to specify `--standalone` option for this.
+
 Topics reported on by chromecast2mqtt
 -------------------------------------
-Each chromecast will be configured with a separate mqtt topic, consisting of `<MQTT_ROOT>//friendly_name`, where friendly name, is a normalized version of the friendly name given to each chromecast, where the name is converted to lower cases, and spaces have been replaced with underscores.
+Each chromecast will be configured with a separate mqtt topic, consisting of `<MQTT_ROOT>/room` (or `<MQTT_ROOT>/device_name` if you supplied `--standalone` option), friendly name, is a normalized version of the friendly name given to each chromecast, where the name is converted to lower cases, and spaces have been replaced with underscores.
 
 The following topics will be used:
 
 | Topic | Payload |
 | ----- | ------- |
-| <MQTT_ROOT>/<FRIENDLY_NAME>/app | Name of the currently running app (netflix, spotify, hbo, tidal etc). |
-| <MQTT_ROOT>/<FRIENDLY_NAME>/state | Current state of the chromecast (playing, paused, buffering) |
-| <MQTT_ROOT>/<FRIENDLY_NAME>/volume | Current volume level (an integer value between 0 and 100) |
-| <MQTT_ROOT>/<FRIENDLY_NAME>/media | Returns a json object containing detailed information about the stream that is playing. Depending on the information from the app vendor. |
-| <MQTT_ROOT>/<FRIENDLY_NAME>/capabilities | Json object containing the capabilities of the current activated app |
+| <MQTT_ROOT>/\<ROOM>/app | Name of the currently running app (netflix, spotify, hbo, tidal etc). |
+| <MQTT_ROOT>/\<ROOM>/state | Current state of the chromecast (playing, paused, buffering) |
+| <MQTT_ROOT>/\<ROOM>/volume | Current volume level (an integer value between 0 and 100) |
+| <MQTT_ROOT>/\<ROOM>/media | Returns a json object containing detailed information about the stream that is playing. Depending on the information from the app vendor. |
+| <MQTT_ROOT>/\<ROOM>/capabilities | Json object containing the capabilities of the current activated app |
 
+Aliasing device topics
+----------------------
+By supplying the `--alias` option and a list of device / alias pairs, you can rename your device topics. Specify a comma separated list of device / topic alias pairs:
+`device1=alias/path1,device2=alias/path2` if an alias is not found for a device upon discovery, then the device name itself will be used in topic generation.
+
+JSON types
+==========
 json formats for media and capabilities are as follows:
 
 media object:
@@ -173,8 +189,8 @@ capabilities object, this is a json containing state and feature capabilities of
 ```
 
 Controlling your chromecast via mqtt
-------------------------------------
-It's possible to control the chromecasts, by sending a message to the `<MQTT_ROOT>/friendly_name/control/<action>` endpoint for each device, where `<action>` is one of the following list, some takes a payload as well:
+====================================
+It's possible to control the chromecasts, by sending a message to the `<MQTT_ROOT>/\<ROOM>/control/<action>` endpoint for each device, where `<action>` is one of the following list, some takes a payload as well:
 
 | Action | Payload required | Value for payload |
 | ------ | ------- | ----------------- |
@@ -199,14 +215,6 @@ The json object for the play command contains a link to the media file you want 
 // Special mimetype "youtube"
  { "link": "zSmOvYzSeaQ", "type": "youtube" }
 ```
-
-if a command fails for some reason, a mqtt message will be posted to the debug topic `<MQTT_ROOT>/debug/commandresult`
-
-Send command to all registered chromecasts
-------------------------------------------
-An extra listening endpoint is created on `<MQTT_ROOT>/control/<action>`, which will send the command (from table above) to all registered chromecast devices.
-
-*Please note The above command layout breaks compability with earlier incarnations, where some commands where sent as payload to `<MQTT_ROOT>/friendly_name/control`, the old method is enabled as a fallback solution, to keep existing mqtt implementations working. The script will log a warning though, to let you know that you are using a deprecated method. It is strongly advicable to upgrade your mqtt setup to use the new endpoints*
 
 Logging
 =======
