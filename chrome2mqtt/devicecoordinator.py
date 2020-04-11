@@ -3,7 +3,6 @@ Handler for chromecast devices, is able to collect devices into rooms, so multip
 devices can be controlled as one mqtt topic / endpoint.
 '''
 import re
-from os import path
 from time import sleep
 import pychromecast
 
@@ -48,13 +47,20 @@ class DeviceCoordinator:
 
     def __mqtt_action(self, client, userdata, message): #pylint: disable=unused-argument
         parameter = message.payload.decode("utf-8")
-        command = path.basename(path.normpath(message.topic))
-        room = self.rooms[self.__decode_mqtt_topic(message)]
+        command = self.__decode_mqtt_command(message)
+        room = self.rooms[self.__decode_mqtt_room(message)]
         room.action(command, parameter)
 
-    def __decode_mqtt_topic(self, message):
+    def __decode_mqtt_command(self, message): #pylint: disable=no-self-use
+        '''Get the command that was sent in the topic'''
+        regex = r"\/control\/(.+)"
+        matches = re.search(regex, message.topic)
+        assert matches is not None, 'Can not extract command from topic "{0}"'.format(message.topic)
+        return matches.group(1)
+
+    def __decode_mqtt_room(self, message):
         '''Get the room name from our own topics'''
-        regex = r"{0}(\w*)\/.*".format(self.mqtt.root)
+        regex = r"{0}(.+)\/control\/.*".format(self.mqtt.root)
         matches = re.search(regex, message.topic)
         assert matches is not None, 'Can not extract room name from topic "{0}"'.format(message.topic) #pylint: disable=line-too-long
         return matches.group(1)

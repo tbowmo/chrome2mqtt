@@ -1,7 +1,6 @@
 ''' Internal MQTT handler for the project '''
 import logging
 from time import sleep
-from datetime import datetime
 import paho.mqtt.client as mqtt
 
 class MQTT(mqtt.Client):
@@ -19,7 +18,10 @@ class MQTT(mqtt.Client):
         self.host = host
         self.port = int(port)
         if root != '':
-            self.root = root + '/'
+            if root[-1] != '/':
+                self.root = root + '/'
+            else:
+                self.root = root
         self.log = logging.getLogger('mqtt')
         self._client_id = client
         if user is not None:

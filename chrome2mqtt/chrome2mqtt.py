@@ -5,7 +5,6 @@
     Copyright 2018: Thomas Bowman Morch
 """
 from os import path
-from datetime import datetime
 import sys
 import logging.config
 import logging

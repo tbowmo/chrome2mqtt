@@ -128,7 +128,7 @@ class ChromeState:
 
     @property
     def state(self):
-        ''' what is the current state (playing, stopped, iddle, ect) '''
+        ''' what is the current state (playing, stopped, idle, ect) '''
         return self.__state.state
 
     @property
