@@ -33,7 +33,7 @@ Table of contents
    * [Logging](#logging)
    * [Thanks to](#thanks-to)
 
-<!-- Added by: thomas, at: søn 12 apr 00:38:35 CEST 2020 -->
+<!-- Added by: thomas, at: søn 12 apr 22:29:18 CEST 2020 -->
 
 <!--te-->
 
@@ -129,14 +129,17 @@ MQTT topics
 
 Rooms or single devices
 -----------------------
-Normal behavior is that devices are grouped into rooms, which is then published as topics. In a room, you can have two devices: one audio and one video device. This limit is imposed as it's impossible to know which video device you want to send a stream, if you ask a room to play a mpeg4 stream.
+chrome2mqtt can organize devices into rooms, or as standalone devices. Normal operation is to organize into rooms, where it can collect two devices (one audio and one video) into one endpoint, automatically directing commands to the active device.
 
-The alternative behavior is that all devices are treated as seperate topics in the mqtt tree. You need to specify `--standalone` option for this.
+If you send a play command with an audio stream to a room, then it will automatically send this to the audio chromecast, and if you send a video stream it will be sent to the video chromecast. When starting the a new stream on an inactive chromecast, the other device will automatically be stopped, if it is playing.
+
+In rooms mode, it will use the device name of your chromecast to identify which room it is placed in. To do this you must have the follow the following scheme for naming the devices `\<room>_tv` or `\<room>_audio`. As an example, my chromecasts are named `livingroom_tv`and `livingroom_audio`, then I get a topic called `<MQTT_ROOT>/livingroom/...`
+
+In standalone mode each device is treated as a separate one, and will have separate topics in your mqtt tree, the topic name will be a a normalized version of the friendly name given to each chromecast, where the name is converted to lower cases, and spaces have been replaced with underscores.
 
 Topics reported on by chromecast2mqtt
 -------------------------------------
-Each chromecast will be configured with a separate mqtt topic, consisting of `<MQTT_ROOT>/room` (or `<MQTT_ROOT>/device_name` if you supplied `--standalone` option), friendly name, is a normalized version of the friendly name given to each chromecast, where the name is converted to lower cases, and spaces have been replaced with underscores.
-
+Each room (or device if using `--standalone` will have a set of mqtt topics where status will be emitted
 The following topics will be used:
 
 | Topic | Payload |
@@ -147,10 +150,18 @@ The following topics will be used:
 | <MQTT_ROOT>/\<ROOM>/media | Returns a json object containing detailed information about the stream that is playing. Depending on the information from the app vendor. |
 | <MQTT_ROOT>/\<ROOM>/capabilities | Json object containing the capabilities of the current activated app |
 
+*notes:*
+MQTT_ROOT is specified through option `--mqttroot` and will default to empty if not specified
+ROOM will be device, if `--standalone` is specified
+
 Aliasing device topics
 ----------------------
 By supplying the `--alias` option and a list of device / alias pairs, you can rename your device topics. Specify a comma separated list of device / topic alias pairs:
 `device1=alias/path1,device2=alias/path2` if an alias is not found for a device upon discovery, then the device name itself will be used in topic generation.
+
+*NOTE* When running with `--standalone` you need to specify the full devicename, in lowercases and spaces converted into "_", that is if you have a device named "Livingroom audio" then you need to specify "livingroom\_audio" as device name. If running in standard mode (where chromecasts are collected into rooms), you need to use the room name for the device in aliasing.
+
+All aliases will have mqtt_root topic prepended (specified through option `--mqttroot`)
 
 JSON types
 ==========
@@ -166,7 +177,6 @@ media object:
   "metadata_type": number,
   "duration": number, // Total duration of the current media track
   "current_time": number, // current time index for the playing media
-  "start_time": number, // Start time in unix timestamp (GMT) for the current media, calculate playing time in seconds with (currentTimeStamp) - start_time
 }
 ```
 
