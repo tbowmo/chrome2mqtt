@@ -1,6 +1,12 @@
 '''
 Simple alias handling, for rooms
 '''
+
+class AliasException(Exception):
+    """
+    Exception class for alias errors
+    """
+
 class Alias:
     #pylint: disable=too-few-public-methods
     '''
@@ -18,7 +24,7 @@ class Alias:
                     alias = alias_pair.split('=')
                     self.__aliases.update({alias[0]: alias[1]})
         except IndexError:
-            raise Exception('You have an error in your alias definition')
+            raise AliasException('You have an error in your alias definition')
         print(self.__aliases)
 
     def get(self, device_name):

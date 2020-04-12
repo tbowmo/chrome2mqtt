@@ -26,8 +26,6 @@ class DeviceCoordinator:
         self.__device_split = device_split
         self.mqtt = mqtt
         self.alias = alias
-        # control_path = '+/control/#'
-        # self.mqtt.message_callback_add(control_path, self.__mqtt_action)
 
     def discover(self, max_devices=0):
         '''
