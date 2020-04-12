@@ -21,7 +21,7 @@ class Alias:
             raise Exception('You have an error in your alias definition')
         print(self.__aliases)
 
-    def get_alias(self, device_name):
+    def get(self, device_name):
         '''
         return an aliased deviceName, if an alias is found,
         otherwise it returns the deviceName as is.

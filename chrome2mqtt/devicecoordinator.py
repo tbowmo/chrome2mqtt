@@ -70,13 +70,13 @@ class DeviceCoordinator:
     def __room(self, device):
         room = device
         if not self.__device_split:
-            room = device.split(self.device_split_char)[1]
-        return self.alias.get_alias(room)
+            room = device.split(self.device_split_char)[0]
+        return self.alias.get(room)
 
     def __device(self, device):
         if self.__device_split:
             return device
-        return device.split(self.device_split_char)[0]
+        return device.split(self.device_split_char)[1]
 
     def __event_handler(self, state: ChromeState, device=None):
         room_name = self.__room(device)
