@@ -150,9 +150,9 @@ The following topics will be used:
 | <MQTT_ROOT>/\<ROOM>/media | Returns a json object containing detailed information about the stream that is playing. Depending on the information from the app vendor. |
 | <MQTT_ROOT>/\<ROOM>/capabilities | Json object containing the capabilities of the current activated app |
 
-*notes:*
-MQTT_ROOT is specified through option `--mqttroot` and will default to empty if not specified
-ROOM will be device, if `--standalone` is specified
+*Notes:*  
+*MQTT_ROOT is specified through option `--mqttroot` and will default to empty if not specified.*  
+*ROOM will be device, if `--standalone` is specified*
 
 Aliasing device topics
 ----------------------
