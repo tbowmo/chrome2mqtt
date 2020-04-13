@@ -1,9 +1,9 @@
 #!/usr/bin/python3
-"""
+'''
     Program that handles chromecast integration to mqtt.
 
     Copyright 2018: Thomas Bowman Morch
-"""
+'''
 from os import path
 import sys
 import logging.config
@@ -69,7 +69,7 @@ def setup_logging(
                             format='%(asctime)s %(name)-16s %(levelname)-8s %(message)s')
 
 def main_loop():
-    """Main operating loop, discovers chromecasts, and run forever until ctrl-c is received"""
+    '''Main operating loop, discovers chromecasts, and run forever until ctrl-c is received'''
 
     assert sys.version_info >= (3, 6), "You need at least python 3.6 to run this program"
 
@@ -100,7 +100,7 @@ def main_loop():
     coordinator = DeviceCoordinator(mqtt, alias, args.split)
 
     def last_will():
-        """Send a last will to the mqtt server"""
+        '''Send a last will to the mqtt server'''
         if args.cleanup:
             coordinator.cleanup()
 

@@ -3,9 +3,9 @@ Simple alias handling, for rooms
 '''
 
 class AliasException(Exception):
-    """
+    '''
     Exception class for alias errors
-    """
+    '''
 
 class Alias:
     #pylint: disable=too-few-public-methods

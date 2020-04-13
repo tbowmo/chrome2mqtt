@@ -4,10 +4,10 @@ from time import sleep
 import paho.mqtt.client as mqtt
 
 class MQTT(mqtt.Client):
-    """ Mqtt handler, takes care of adding a root topic to all topics
+    ''' Mqtt handler, takes care of adding a root topic to all topics
         managed by this class, so others do not have to be aware of
         this root topic
-    """
+    '''
 
     is_connected = False
     root = ''

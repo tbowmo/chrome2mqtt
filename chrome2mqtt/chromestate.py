@@ -23,9 +23,9 @@ class BaseHelper(metaclass=abc.ABCMeta):
         pass
 
 class Media(BaseHelper):
-    """
+    '''
         Helper class for holding information about the current playing media
-    """
+    '''
     #pylint: disable=too-many-instance-attributes, missing-docstring
     #All attributes are needed in this object, to hold media info.
     def __init__(self, device):
@@ -58,9 +58,9 @@ class Media(BaseHelper):
         pass
 
 class SupportedFeatures(BaseHelper):
-    """
+    '''
         Helper class for holding information about supported features of the current stream / app
-    """
+    '''
     def __init__(self):
         self.skip_fwd = False
         self.skip_bck = False
@@ -80,9 +80,9 @@ class SupportedFeatures(BaseHelper):
         pass
 
 class State(BaseHelper):
-    """
+    '''
         Helper class holding information about current state of the chromecast
-    """
+    '''
     def __init__(self, device):
         self.device = device
         self.app = 'None'
@@ -106,9 +106,9 @@ class State(BaseHelper):
         self.supported_features.set_media_state(media_status)
 
 class ChromeState:
-    """
+    '''
         Holds state of the chromecast media_status
-    """
+    '''
     __state = State('')
     __media = Media('')
 
@@ -154,7 +154,7 @@ class ChromeState:
         return self.__state.json()
 
     def clear(self):
-        """ Clear all fields """
+        ''' Clear all fields '''
         self.__state = State(self.__name)
         self.__media = Media(self.__name)
 

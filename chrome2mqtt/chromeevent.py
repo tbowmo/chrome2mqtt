@@ -8,7 +8,7 @@ from chrome2mqtt.command import Command, CommandException
 from chrome2mqtt.chromestate import ChromeState
 
 class ChromeEvent:
-    """
+    '''
         Handle events to and from registered chromecast devices.
 
         Internally it listens for new media and / or cast messages from
@@ -17,7 +17,7 @@ class ChromeEvent:
 
         Also handles actions destined for the specific device, by calling
         the action method
-    """
+    '''
     device: Chromecast = None
     last_media = None
     last_state = None
