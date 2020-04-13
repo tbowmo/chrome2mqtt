@@ -90,7 +90,7 @@ class DeviceCoordinator:
         device = self.__device(name)
         if room_name not in self.rooms:
             self.rooms.update({room_name : RoomState(room_name, self.__device_split)})
-            control_path = '{0}/control/#'.format(room_name)
+            control_path = '{0}/control/+'.format(room_name)
             self.mqtt.message_callback_add(control_path, self.__mqtt_action)
 
         room = self.rooms[room_name]
