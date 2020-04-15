@@ -177,6 +177,7 @@ media object:
   "metadata_type": number,
   "duration": number, // Total duration of the current media track
   "current_time": number, // current time index for the playing media
+  "last_update": number, // timestamp for last media update
 }
 ```
 
