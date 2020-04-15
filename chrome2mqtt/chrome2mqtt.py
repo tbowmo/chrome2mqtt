@@ -1,11 +1,10 @@
 #!/usr/bin/python3
-"""
+'''
     Program that handles chromecast integration to mqtt.
 
     Copyright 2018: Thomas Bowman Morch
-"""
+'''
 from os import path
-from datetime import datetime
 import sys
 import logging.config
 import logging
@@ -16,6 +15,7 @@ import json
 
 from chrome2mqtt.mqtt import MQTT
 from chrome2mqtt.devicecoordinator import DeviceCoordinator
+from chrome2mqtt.alias import Alias
 
 __version__ = __VERSION__ = "1.0.0"
 
@@ -42,6 +42,7 @@ def parse_args(argv=None):
     parser.add_argument('-V', '--version', action='version', version='%(prog)s {version}'.format(version=__VERSION__))
     parser.add_argument('-C', '--cleanup', action="store_true", dest="cleanup", help="Cleanup mqtt topic on exit")
     parser.add_argument('-S', '--standalone', action="store_true", dest="split", help="Split into separate devices")
+    parser.add_argument('--alias', action="store", help="topic aliases for devices")
     return parser.parse_args(argv)
 
 def start_banner(args):
@@ -68,7 +69,7 @@ def setup_logging(
                             format='%(asctime)s %(name)-16s %(levelname)-8s %(message)s')
 
 def main_loop():
-    """Main operating loop, discovers chromecasts, and run forever until ctrl-c is received"""
+    '''Main operating loop, discovers chromecasts, and run forever until ctrl-c is received'''
 
     assert sys.version_info >= (3, 6), "You need at least python 3.6 to run this program"
 
@@ -95,10 +96,11 @@ def main_loop():
         print(exception)
         sys.exit(1)
 
-    coordinator = DeviceCoordinator(mqtt, args.split)
+    alias = Alias(args.alias)
+    coordinator = DeviceCoordinator(mqtt, alias, args.split)
 
     def last_will():
-        """Send a last will to the mqtt server"""
+        '''Send a last will to the mqtt server'''
         if args.cleanup:
             coordinator.cleanup()
 

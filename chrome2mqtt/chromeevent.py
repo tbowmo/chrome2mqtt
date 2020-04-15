@@ -8,7 +8,7 @@ from chrome2mqtt.command import Command, CommandException
 from chrome2mqtt.chromestate import ChromeState
 
 class ChromeEvent:
-    """
+    '''
         Handle events to and from registered chromecast devices.
 
         Internally it listens for new media and / or cast messages from
@@ -17,7 +17,7 @@ class ChromeEvent:
 
         Also handles actions destined for the specific device, by calling
         the action method
-    """
+    '''
     device: Chromecast = None
     last_media = None
     last_state = None
@@ -41,11 +41,7 @@ class ChromeEvent:
         try:
             result = self.__command.execute(command, parameter)
             if not result:
-                result = self.__command.execute(parameter, None)
-                if not result:
-                    self.log.error('Control command %s not supported with parameter %s',
-                                   command,
-                                   parameter)
+                self.log.error('Command "%s" not supported with parameter "%s"', command, parameter)
             if result:
                 self.log.info('Success')
         except CommandException as exception:
@@ -54,13 +50,13 @@ class ChromeEvent:
             self.log.error(exception)
 
     def new_cast_status(self, status):
-        ''' Receives updates on new casts '''
+        ''' Receives updates when new app is starting on the chromecast '''
         self.log.info(status)
         self.status.set_cast_state(status)
         self.__callback(self.status)
 
     def new_media_status(self, status):
-        ''' Receives updates when new media is playing '''
+        ''' Receives updates when new media changes is happening '''
         self.log.info(status)
         self.status.set_media_state(status)
         self.__callback(self.status)

@@ -3,7 +3,6 @@ Handler for chromecast devices, is able to collect devices into rooms, so multip
 devices can be controlled as one mqtt topic / endpoint.
 '''
 import re
-from os import path
 from time import sleep
 import pychromecast
 
@@ -11,6 +10,7 @@ from chrome2mqtt.chromeevent import ChromeEvent
 from chrome2mqtt.chromestate import ChromeState
 from chrome2mqtt.mqtt import MQTT
 from chrome2mqtt.roomstate import RoomState
+from chrome2mqtt.alias import Alias
 
 class DeviceCoordinator:
     '''
@@ -22,11 +22,10 @@ class DeviceCoordinator:
     device_count = 0
     device_split_char = '_'
 
-    def __init__(self, mqtt: MQTT, device_split=False):
+    def __init__(self, mqtt: MQTT, alias: Alias, device_split=False):
         self.__device_split = device_split
         self.mqtt = mqtt
-        control_path = '+/control/#'
-        self.mqtt.message_callback_add(control_path, self.__mqtt_action)
+        self.alias = alias
 
     def discover(self, max_devices=0):
         '''
@@ -48,26 +47,34 @@ class DeviceCoordinator:
 
     def __mqtt_action(self, client, userdata, message): #pylint: disable=unused-argument
         parameter = message.payload.decode("utf-8")
-        command = path.basename(path.normpath(message.topic))
-        room = self.rooms[self.__decode_mqtt_topic(message)]
+        command = self.__decode_mqtt_command(message)
+        room = self.rooms[self.__decode_mqtt_room(message)]
         room.action(command, parameter)
 
-    def __decode_mqtt_topic(self, message):
+    def __decode_mqtt_command(self, message): #pylint: disable=no-self-use
+        '''Get the command that was sent in the topic'''
+        regex = r"\/control\/(.+)"
+        matches = re.search(regex, message.topic)
+        assert matches is not None, 'Can not extract command from topic "{0}"'.format(message.topic)
+        return matches.group(1)
+
+    def __decode_mqtt_room(self, message):
         '''Get the room name from our own topics'''
-        regex = r"{0}(\w*)\/.*".format(self.mqtt.root)
+        regex = r"{0}(.+)\/control\/.*".format(self.mqtt.root)
         matches = re.search(regex, message.topic)
         assert matches is not None, 'Can not extract room name from topic "{0}"'.format(message.topic) #pylint: disable=line-too-long
         return matches.group(1)
 
     def __room(self, device):
-        if self.__device_split:
-            return device
-        return device.split(self.device_split_char)[1]
+        room = device
+        if not self.__device_split:
+            room = device.split(self.device_split_char)[0]
+        return self.alias.get(room)
 
     def __device(self, device):
         if self.__device_split:
             return device
-        return device.split(self.device_split_char)[0]
+        return device.split(self.device_split_char)[1]
 
     def __event_handler(self, state: ChromeState, device=None):
         room_name = self.__room(device)
@@ -83,6 +90,9 @@ class DeviceCoordinator:
         device = self.__device(name)
         if room_name not in self.rooms:
             self.rooms.update({room_name : RoomState(room_name, self.__device_split)})
+            control_path = '{0}/control/+'.format(room_name)
+            self.mqtt.message_callback_add(control_path, self.__mqtt_action)
+
         room = self.rooms[room_name]
         room.add_device(ChromeEvent(chromecast,
                                     ChromeState(device),

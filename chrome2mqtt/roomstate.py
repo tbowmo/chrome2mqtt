@@ -99,7 +99,7 @@ class RoomState:
                     device = self.__determine_playable_device(parameter)
                 self.__devices[device].action('play', parameter)
             except ValueError:
-                pass
+                self.__devices[self.__active].action(command, parameter)
         else:
             if all_devices:
                 for dev in self.__devices.items():

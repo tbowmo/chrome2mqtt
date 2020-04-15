@@ -11,14 +11,14 @@ from pychromecast.controllers.youtube import YouTubeController
 from chrome2mqtt.chromestate import ChromeState
 
 class CommandException(Exception):
-    """
+    '''
     Exception class for command errors
-    """
+    '''
 
 class Command:
-    """
+    '''
     Class that handles dispatching of commands to a chromecast device
-    """
+    '''
     def __init__(self, device: Chromecast, status: ChromeState):
         self.chromestate = status
         self.device = device
@@ -27,7 +27,7 @@ class Command:
         self.device.register_handler(self.youtube)
 
     def execute(self, cmd, payload):
-        """execute command on the chromecast
+        '''execute command on the chromecast
 
         Arguments:
             cmd {[string]}
@@ -35,7 +35,7 @@ class Command:
 
         Returns:
             Result -- result object from the command execution
-        """
+        '''
         method = getattr(self, cmd, lambda x: False)
         sig = signature(method)
         if str(sig) == '(x)':
@@ -48,11 +48,11 @@ class Command:
         return True
 
     def stop(self):
-        """ Stop playing on the chromecast """
+        ''' Stop playing on the chromecast '''
         self.device.media_controller.stop()
 
     def pause(self, pause):
-        """ Pause playback """
+        ''' Pause playback '''
         if (pause is None or pause == ''):
             if self.device.media_controller.is_paused:
                 self.device.media_controller.play()
@@ -68,30 +68,30 @@ class Command:
                 raise CommandException('Pause could not match "{0}" as a parameter'.format(pause))
 
     def fwd(self):
-        """ Skip to next track """
+        ''' Skip to next track '''
         self.log.warning('fwd is a deprecated function, use next instead')
         return self.next()
 
     def rev(self):
-        """ Rewind to previous track """
+        ''' Rewind to previous track '''
         self.log.warning('rev is a deprecated function, use prev instead')
         return self.prev()
 
     def next(self):
-        """ Skip to next track """
+        ''' Skip to next track '''
         self.device.media_controller.queue_next()
 
     def prev(self):
-        """ Rewind to previous track """
+        ''' Rewind to previous track '''
         self.device.media_controller.queue_prev()
 
     def quit(self):
-        """ Quit running application on chromecast """
+        ''' Quit running application on chromecast '''
         self.chromestate.clear()
         self.device.quit_app()
 
     def play(self, media=None):
-        """ Play a media URL on the chromecast """
+        ''' Play a media URL on the chromecast '''
         if media is None or media == '':
             self.device.media_controller.play()
         else:
@@ -123,7 +123,7 @@ class Command:
             retry = retry - 1
 
     def volume(self, level):
-        """ Set the volume level """
+        ''' Set the volume level '''
         if level is None or level == '':
             raise CommandException('You need to specify volume level')
         if int(level) > 100:
@@ -133,7 +133,7 @@ class Command:
         self.device.set_volume(int(level) / 100.0)
 
     def mute(self, mute):
-        """ Mute device """
+        ''' Mute device '''
         if (mute is None or mute == ''):
             self.device.set_volume_muted(not self.device.status.volume_muted)
         else:
@@ -146,5 +146,5 @@ class Command:
                 raise CommandException('Mute could not match "{0}" as a parameter'.format(mute))
 
     def update(self):
-        """ Request an update from the chromecast """
+        ''' Request an update from the chromecast '''
         self.device.media_controller.update_status()

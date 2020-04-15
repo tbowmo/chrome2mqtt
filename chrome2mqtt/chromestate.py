@@ -5,6 +5,7 @@ use ChromeState from this module, to handle the chromecast states.
 '''
 import json
 import abc
+from time import time
 from pychromecast.socket_client import CastStatus
 from pychromecast.controllers.media import MediaStatus
 
@@ -23,9 +24,9 @@ class BaseHelper(metaclass=abc.ABCMeta):
         pass
 
 class Media(BaseHelper):
-    """
+    '''
         Helper class for holding information about the current playing media
-    """
+    '''
     #pylint: disable=too-many-instance-attributes, missing-docstring
     #All attributes are needed in this object, to hold media info.
     def __init__(self, device):
@@ -38,6 +39,7 @@ class Media(BaseHelper):
         self.content_id = None
         self.duration = None
         self.current_time = None
+        self.last_update = None
 
     def set_media_state(self, media_status: MediaStatus):
         self.title = media_status.title
@@ -46,6 +48,7 @@ class Media(BaseHelper):
         self.metadata_type = media_status.metadata_type
         self.duration = media_status.duration
         self.current_time = media_status.current_time
+        self.last_update = time()
         if media_status.images:
             images = media_status.images
             self.album_art = images[0].url
@@ -58,9 +61,9 @@ class Media(BaseHelper):
         pass
 
 class SupportedFeatures(BaseHelper):
-    """
+    '''
         Helper class for holding information about supported features of the current stream / app
-    """
+    '''
     def __init__(self):
         self.skip_fwd = False
         self.skip_bck = False
@@ -80,9 +83,9 @@ class SupportedFeatures(BaseHelper):
         pass
 
 class State(BaseHelper):
-    """
+    '''
         Helper class holding information about current state of the chromecast
-    """
+    '''
     def __init__(self, device):
         self.device = device
         self.app = 'None'
@@ -106,9 +109,9 @@ class State(BaseHelper):
         self.supported_features.set_media_state(media_status)
 
 class ChromeState:
-    """
+    '''
         Holds state of the chromecast media_status
-    """
+    '''
     __state = State('')
     __media = Media('')
 
@@ -128,7 +131,7 @@ class ChromeState:
 
     @property
     def state(self):
-        ''' what is the current state (playing, stopped, iddle, ect) '''
+        ''' what is the current state (playing, stopped, idle, ect) '''
         return self.__state.state
 
     @property
@@ -154,7 +157,7 @@ class ChromeState:
         return self.__state.json()
 
     def clear(self):
-        """ Clear all fields """
+        ''' Clear all fields '''
         self.__state = State(self.__name)
         self.__media = Media(self.__name)
 
