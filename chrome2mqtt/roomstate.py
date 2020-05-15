@@ -101,7 +101,7 @@ class RoomState:
             except ValueError:
                 self.__devices[self.__active].action(command, parameter)
         elif command == 'quit' or command == 'stop':
-            for dev in self.__devices.items():
+            for dev in self.__devices.values():
                 dev.action(command, parameter)
         else:
             self.__devices[self.__active].action(command, parameter)
