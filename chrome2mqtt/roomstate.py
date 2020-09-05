@@ -82,13 +82,13 @@ class RoomState:
            and self.state.app != 'None' \
            and new_state.app == 'None':
             return
-        
+
         if self.__active != new_state.name \
            and self.__active != 'N/A' \
            and self.state.app != 'None':
-           self.log.info('quit {0}'.format(self.__active))
-           self.__devices[self.__active].action('quit', '')
-        
+            self.log.info('quit %s',self.__active)
+            self.__devices[self.__active].action('quit', '')
+
         self.__state = new_state
         self.__active = new_state.name
         self.__state_media.update(new_state.media_json)

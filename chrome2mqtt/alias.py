@@ -23,8 +23,8 @@ class Alias:
                 for alias_pair in alias_pairs:
                     alias = alias_pair.split('=')
                     self.__aliases.update({alias[0]: alias[1]})
-        except IndexError:
-            raise AliasException('You have an error in your alias definition')
+        except IndexError as error:
+            raise AliasException('You have an error in your alias definition') from error
         print(self.__aliases)
 
     def get(self, device_name):

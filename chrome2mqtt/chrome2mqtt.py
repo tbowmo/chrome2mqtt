@@ -12,6 +12,7 @@ import socket
 import atexit
 import signal
 import json
+import argparse
 
 from chrome2mqtt.mqtt import MQTT
 from chrome2mqtt.devicecoordinator import DeviceCoordinator
@@ -22,7 +23,6 @@ __version__ = __VERSION__ = "1.0.0"
 def parse_args(argv=None):
     #pylint: disable=line-too-long
     ''' Command line argument parser '''
-    import argparse
     parser = argparse.ArgumentParser(prog='chrome2mqtt',
                                      formatter_class=argparse.RawDescriptionHelpFormatter,
                                      description='chrome2mqtt\n\nConnects your chromecasts to your mqtt-broker',

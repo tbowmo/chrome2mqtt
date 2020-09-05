@@ -67,16 +67,6 @@ class Command:
             else:
                 raise CommandException('Pause could not match "{0}" as a parameter'.format(pause))
 
-    def fwd(self):
-        ''' Skip to next track '''
-        self.log.warning('fwd is a deprecated function, use next instead')
-        return self.next()
-
-    def rev(self):
-        ''' Rewind to previous track '''
-        self.log.warning('rev is a deprecated function, use prev instead')
-        return self.prev()
-
     def next(self):
         ''' Skip to next track '''
         self.device.media_controller.queue_next()
@@ -90,6 +80,10 @@ class Command:
         self.chromestate.clear()
         self.device.quit_app()
 
+    def poweroff(self):
+        ''' Poweroff, same as quit '''
+        self.quit()
+
     def play(self, media=None):
         ''' Play a media URL on the chromecast '''
         if media is None or media == '':
@@ -102,8 +96,8 @@ class Command:
 
         try:
             media_obj = json.loads(media, object_hook=lambda d: Namespace(**d))
-        except:
-            raise CommandException("{0} is not a valid json object".format(media))
+        except Exception as error:
+            raise CommandException("{0} is not a valid json object".format(media)) from error
 
         if not hasattr(media_obj, 'link') or not hasattr(media_obj, 'type'):
             raise CommandException(
