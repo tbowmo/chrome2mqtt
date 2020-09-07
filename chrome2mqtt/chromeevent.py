@@ -47,6 +47,8 @@ class ChromeEvent:
         except CommandException as exception:
             self.log.warning(exception)
         except Exception as exception: #pylint: disable=broad-except
+            self.log.error(command)
+            self.log.error(parameter)
             self.log.error(exception)
 
     def new_cast_status(self, status):
