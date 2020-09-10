@@ -34,11 +34,8 @@ class DeviceCoordinator:
         If max_devices is specified, discovery is turned off, when the number of
         found devices has been reached
         '''
-        browser = pychromecast.get_chromecasts(callback=self.__search_callback,
+        pychromecast.get_chromecasts(callback=self.__search_callback,
                                                       blocking=False)
-        while (max_devices > 0 and self.device_count < max_devices):
-            sleep(0.5)
-        pychromecast.stop_discovery(browser)
 
     def cleanup(self):
         ''' Clean up MQTT topics for all registered rooms '''
