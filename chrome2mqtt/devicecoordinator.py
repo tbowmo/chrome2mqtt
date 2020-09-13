@@ -3,7 +3,6 @@ Handler for chromecast devices, is able to collect devices into rooms, so multip
 devices can be controlled as one mqtt topic / endpoint.
 '''
 import re
-from time import sleep
 import pychromecast
 
 from chrome2mqtt.chromeevent import ChromeEvent
@@ -18,7 +17,7 @@ class DeviceCoordinator:
     or as standalone devices (device_split=true)
     '''
     rooms = {}
-    mqtt: MQTT = None
+    mqtt: MQTT
     device_count = 0
     device_split_char = '_'
 
@@ -27,18 +26,11 @@ class DeviceCoordinator:
         self.mqtt = mqtt
         self.alias = alias
 
-    def discover(self, max_devices=0):
+    def discover(self):
         '''
-        Discover chromecast devices on the network.
-
-        If max_devices is specified, discovery is turned off, when the number of
-        found devices has been reached
+        Start discovering chromecasts on the network.
         '''
-        stop_discovery = pychromecast.get_chromecasts(callback=self.__search_callback,
-                                                      blocking=False)
-        while (max_devices > 0 and self.device_count < max_devices):
-            sleep(0.5)
-        stop_discovery()
+        pychromecast.get_chromecasts(callback=self.__search_callback, blocking=False)
 
     def cleanup(self):
         ''' Clean up MQTT topics for all registered rooms '''

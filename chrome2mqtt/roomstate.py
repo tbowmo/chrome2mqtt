@@ -1,6 +1,7 @@
 ''' RoomState is handling the state of a single room with multiple chromecasts
 '''
 import json
+import logging
 from types import SimpleNamespace as Namespace
 from time import sleep
 from chrome2mqtt.chromestate import ChromeState
@@ -36,6 +37,7 @@ class RoomState:
     def __init__(self, room, device_split=False):
         self.__device_split = device_split
         self.__room = room
+        self.log = logging.getLogger('roomState_{0}'.format(self.__room))
 
     @property
     def room(self):
@@ -81,6 +83,12 @@ class RoomState:
            and new_state.app == 'None':
             return
 
+        if self.__active != new_state.name \
+           and self.__active != 'N/A' \
+           and self.state.app != 'None':
+            self.log.info('quit %s',self.__active)
+            self.__devices[self.__active].action('quit', '')
+
         self.__state = new_state
         self.__active = new_state.name
         self.__state_media.update(new_state.media_json)
@@ -90,7 +98,7 @@ class RoomState:
         ''' Add device to this room '''
         self.__devices.update({name: chrome_device})
 
-    def action(self, command, parameter):
+    def action(self, command, parameter, all_devices=False):
         ''' Room level action, sends the action to the active chromecast '''
         if command == 'play':
             try:
@@ -100,16 +108,17 @@ class RoomState:
                 self.__devices[device].action('play', parameter)
             except ValueError:
                 self.__devices[self.__active].action(command, parameter)
-        elif command == 'quit' or command == 'stop':
-            for dev in self.__devices.values():
-                dev.action(command, parameter)
         else:
-            self.__devices[self.__active].action(command, parameter)
+            if all_devices:
+                for dev in self.__devices.items():
+                    dev.action(command, parameter)
+            else:
+                self.__devices[self.__active].action(command, parameter)
 
     def __determine_playable_device(self, parameter):
         media = json.loads(parameter, object_hook=lambda d: Namespace(**d))
         device = 'tv'
-        if hasattr(media, 'type') and media.type.lower().startswith('audio/'):
+        if hasattr(media, 'type') and media.type.lower().startswith('audio'):
             device = 'audio'
         if device != self.__active:
             self.__devices[self.__active].action('quit', '')
