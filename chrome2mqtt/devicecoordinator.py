@@ -17,7 +17,7 @@ class DeviceCoordinator:
     or as standalone devices (device_split=true)
     '''
     rooms = {}
-    mqtt: MQTT = None
+    mqtt: MQTT
     device_count = 0
     device_split_char = '_'
 
@@ -30,8 +30,7 @@ class DeviceCoordinator:
         '''
         Start discovering chromecasts on the network.
         '''
-        pychromecast.get_chromecasts(callback=self.__search_callback,
-                                                      blocking=False)
+        pychromecast.get_chromecasts(callback=self.__search_callback, blocking=False)
 
     def cleanup(self):
         ''' Clean up MQTT topics for all registered rooms '''
