@@ -25,16 +25,14 @@ def parse_args(argv=None):
     ''' Command line argument parser '''
     parser = argparse.ArgumentParser(prog='chrome2mqtt',
                                      formatter_class=argparse.RawDescriptionHelpFormatter,
-                                     description='chrome2mqtt\n\nConnects your chromecasts to your mqtt-broker',
+                                     description='chrome2mqtt\n\nConnects your chromecasts to a mqtt-broker',
                                      epilog='See more on https://github.com/tbowmo/chrome2mqtt/README.md'
                                      )
-    required_flags = parser.add_mutually_exclusive_group(required=True)
-    required_flags.add_argument('-max', '--MAX', action="store", type=int, default=None, help="Max number of chromecasts to expect")
     parser.add_argument('--mqttport', action="store", default=1883, type=int, help="MQTT port on host")
     parser.add_argument('--mqttclient', action="store", default=socket.gethostname(), help="Client name for mqtt")
     parser.add_argument('--mqttroot', action="store", default="chromecast", help="MQTT root topic")
-    parser.add_argument('--mqttuser', action="store", default=None, help="MQTT user (if authentication is enabled for your broker)")
-    parser.add_argument('--mqttpass', action="store", default=None, help="MQTT password (if authentication is enabled for your broker)")
+    parser.add_argument('--mqttuser', action="store", default=None, help="MQTT user (if authentication is enabled for the broker)")
+    parser.add_argument('--mqttpass', action="store", default=None, help="MQTT password (if authentication is enabled for the broker)")
     parser.add_argument('-H', '--mqtthost', action="store", default="127.0.0.1", help="MQTT Host")
     parser.add_argument('-l', '--logfile', action="store", default=None, help="Log to filename")
     parser.add_argument('-d', '--debug', action="store_const", dest="log", const=logging.DEBUG, help="loglevel debug")
@@ -47,7 +45,7 @@ def parse_args(argv=None):
 
 def start_banner(args):
     ''' Print banner message for the programme '''
-    print('Chromecast2MQTT by tbowmo')
+    print('Chromecast2MQTT')
     print('Connecting to mqtt host ' + args.mqtthost + ' port ' + str(args.mqttport))
     print('Using mqtt root ' + args.mqttroot)
 
@@ -77,10 +75,6 @@ def main_loop():
     start_banner(args)
 
     setup_logging(args.logfile, args.log)
-
-    if args.MAX == 0:
-        print('WARNING! max casters is set to 0, which means the script will never stop listening for new casters') #pylint: disable=line-too-long
-        print('specify --max= to set the maximum number of chromecasts to expect')
 
     try:
         mqtt = MQTT(
@@ -112,5 +106,5 @@ def main_loop():
 
     signal.signal(signal.SIGINT, signal_handler)
     while True:
-        coordinator.discover(args.MAX)
+        coordinator.discover()
         signal.pause()

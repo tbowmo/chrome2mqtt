@@ -12,7 +12,7 @@ It listens to events from the connected chromecasts, and send their status to MQ
 
 It also listens to a MQTT topic, for commands. So you can send commands to your chromecasts like play, pause, stop etc.
 
-*** NOTE! Chromecast devices are collected into rooms, old operation where devices are treated seperately is available with option ```--standalone```
+**NOTE!** Chromecast devices are collected into rooms, old operation where devices are treated seperately is available with option ```--standalone```
 
 Table of contents
 ===
@@ -46,9 +46,10 @@ Starting python script with virtual-environment
 First ensure that you have at least python3.6 and venv installed, then create a new virtual environment for your python script:
 
 ```shell
-$ python3 -m venv ~/chrome2mqtt
-$ source ~/chrome2mqtt/bin/activate
-cd ~/chrome2mqtt
+$ git clone https://github.com/tbowmo/chrome2mqtt.git
+$ cd chrome2mqtt
+$ python3 -m venv .
+$ source ./bin/activate
 $ pip install --no-cache-dir -r requirements.txt
 ```
 
@@ -70,7 +71,7 @@ After=network.target
 [Service]
 Type=simple
 WorkingDirectory=/home/pi/chrome2mqtt
-ExecStart=/home/pi/chrome2mqtt/bin/python -m chrome2mqtt -max 2 
+ExecStart=/home/pi/chrome2mqtt/bin/python -m chrome2mqtt
 
 [Install]
 WantedBy=multi-user.target
@@ -90,26 +91,20 @@ Command line options
 -------------
 Configure through command line options, as shown below
 ```
-usage: chrome2mqtt [-h] -max MAX [--mqttport MQTTPORT]
-                   [--mqttclient MQTTCLIENT] [--mqttroot MQTTROOT]
-                   [--mqttuser MQTTUSER] [--mqttpass MQTTPASS] [-H MQTTHOST]
-                   [-l LOGFILE] [-d] [-v] [-V] [-C]
+usage: chrome2mqtt [-h] [--mqttport MQTTPORT] [--mqttclient MQTTCLIENT] [--mqttroot MQTTROOT] [--mqttuser MQTTUSER] [--mqttpass MQTTPASS] [-H MQTTHOST] [-l LOGFILE] [-d] [-v] [-V] [-C] [-S] [--alias ALIAS]
 
 chrome2mqtt
 
-Connects your chromecasts to your mqtt-broker
+Connects your chromecasts to a mqtt-broker
 
 optional arguments:
   -h, --help            show this help message and exit
-  -max MAX, --MAX MAX   Max number of chromecasts to expect
   --mqttport MQTTPORT   MQTT port on host
   --mqttclient MQTTCLIENT
                         Client name for mqtt
   --mqttroot MQTTROOT   MQTT root topic
-  --mqttuser MQTTUSER   MQTT user (if authentication is enabled for your
-                        broker)
-  --mqttpass MQTTPASS   MQTT password (if authentication is enabled for your
-                        broker)
+  --mqttuser MQTTUSER   MQTT user (if authentication is enabled for the broker)
+  --mqttpass MQTTPASS   MQTT password (if authentication is enabled for the broker)
   -H MQTTHOST, --mqtthost MQTTHOST
                         MQTT Host
   -l LOGFILE, --logfile LOGFILE
@@ -118,10 +113,10 @@ optional arguments:
   -v, --verbose         loglevel info
   -V, --version         show program's version number and exit
   -C, --cleanup         Cleanup mqtt topic on exit
-  -S, --standalone      Do not collect devices into rooms, and treat them all as standalone devices.
-  --alias ALIAS         Alias list for devices
+  -S, --standalone      Split into separate devices
+  --alias ALIAS         topic aliases for devices
 
-See more on https://github.com/tbowmo/chrome2mqtt
+See more on https://github.com/tbowmo/chrome2mqtt/README.md
 ```
 
 MQTT topics
