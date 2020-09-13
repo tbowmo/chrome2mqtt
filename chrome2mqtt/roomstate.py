@@ -98,7 +98,7 @@ class RoomState:
         ''' Add device to this room '''
         self.__devices.update({name: chrome_device})
 
-    def action(self, command, parameter):
+    def action(self, command, parameter, all_devices=False):
         ''' Room level action, sends the action to the active chromecast '''
         if command == 'play':
             try:
@@ -108,11 +108,12 @@ class RoomState:
                 self.__devices[device].action('play', parameter)
             except ValueError:
                 self.__devices[self.__active].action(command, parameter)
-        elif command == 'quit' or command == 'stop':
-            for dev in self.__devices.values():
-                dev.action(command, parameter)
         else:
-            self.__devices[self.__active].action(command, parameter)
+            if all_devices:
+                for dev in self.__devices.items():
+                    dev.action(command, parameter)
+            else:
+                self.__devices[self.__active].action(command, parameter)
 
     def __determine_playable_device(self, parameter):
         media = json.loads(parameter, object_hook=lambda d: Namespace(**d))
