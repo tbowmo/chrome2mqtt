@@ -1,3 +1,3 @@
-pychromecast==7.3.0
+pychromecast==9.0.0
 pytz==2019.2
 paho-mqtt==1.5.0

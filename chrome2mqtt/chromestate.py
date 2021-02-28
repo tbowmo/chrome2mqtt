@@ -6,7 +6,7 @@ use ChromeState from this module, to handle the chromecast states.
 import json
 import abc
 from time import time
-from pychromecast.socket_client import CastStatus
+from pychromecast.controllers.receiver import CastStatus
 from pychromecast.controllers.media import MediaStatus
 
 class BaseHelper(metaclass=abc.ABCMeta):
