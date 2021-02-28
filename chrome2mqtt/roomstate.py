@@ -86,7 +86,7 @@ class RoomState:
         if self.__active != new_state.name \
            and self.__active != 'N/A' \
            and self.state.app != 'None':
-            self.log.info('quit %s',self.__active)
+            self.log.info('quit %s', self.__active)
             self.__devices[self.__active].action('quit', '')
 
         self.__state = new_state
