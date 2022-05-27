@@ -1,2 +1,2 @@
 [Master]
-init-hook='import sys; sys.path.append("lib/python3.7/site-packages")'
+init-hook='import sys; sys.path.append("lib/python3.10/site-packages")'
