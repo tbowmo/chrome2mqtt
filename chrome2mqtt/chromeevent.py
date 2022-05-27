@@ -26,7 +26,7 @@ class ChromeEvent:
         self.callback = callback
         self.device = device
         self.name = name
-        self.log = logging.getLogger('chromevent_{0}_{1}'.format(self.device.cast_type, self.name))
+        self.log = logging.getLogger(f'chromevent_{self.device.cast_type}_{self.name}')
 
         self.device.register_status_listener(self)
         self.device.media_controller.register_status_listener(self)

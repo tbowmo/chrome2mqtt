@@ -65,7 +65,7 @@ class Command:
             elif pause in ('0', 'false'):
                 self.device.media_controller.play()
             else:
-                raise CommandException('Pause could not match "{0}" as a parameter'.format(pause))
+                raise CommandException(f'Pause could not match "{pause}" as a parameter')
 
     def next(self):
         ''' Skip to next track '''
@@ -97,11 +97,11 @@ class Command:
         try:
             media_obj = json.loads(media, object_hook=lambda d: Namespace(**d))
         except Exception as error:
-            raise CommandException("{0} is not a valid json object".format(media)) from error
+            raise CommandException(f"{media} is not a valid json object") from error
 
         if not hasattr(media_obj, 'link') or not hasattr(media_obj, 'type'):
             raise CommandException(
-                'Wrong parameter, it should be json object with: {{link: string, type: string}}, you sent {0}'.format(media) #pylint: disable=line-too-long
+                f'Wrong parameter, it should be json object with: {{link: string, type: string}}, you sent {media}' #pylint: disable=line-too-long
                 )
 
         retry = 3
@@ -137,7 +137,7 @@ class Command:
             elif mute in ('0', 'false'):
                 self.device.set_volume_muted(False)
             else:
-                raise CommandException('Mute could not match "{0}" as a parameter'.format(mute))
+                raise CommandException(f'Mute could not match "{mute}" as a parameter')
 
     def update(self):
         ''' Request an update from the chromecast '''

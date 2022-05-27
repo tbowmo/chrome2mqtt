@@ -37,7 +37,7 @@ def parse_args(argv=None):
     parser.add_argument('-l', '--logfile', action="store", default=None, help="Log to filename")
     parser.add_argument('-d', '--debug', action="store_const", dest="log", const=logging.DEBUG, help="loglevel debug")
     parser.add_argument('-v', '--verbose', action="store_const", dest="log", const=logging.INFO, help="loglevel info")
-    parser.add_argument('-V', '--version', action='version', version='%(prog)s {version}'.format(version=__VERSION__))
+    parser.add_argument('-V', '--version', action='version', version=f'%(prog)s {__VERSION__}')
     parser.add_argument('-C', '--cleanup', action="store_true", dest="cleanup", help="Cleanup mqtt topic on exit")
     parser.add_argument('-S', '--standalone', action="store_true", dest="split", help="Split into separate devices")
     parser.add_argument('--alias', action="store", help="topic aliases for devices")
@@ -86,7 +86,7 @@ def main_loop():
             password=args.mqttpass
             )
     except ConnectionError as exception:
-        print('Error connecting to mqtt host {0} on port {1}'.format(args.mqtthost, args.mqttport))
+        print(f'Error connecting to mqtt host {args.mqtthost} on port {args.mqttport}')
         print(exception)
         sys.exit(1)
 

@@ -37,7 +37,7 @@ class RoomState:
     def __init__(self, room, device_split=False):
         self.__device_split = device_split
         self.__room = room
-        self.log = logging.getLogger('roomState_{0}'.format(self.__room))
+        self.log = logging.getLogger(f'roomState_{self.__room}')
 
     @property
     def room(self):

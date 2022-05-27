@@ -47,14 +47,14 @@ class DeviceCoordinator:
         '''Get the command that was sent in the topic'''
         regex = r"\/control\/(.+)"
         matches = re.search(regex, message.topic)
-        assert matches is not None, 'Can not extract command from topic "{0}"'.format(message.topic)
+        assert matches is not None, f'Can not extract command from topic "{message.topic}"'
         return matches.group(1)
 
     def __decode_mqtt_room(self, message):
         '''Get the room name from our own topics'''
-        regex = r"{0}(.+)\/control\/.*".format(self.mqtt.root)
+        regex = rf"{self.mqtt.root}(.+)\/control\/.*"
         matches = re.search(regex, message.topic)
-        assert matches is not None, 'Can not extract room name from topic "{0}"'.format(message.topic) #pylint: disable=line-too-long
+        assert matches is not None, f'Can not extract room name from topic "{message.topic}"' #pylint: disable=line-too-long
         return matches.group(1)
 
     def __room(self, device):
@@ -82,7 +82,7 @@ class DeviceCoordinator:
         device = self.__device(name)
         if room_name not in self.rooms:
             self.rooms.update({room_name : RoomState(room_name, self.__device_split)})
-            control_path = '{0}/control/+'.format(room_name)
+            control_path = f'{room_name}/control/+'
             self.mqtt.message_callback_add(control_path, self.__mqtt_action)
 
         room = self.rooms[room_name]
@@ -94,14 +94,14 @@ class DeviceCoordinator:
 
     def __mqtt_publish(self, room: RoomState, force=False):
         base = room.room
-        self.mqtt.publish('{0}/device'.format(base), room.active_device, retain=True)
+        self.mqtt.publish(f'{base}/device', room.active_device, retain=True)
         if (force or room.media_changed):
-            self.mqtt.publish('{0}/media'.format(base), room.media_json, retain=True)
+            self.mqtt.publish(f'{base}/media', room.media_json, retain=True)
         if (force or room.state_changed):
-            self.mqtt.publish('{0}/capabilities'.format(base), room.state_json, retain=True)
-            self.mqtt.publish('{0}/state'.format(base), room.state.state, retain=True)
-            self.mqtt.publish('{0}/volume'.format(base), room.state.volume, retain=True)
-            self.mqtt.publish('{0}/app'.format(base), room.state.app, retain=True)
+            self.mqtt.publish(f'{base}/capabilities', room.state_json, retain=True)
+            self.mqtt.publish(f'{base}/state', room.state.state, retain=True)
+            self.mqtt.publish(f'{base}/volume', room.state.volume, retain=True)
+            self.mqtt.publish(f'{base}/app', room.state.app, retain=True)
 
     def __cleanup(self, room):
         self.mqtt.publish(room + '/capabilities', None, retain=False)
