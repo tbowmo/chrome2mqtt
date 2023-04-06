@@ -14,7 +14,7 @@ class Alias:
     aliases is setup with an comma delimited string with alias pairs:
     device1=alias/path1,device2=alias/path2,....
     '''
-    __aliases = {}
+    __aliases: dict = {}
     def __init__(self, alias_string=None):
         print('alias init')
         try:

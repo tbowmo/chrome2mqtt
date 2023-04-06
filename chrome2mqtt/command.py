@@ -8,7 +8,7 @@ import logging
 from time import sleep
 from pychromecast import Chromecast
 from pychromecast.controllers.youtube import YouTubeController
-from chrome2mqtt.chromestate import ChromeState
+from .chromestate import ChromeState
 
 class CommandException(Exception):
     '''
@@ -20,7 +20,7 @@ class Command:
     Class that handles dispatching of commands to a chromecast device
     '''
     def __init__(self, device: Chromecast, status: ChromeState):
-        self.chromestate = status
+        self.chrome_state = status
         self.device = device
         self.log = logging.getLogger('Command_' + self.device.name)
         self.youtube = YouTubeController()
@@ -77,7 +77,7 @@ class Command:
 
     def quit(self):
         ''' Quit running application on chromecast '''
-        self.chromestate.clear()
+        self.chrome_state.clear()
         self.device.quit_app()
 
     def poweroff(self):
@@ -115,6 +115,8 @@ class Command:
             if self.device.media_controller.is_playing or retry == 0:
                 break
             retry = retry - 1
+        if retry == 0 and not self.device.media_controller.is_playing:
+            raise CommandException('Could not start chromecast')
 
     def volume(self, level):
         ''' Set the volume level '''

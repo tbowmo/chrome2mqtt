@@ -9,7 +9,7 @@ class MQTT(mqtt.Client):
         this root topic
     '''
     #pylint: disable=too-many-instance-attributes
-    is_connected = False
+    __is_connected = False
     root = ''
 
     def __init__(self, host='127.0.0.1', port=1883, client='chrome', root='', user=None, password=None): #pylint: disable=too-many-arguments, line-too-long
@@ -48,14 +48,14 @@ class MQTT(mqtt.Client):
     def publish(self, topic, payload=None, qos=0, retain=False): #pylint: disable=arguments-differ
         ''' publish on mqtt, adding root topic to the topic '''
         topic = self.root + topic
-        if self.is_connected:
+        if self.__is_connected:
             super().publish(topic, payload, qos, retain)
 
     def __on_connect(self, mqttc, obj, flags, rc): # pylint: disable=unused-argument, invalid-name, arguments-differ
         ''' handle connection established '''
         self.log.warning('Connect %s', rc)
         if rc == 0:
-            self.is_connected = True
+            self.__is_connected = True
             for subscription in self.subscriptions:
                 self.subscribe(subscription)
         else:
@@ -64,7 +64,7 @@ class MQTT(mqtt.Client):
     def __on_disconnect(self, client, userdata, rc): # pylint: disable=unused-argument, invalid-name, arguments-differ
         ''' handle disconnects '''
         self.log.warning('Disconnected, reconnecting')
-        self.is_connected = False
+        self.__is_connected = False
         self.reconnect()
 
     def __on_log(self, mqttc, obj, level, buf): # pylint: disable=unused-argument, arguments-differ
@@ -75,6 +75,6 @@ class MQTT(mqtt.Client):
         ''' Connect to the mqtt broker '''
         self.connect(self.host, self.port, 30)
         self.loop_start()
-        while not self.is_connected:
+        while not self.__is_connected:
             sleep(1)
             self.log.info('Waiting for connection to %s', self.host)
