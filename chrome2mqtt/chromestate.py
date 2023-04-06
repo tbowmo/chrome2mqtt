@@ -5,6 +5,7 @@ use ChromeState from this module, to handle the chromecast states.
 '''
 import json
 import abc
+from attrs import define, field, asdict
 from time import time
 from pychromecast.controllers.receiver import CastStatus
 from pychromecast.controllers.media import MediaStatus
@@ -13,7 +14,7 @@ class BaseHelper(metaclass=abc.ABCMeta):
     ''' Base class, defining methods for jsonifying data '''
     #pylint: disable=missing-docstring
     def json(self):
-        return json.dumps(self, default=lambda o: o.__dict__)
+        return json.dumps(asdict(self))
 
     @abc.abstractmethod
     def set_cast_state(self, status: CastStatus):
@@ -23,23 +24,24 @@ class BaseHelper(metaclass=abc.ABCMeta):
     def set_media_state(self, media_status: MediaStatus):
         pass
 
+@define
 class Media(BaseHelper):
     '''
         Helper class for holding information about the current playing media
     '''
     #pylint: disable=too-many-instance-attributes, missing-docstring
     #All attributes are needed in this object, to hold media info.
-    def __init__(self, device):
-        self.device = device
-        self.title = ''
-        self.artist = ''
-        self.album = ''
-        self.album_art = ''
-        self.metadata_type = None
-        self.content_id = None
-        self.duration = None
-        self.current_time = None
-        self.last_update = None
+    
+    device: str = field()
+    title: str = field(init = False, default='')
+    artist: str = field(init = False, default='')
+    album: str = field(init = False, default='')
+    album_art: str = field(init = False, default='')
+    metadata_type: str = field(init = False, default=None)
+    content_id: str = field(init = False, default=None)
+    duration: float = field(init = False, default=None)
+    current_time: float = field(init = False, default=None)
+    last_update: float = field(init = False, default=None)
 
     def set_media_state(self, media_status: MediaStatus):
         self.title = media_status.title
@@ -60,16 +62,16 @@ class Media(BaseHelper):
         # Empty as we do not use any info on the CastStatus object
         pass
 
+@define
 class SupportedFeatures(BaseHelper):
     '''
         Helper class for holding information about supported features of the current stream / app
     '''
-    def __init__(self):
-        self.skip_fwd = False
-        self.skip_bck = False
-        self.pause = False
-        self.volume = False
-        self.mute = False
+    skip_fwd: bool = field(init = False, default=False)
+    skip_bck: bool = field(init = False, default=False)
+    pause: bool = field(init = False, default=False)
+    volume: bool = field(init = False, default=False)
+    mute: bool = field(init = False, default=False)
 
     def set_media_state(self, media_status: MediaStatus):
         self.skip_fwd = media_status.supports_queue_next or media_status.supports_skip_forward
@@ -82,18 +84,19 @@ class SupportedFeatures(BaseHelper):
         # Empty as we do not use any info on the CastStatus object
         pass
 
-class State(BaseHelper):
+@define
+class State(BaseHelper): 
     '''
         Helper class holding information about current state of the chromecast
     '''
-    def __init__(self, device):
-        self.device = device
-        self.app = 'None'
-        self.state = 'STOPPED'
-        self.volume = 0
-        self.muted = False
-        self.app_icon = ''
-        self.supported_features = SupportedFeatures()
+
+    device: str = field()
+    app: str = field(init = False, default='None')
+    state: str = field(init = False, default='STOPPED')
+    volume: int = field(init = False, default=0)
+    muted: bool = field(init = False, default=False)
+    app_icon: str = field(init = False, default='')
+    supported_features: str = field(init = False, default=SupportedFeatures())
 
     def set_cast_state(self, status: CastStatus):
         self.app = status.display_name or 'None'
@@ -102,11 +105,11 @@ class State(BaseHelper):
         self.volume = round(status.volume_level * 100)
         self.muted = status.volume_muted == 1
         self.app_icon = status.icon_url
-        self.supported_features.set_cast_state(status)
+        self.supported_features.set_cast_state(status) #pylint: disable=no-member
 
     def set_media_state(self, media_status: MediaStatus):
         self.state = media_status.player_state
-        self.supported_features.set_media_state(media_status)
+        self.supported_features.set_media_state(media_status) #pylint: disable=no-member
 
 class ChromeState:
     '''

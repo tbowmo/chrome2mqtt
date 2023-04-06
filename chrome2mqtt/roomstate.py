@@ -4,7 +4,7 @@ import json
 import logging
 from types import SimpleNamespace as Namespace
 from time import sleep
-from chrome2mqtt.chromestate import ChromeState
+from .chromestate import ChromeState
 
 class StateChanged:
     '''Keeps track if state has changed'''
@@ -31,7 +31,7 @@ class RoomState:
     __active = 'N/A'
     __state_media = StateChanged()
     __state_state = StateChanged()
-    __devices = {}
+    __devices: dict = {}
     __device_split = False
 
     def __init__(self, room, device_split=False):
@@ -48,11 +48,6 @@ class RoomState:
     def active_device(self):
         ''' Name of the device that is active '''
         return self.__active
-
-    @property
-    def state(self):
-        ''' state of the active device '''
-        return self.__state
 
     @property
     def state_json(self):
@@ -73,6 +68,11 @@ class RoomState:
     def media_changed(self):
         ''' Returns true if media has changed since last time '''
         return self.__state_media.changed
+
+    @property
+    def state(self):
+        ''' state of the active device '''
+        return self.__state
 
     @state.setter
     def state(self, new_state: ChromeState):

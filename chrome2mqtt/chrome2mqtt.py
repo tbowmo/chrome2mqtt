@@ -14,9 +14,9 @@ import signal
 import json
 import argparse
 
-from chrome2mqtt.mqtt import MQTT
-from chrome2mqtt.devicecoordinator import DeviceCoordinator
-from chrome2mqtt.alias import Alias
+from .mqtt import MQTT
+from .devicecoordinator import DeviceCoordinator
+from .alias import Alias
 
 __version__ = __VERSION__ = "1.0.0"
 
@@ -55,7 +55,7 @@ def setup_logging(
     ):
     ''' Initialize logging '''
     if path.isfile('./logsetup.json'):
-        with open('./logsetup.json', 'rt') as options_file:
+        with open(file='./logsetup.json', mode='rt', encoding='utf-8') as options_file:
             config = json.load(options_file)
         logging.config.dictConfig(config)
     elif file is not None:

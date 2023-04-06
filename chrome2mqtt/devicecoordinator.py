@@ -3,20 +3,21 @@ Handler for chromecast devices, is able to collect devices into rooms, so multip
 devices can be controlled as one mqtt topic / endpoint.
 '''
 import re
+from typing import Dict
 import pychromecast
 
-from chrome2mqtt.chromeevent import ChromeEvent
-from chrome2mqtt.chromestate import ChromeState
-from chrome2mqtt.mqtt import MQTT
-from chrome2mqtt.roomstate import RoomState
-from chrome2mqtt.alias import Alias
+from .chromeevent import ChromeEvent
+from .chromestate import ChromeState
+from .mqtt import MQTT
+from .roomstate import RoomState
+from .alias import Alias
 
 class DeviceCoordinator:
     '''
     Handles chromecasts devices, organizing them into rooms (normal behavior),
     or as standalone devices (device_split=true)
     '''
-    rooms = {}
+    rooms: Dict[str, RoomState] = {}
     mqtt: MQTT
     device_count = 0
     device_split_char = '_'
@@ -43,7 +44,7 @@ class DeviceCoordinator:
         room = self.rooms[self.__decode_mqtt_room(message)]
         room.action(command, parameter)
 
-    def __decode_mqtt_command(self, message): #pylint: disable=no-self-use
+    def __decode_mqtt_command(self, message):
         '''Get the command that was sent in the topic'''
         regex = r"\/control\/(.+)"
         matches = re.search(regex, message.topic)

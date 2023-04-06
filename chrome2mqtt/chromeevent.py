@@ -3,9 +3,10 @@ Handles events from a chromecast device, and reports these to various endpoints
 '''
 from time import sleep
 import logging
+from typing import Callable
 from pychromecast import Chromecast
-from chrome2mqtt.command import Command, CommandException
-from chrome2mqtt.chromestate import ChromeState
+from .command import Command, CommandException
+from .chromestate import ChromeState
 
 class ChromeEvent:
     '''
@@ -18,11 +19,11 @@ class ChromeEvent:
         Also handles actions destined for the specific device, by calling
         the action method
     '''
-    device: Chromecast = None
-    last_media = None
-    last_state = None
-    callback = None
-    def __init__(self, device: Chromecast, status: ChromeState, callback=None, name=None):
+    device: Chromecast | None = None
+    status: ChromeState | None = None
+    callback: Callable[[ChromeState, str], None] | None = None
+
+    def __init__(self, device: Chromecast, status: ChromeState, callback: Callable[[ChromeState, str], None] | None = None, name=None):
         self.callback = callback
         self.device = device
         self.name = name
