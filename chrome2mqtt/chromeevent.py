@@ -19,11 +19,11 @@ class ChromeEvent:
         Also handles actions destined for the specific device, by calling
         the action method
     '''
-    device: Chromecast | None = None
-    status: ChromeState | None = None
-    callback: Callable[[ChromeState, str], None] | None = None
+    device: Chromecast = None
+    status: ChromeState = None
+    callback: Callable[[ChromeState, str], None] = None
 
-    def __init__(self, device: Chromecast, status: ChromeState, callback: Callable[[ChromeState, str], None] | None = None, name=None):
+    def __init__(self, device: Chromecast, status: ChromeState, callback: Callable[[ChromeState, str], None] = None, name=None):
         self.callback = callback
         self.device = device
         self.name = name
