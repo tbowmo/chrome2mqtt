@@ -29,8 +29,8 @@ class StateChanged:
 class RoomState:
     ''' Handles state of a room, with multiple chromecast devices. '''
     #pylint: disable=no-member
-    __room: str = field()
-    __device_split: bool = field(default = False)
+    room: str = field()
+    device_split: bool = field(default = False)
     __state: ChromeState = field(init = False, default=None)
     __active:str = field(init=False, default='N/A')
     __state_media: StateChanged = field(init=False, default=StateChanged())
@@ -39,12 +39,7 @@ class RoomState:
     __log: logging.Logger = field(init=False, default=None)
 
     def __attrs_post_init__(self):
-        self.__log = logging.getLogger(f'roomState_{self.__room}')
-
-    @property
-    def room(self):
-        ''' name of the room '''
-        return self.__room
+        self.__log = logging.getLogger(f'roomState_{self.room}')
 
     @property
     def active_device(self):
@@ -105,7 +100,7 @@ class RoomState:
         if command == 'play':
             try:
                 device = self.__active
-                if not self.__device_split:
+                if not self.device_split:
                     device = self.__determine_playable_device(parameter)
                 self.__devices[device].action('play', parameter)
             except ValueError:
