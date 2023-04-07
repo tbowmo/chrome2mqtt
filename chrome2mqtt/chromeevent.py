@@ -4,10 +4,12 @@ Handles events from a chromecast device, and reports these to various endpoints
 from time import sleep
 import logging
 from typing import Callable
+from attrs import define, field
 from pychromecast import Chromecast
 from .command import Command, CommandException
 from .chromestate import ChromeState
 
+@define
 class ChromeEvent:
     '''
         Handle events to and from registered chromecast devices.
@@ -19,20 +21,19 @@ class ChromeEvent:
         Also handles actions destined for the specific device, by calling
         the action method
     '''
-    device: Chromecast = None
-    status: ChromeState = None
-    callback: Callable[[ChromeState, str], None] = None
+    #pylint: disable=no-member
+    device: Chromecast = field()
+    status: ChromeState = field()
+    callback: Callable[[ChromeState, str], None] =  field(default = None)
+    name: str = field(default=None)
+    __log: logging.Logger = field(init=False, default = None)
+    __command: Command = field(init=False, default = None)
 
-    def __init__(self, device: Chromecast, status: ChromeState, callback: Callable[[ChromeState, str], None] = None, name=None):
-        self.callback = callback
-        self.device = device
-        self.name = name
-        self.log = logging.getLogger(f'chromevent_{self.device.cast_type}_{self.name}')
+    def __attrs_post_init__(self):
+        self.__log = logging.getLogger(f'chromevent_{self.device.cast_type}_{self.name}')
 
         self.device.register_status_listener(self)
         self.device.media_controller.register_status_listener(self)
-
-        self.status = status
 
         self.device.wait()
         self.__command = Command(self.device, self.status)
@@ -42,25 +43,29 @@ class ChromeEvent:
         try:
             result = self.__command.execute(command, parameter)
             if not result:
-                self.log.error('Command "%s" not supported with parameter "%s"', command, parameter)
+                self.__log.error(
+                    'Command "%s" not supported with parameter "%s"',
+                    command,
+                    parameter
+                )
             if result:
-                self.log.info('Success')
+                self.__log.info('Success')
         except CommandException as exception:
-            self.log.warning(exception)
+            self.__log.warning(exception)
         except Exception as exception: #pylint: disable=broad-except
-            self.log.error(command)
-            self.log.error(parameter)
-            self.log.error(exception)
+            self.__log.error(command)
+            self.__log.error(parameter)
+            self.__log.error(exception)
 
     def new_cast_status(self, status):
         ''' Receives updates when new app is starting on the chromecast '''
-        self.log.info(status)
+        self.__log.info(status)
         self.status.set_cast_state(status)
         self.__callback(self.status)
 
     def new_media_status(self, status):
         ''' Receives updates when new media changes is happening '''
-        self.log.info(status)
+        self.__log.info(status)
         self.status.set_media_state(status)
         self.__callback(self.status)
         if self.status.state == 'PLAYING' and self.status.app == 'Netflix':
@@ -71,4 +76,4 @@ class ChromeEvent:
 
     def __callback(self, msg: ChromeState):
         if self.callback is not None:
-            self.callback(msg, self.name)
+            self.callback(msg, self.name) #pylint: disable=not-callable

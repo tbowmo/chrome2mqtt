@@ -5,27 +5,26 @@ devices can be controlled as one mqtt topic / endpoint.
 import re
 from typing import Dict
 import pychromecast
-
+from attrs import define, field
 from .chromeevent import ChromeEvent
 from .chromestate import ChromeState
 from .mqtt import MQTT
 from .roomstate import RoomState
 from .alias import Alias
 
+@define
 class DeviceCoordinator:
     '''
     Handles chromecasts devices, organizing them into rooms (normal behavior),
     or as standalone devices (device_split=true)
     '''
-    rooms: Dict[str, RoomState] = {}
-    mqtt: MQTT
-    device_count = 0
-    device_split_char = '_'
+    #pylint: disable=no-member
 
-    def __init__(self, mqtt: MQTT, alias: Alias, device_split=False):
-        self.__device_split = device_split
-        self.mqtt = mqtt
-        self.alias = alias
+    mqtt: MQTT = field()
+    alias: Alias = field()
+    device_split = field(default=False)
+    __rooms: Dict[str, RoomState] = field(init= False, default={})
+    __device_split_char = field(init=False, default='_')
 
     def discover(self):
         '''
@@ -35,13 +34,13 @@ class DeviceCoordinator:
 
     def cleanup(self):
         ''' Clean up MQTT topics for all registered rooms '''
-        for room in self.rooms:
+        for room in self.__rooms:
             self.__cleanup(room)
 
     def __mqtt_action(self, client, userdata, message): #pylint: disable=unused-argument
         parameter = message.payload.decode("utf-8")
         command = self.__decode_mqtt_command(message)
-        room = self.rooms[self.__decode_mqtt_room(message)]
+        room = self.__rooms[self.__decode_mqtt_room(message)]
         room.action(command, parameter)
 
     def __decode_mqtt_command(self, message):
@@ -60,33 +59,32 @@ class DeviceCoordinator:
 
     def __room(self, device):
         room = device
-        if not self.__device_split:
-            room = device.split(self.device_split_char)[0]
+        if not self.device_split:
+            room = device.split(self.__device_split_char)[0]
         return self.alias.get(room)
 
     def __device(self, device):
-        if self.__device_split:
+        if self.device_split:
             return device
-        return device.split(self.device_split_char)[1]
+        return device.split(self.__device_split_char)[1]
 
     def __event_handler(self, state: ChromeState, device=None):
         room_name = self.__room(device)
-        self.rooms[room_name].state = state
+        self.__rooms[room_name].state = state
 
-        self.__mqtt_publish(self.rooms[room_name])
+        self.__mqtt_publish(self.__rooms[room_name])
 
     def __search_callback(self, chromecast: pychromecast.Chromecast):
         chromecast.connect()
-        self.device_count += 1
-        name = chromecast.name.lower().replace(' ', self.device_split_char)
+        name = chromecast.name.lower().replace(' ', self.__device_split_char)
         room_name = self.__room(name)
         device = self.__device(name)
-        if room_name not in self.rooms:
-            self.rooms.update({room_name : RoomState(room_name, self.__device_split)})
+        if room_name not in self.__rooms:
+            self.__rooms.update({room_name : RoomState(room_name, self.device_split)})
             control_path = f'{room_name}/control/+'
             self.mqtt.message_callback_add(control_path, self.__mqtt_action)
 
-        room = self.rooms[room_name]
+        room = self.__rooms[room_name]
         room.add_device(ChromeEvent(chromecast,
                                     ChromeState(device),
                                     self.__event_handler,

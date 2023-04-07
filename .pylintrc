@@ -1,2 +1,5 @@
 [Master]
 init-hook='import sys; sys.path.append("lib/python3.10/site-packages")'
+
+[MESSAGES CONTROL]
+disable=unsubscriptable-object, not-an-iterable, unsupported-membership-test
