@@ -2,7 +2,7 @@
 Handles events from a chromecast device, and reports these to various endpoints
 '''
 from time import sleep
-import logging
+from logging import getLogger, Logger
 from typing import Callable
 from attrs import define, field
 from pychromecast import Chromecast
@@ -26,11 +26,11 @@ class ChromeEvent:
     status: ChromeState = field()
     callback: Callable[[ChromeState, str], None] =  field(default = None)
     name: str = field(default=None)
-    __log: logging.Logger = field(init=False, default = None)
+    __log: Logger = field(init=False, default = None)
     __command: Command = field(init=False, default = None)
 
     def __attrs_post_init__(self):
-        self.__log = logging.getLogger(f'chromevent_{self.device.cast_type}_{self.name}')
+        self.__log = getLogger(f'chromevent_{self.device.cast_type}_{self.name}')
 
         self.device.register_status_listener(self)
         self.device.media_controller.register_status_listener(self)

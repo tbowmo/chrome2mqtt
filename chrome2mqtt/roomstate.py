@@ -1,7 +1,7 @@
 ''' RoomState is handling the state of a single room with multiple chromecasts
 '''
 import json
-import logging
+from logging import getLogger, Logger
 from types import SimpleNamespace as Namespace
 from time import sleep
 from attrs import define, field
@@ -36,10 +36,10 @@ class RoomState:
     __state_media: StateChanged = field(init=False, default=StateChanged())
     __state_state: StateChanged = field(init=False, default=StateChanged())
     __devices: dict = field(init=False, default={})
-    __log: logging.Logger = field(init=False, default=None)
+    __log: Logger = field(init=False)
 
     def __attrs_post_init__(self):
-        self.__log = logging.getLogger(f'roomState_{self.room}')
+        self.__log = getLogger(f'roomState_{self.room}')
 
     @property
     def active_device(self):

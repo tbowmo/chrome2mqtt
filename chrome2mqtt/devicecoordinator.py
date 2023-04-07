@@ -15,7 +15,7 @@ from .alias import Alias
 @define
 class DeviceCoordinator:
     '''
-    Handles chromecasts devices, organizing them into rooms (normal behavior),
+    Handles chromecast devices, organizing them into rooms (normal behavior),
     or as standalone devices (device_split=true)
     '''
     #pylint: disable=no-member
