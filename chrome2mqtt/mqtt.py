@@ -1,9 +1,9 @@
 ''' Internal MQTT handler for the project '''
-import logging
+from logging import getLogger
 from time import sleep
-import paho.mqtt.client as mqtt
+from paho.mqtt.client import Client
 
-class MQTT(mqtt.Client):
+class MQTT(Client):
     ''' Mqtt handler, takes care of adding a root topic to all topics
         managed by this class, so others do not have to be aware of
         this root topic
@@ -25,7 +25,7 @@ class MQTT(mqtt.Client):
         self.on_log = self.__on_log
         self.on_connect = self.__on_connect
         self.on_disconnect = self.__on_disconnect
-        self.log = logging.getLogger('mqtt')
+        self.log = getLogger('mqtt')
         self._client_id = client
         if user is not None:
             self.username_pw_set(user, password)

@@ -4,8 +4,8 @@ Handles command dispatching for chomecast devices, use the Command class
 from inspect import signature
 from types import SimpleNamespace as Namespace
 import json
-import logging
 from time import sleep
+from attrs import field, define
 from pychromecast import Chromecast
 from pychromecast.controllers.youtube import YouTubeController
 from .chromestate import ChromeState
@@ -15,15 +15,17 @@ class CommandException(Exception):
     Exception class for command errors
     '''
 
+@define
 class Command:
     '''
     Class that handles dispatching of commands to a chromecast device
     '''
-    def __init__(self, device: Chromecast, status: ChromeState):
-        self.chrome_state = status
-        self.device = device
-        self.log = logging.getLogger('Command_' + self.device.name)
-        self.youtube = YouTubeController()
+    #pylint: disable=no-member
+    device: Chromecast = field()
+    status: ChromeState = field()
+    youtube: YouTubeController = field(init=False, default= YouTubeController())
+
+    def __attrs_post_init__(self):
         self.device.register_handler(self.youtube)
 
     def execute(self, cmd, payload):

@@ -1,0 +1,4 @@
+pychromecast==13.0.7
+pytz>=2019.2
+paho-mqtt>=1.6.0
+attrs

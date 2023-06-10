@@ -1,9 +1,10 @@
 ''' RoomState is handling the state of a single room with multiple chromecasts
 '''
 import json
-import logging
+from logging import getLogger, Logger
 from types import SimpleNamespace as Namespace
 from time import sleep
+from attrs import define, field
 from .chromestate import ChromeState
 
 class StateChanged:
@@ -24,25 +25,21 @@ class StateChanged:
             self.__last_state = state
             self.__changed = True
 
+@define
 class RoomState:
     ''' Handles state of a room, with multiple chromecast devices. '''
-    __state = None
-    __room = 'N/A'
-    __active = 'N/A'
-    __state_media = StateChanged()
-    __state_state = StateChanged()
-    __devices: dict = {}
-    __device_split = False
+    #pylint: disable=no-member
+    room: str = field()
+    device_split: bool = field(default = False)
+    __state: ChromeState = field(init = False, default=None)
+    __active:str = field(init=False, default='N/A')
+    __state_media: StateChanged = field(init=False, default=StateChanged())
+    __state_state: StateChanged = field(init=False, default=StateChanged())
+    __devices: dict = field(init=False, default={})
+    __log: Logger = field(init=False)
 
-    def __init__(self, room, device_split=False):
-        self.__device_split = device_split
-        self.__room = room
-        self.log = logging.getLogger(f'roomState_{self.__room}')
-
-    @property
-    def room(self):
-        ''' name of the room '''
-        return self.__room
+    def __attrs_post_init__(self):
+        self.__log = getLogger(f'roomState_{self.room}')
 
     @property
     def active_device(self):
@@ -86,7 +83,7 @@ class RoomState:
         if self.__active != new_state.name \
            and self.__active != 'N/A' \
            and self.state.app != 'None':
-            self.log.info('quit %s', self.__active)
+            self.__log.info('quit %s', self.__active)
             self.__devices[self.__active].action('quit', '')
 
         self.__state = new_state
@@ -103,7 +100,7 @@ class RoomState:
         if command == 'play':
             try:
                 device = self.__active
-                if not self.__device_split:
+                if not self.device_split:
                     device = self.__determine_playable_device(parameter)
                 self.__devices[device].action('play', parameter)
             except ValueError:

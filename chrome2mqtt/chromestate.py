@@ -5,8 +5,8 @@ use ChromeState from this module, to handle the chromecast states.
 '''
 import json
 import abc
-from attrs import define, field, asdict
 from time import time
+from attrs import define, field, asdict
 from pychromecast.controllers.receiver import CastStatus
 from pychromecast.controllers.media import MediaStatus
 
@@ -31,7 +31,7 @@ class Media(BaseHelper):
     '''
     #pylint: disable=too-many-instance-attributes, missing-docstring
     #All attributes are needed in this object, to hold media info.
-    
+
     device: str = field()
     title: str = field(init = False, default='')
     artist: str = field(init = False, default='')
@@ -85,7 +85,7 @@ class SupportedFeatures(BaseHelper):
         pass
 
 @define
-class State(BaseHelper): 
+class State(BaseHelper):
     '''
         Helper class holding information about current state of the chromecast
     '''
@@ -96,7 +96,7 @@ class State(BaseHelper):
     volume: int = field(init = False, default=0)
     muted: bool = field(init = False, default=False)
     app_icon: str = field(init = False, default='')
-    supported_features: str = field(init = False, default=SupportedFeatures())
+    supported_features: SupportedFeatures = field(init = False, default=SupportedFeatures())
 
     def set_cast_state(self, status: CastStatus):
         self.app = status.display_name or 'None'
