@@ -74,11 +74,11 @@ class RoomState:
     @state.setter
     def state(self, new_state: ChromeState):
         ''' Update room state from chromecast devices '''
-        ignoredApps = new_state.app == 'Default Media Receiver' or new_state.app == 'None' 
+        ignored_apps = new_state.app in ('Default Media Receiver', 'None')
         if self.__state is not None \
            and self.__state.app != 'None' \
            and new_state.name != self.__active \
-           and ignoredApps:
+           and ignored_apps:
             return
 
         if self.__active != new_state.name \

@@ -79,7 +79,7 @@ class Command:
 
     def quit(self):
         ''' Quit running application on chromecast '''
-        self.chrome_state.clear()
+        self.status.clear()
         self.device.quit_app()
 
     def poweroff(self):
