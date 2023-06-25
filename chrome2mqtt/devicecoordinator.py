@@ -102,10 +102,10 @@ class DeviceCoordinator:
             self.mqtt.publish(f'{base}/volume', room.state.volume, retain=True)
             self.mqtt.publish(f'{base}/app', room.state.app, retain=True)
 
-    def __cleanup(self, room):
-        self.mqtt.publish(room + '/capabilities', None, retain=False)
-        self.mqtt.publish(room + '/media', None, retain=False)
-        self.mqtt.publish(room + '/state', None, retain=False)
-        self.mqtt.publish(room + '/volume', None, retain=False)
-        self.mqtt.publish(room + '/app', None, retain=False)
-        self.mqtt.publish(room + '/device', None, retain=False)
+    def __cleanup(self, room: str):
+        self.mqtt.publish(f'{room}/capabilities', None, retain=False)
+        self.mqtt.publish(f'{room}/media', None, retain=False)
+        self.mqtt.publish(f'{room}/state', None, retain=False)
+        self.mqtt.publish(f'{room}/volume', None, retain=False)
+        self.mqtt.publish(f'{room}/app', None, retain=False)
+        self.mqtt.publish(f'{room}/device', None, retain=False)

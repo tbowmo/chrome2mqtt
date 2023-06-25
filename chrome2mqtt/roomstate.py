@@ -28,7 +28,7 @@ class StateChanged:
 @define
 class RoomState:
     ''' Handles state of a room, with multiple chromecast devices. '''
-    #pylint: disable=no-member
+    #pylint: disable=no-member, too-many-instance-attributes
     room: str = field()
     device_split: bool = field(default = False)
     __state: ChromeState = field(init = False, default=None)
@@ -74,15 +74,16 @@ class RoomState:
     @state.setter
     def state(self, new_state: ChromeState):
         ''' Update room state from chromecast devices '''
-        if self.state is not None \
+        ignoredApps = new_state.app == 'Default Media Receiver' or new_state.app == 'None' 
+        if self.__state is not None \
+           and self.__state.app != 'None' \
            and new_state.name != self.__active \
-           and self.state.app != 'None' \
-           and new_state.app == 'None':
+           and ignoredApps:
             return
 
         if self.__active != new_state.name \
            and self.__active != 'N/A' \
-           and self.state.app != 'None':
+           and self.__state.app != 'None':
             self.__log.info('quit %s', self.__active)
             self.__devices[self.__active].action('quit', '')
 
