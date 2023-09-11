@@ -85,7 +85,7 @@ Then in a terminal, execute the following two commands to enable your new servic
 
 Start in a docker container
 ---
-If you wish to run inside a docker container, you can build your own image with `docker build . --tag chrome2mqtt` and then run it with `docker run chrome2mqtt <options>` 
+If you wish to run inside a docker container, you can build your own image with `docker build . --tag chrome2mqtt` and then run it with `docker run --network=host chrome2mqtt <options>` 
 
 Command line options
 -------------
