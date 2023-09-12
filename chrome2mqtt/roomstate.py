@@ -118,6 +118,13 @@ class RoomState:
         device = 'tv'
         if hasattr(media, 'type') and media.type.lower().startswith('audio'):
             device = 'audio'
+        
+        if device not in self.__devices:
+            # Some naming mishaps for the devices detected, so we are not able to determine which device to play on
+            # so start on the first available one
+            self.__log.error('Device %s is not available, defaulting to first in list', device)
+            device = list(self.__devices.keys())[0]
+ 
         if device != self.__active:
             self.__devices[self.__active].action('quit', '')
             sleep(0.5)
