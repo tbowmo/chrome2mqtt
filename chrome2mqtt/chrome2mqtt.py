@@ -69,7 +69,7 @@ def setup_logging(
 def main_loop():
     '''Main operating loop, discovers chromecasts, and run forever until ctrl-c is received'''
 
-    assert sys.version_info >= (3, 6), "You need at least python 3.6 to run this program"
+    assert sys.version_info >= (3, 11), "You need at least python 3.11 to run this program"
 
     args = parse_args()
     start_banner(args)
