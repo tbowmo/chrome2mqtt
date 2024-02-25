@@ -75,7 +75,6 @@ class DeviceCoordinator:
         self.__mqtt_publish(self.__rooms[room_name])
 
     def __search_callback(self, chromecast: pychromecast.Chromecast):
-        chromecast.connect()
         name = chromecast.name.lower().replace(' ', self.__device_split_char)
         room_name = self.__room(name)
         device = self.__device(name)

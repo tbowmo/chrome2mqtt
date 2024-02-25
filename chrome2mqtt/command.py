@@ -56,7 +56,7 @@ class Command:
     def pause(self, pause):
         ''' Pause playback '''
         if (pause is None or pause == ''):
-            if self.device.media_controller.is_paused:
+            if self.device.media_controller.status.player_is_paused:
                 self.device.media_controller.play()
             else:
                 self.device.media_controller.pause()
@@ -114,10 +114,10 @@ class Command:
             else:
                 self.device.media_controller.play_media(media_obj.link, media_obj.type)
             sleep(0.5)
-            if self.device.media_controller.is_playing or retry == 0:
+            if self.device.media_controller.status.player_is_playing or retry == 0:
                 break
             retry = retry - 1
-        if retry == 0 and not self.device.media_controller.is_playing:
+        if retry == 0 and not self.device.media_controller.status.player_is_playing:
             raise CommandException('Could not start chromecast')
 
     def volume(self, level):
