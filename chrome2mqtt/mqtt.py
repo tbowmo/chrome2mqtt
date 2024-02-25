@@ -1,7 +1,7 @@
 ''' Internal MQTT handler for the project '''
 from logging import getLogger
 from time import sleep
-from paho.mqtt.client import Client
+from paho.mqtt.client import Client, CallbackAPIVersion
 
 class MQTT(Client):
     ''' Mqtt handler, takes care of adding a root topic to all topics
@@ -13,7 +13,7 @@ class MQTT(Client):
     root = ''
 
     def __init__(self, host='127.0.0.1', port=1883, client='chrome', root='', user=None, password=None): #pylint: disable=too-many-arguments, line-too-long
-        super().__init__(host, port)
+        super().__init__(CallbackAPIVersion.VERSION2, client)
         self.subscriptions = []
         self.host = host
         self.port = int(port)
@@ -26,7 +26,6 @@ class MQTT(Client):
         self.on_connect = self.__on_connect
         self.on_disconnect = self.__on_disconnect
         self.log = getLogger('mqtt')
-        self._client_id = client
         if user is not None:
             self.username_pw_set(user, password)
         self.__connect()
@@ -51,17 +50,17 @@ class MQTT(Client):
         if self.__is_connected:
             super().publish(topic, payload, qos, retain)
 
-    def __on_connect(self, mqttc, obj, flags, rc): # pylint: disable=unused-argument, invalid-name, arguments-differ
+    def __on_connect(self, client, userdata, flags, reason_code, properties): # pylint: disable=unused-argument, invalid-name, arguments-differ, too-many-arguments
         ''' handle connection established '''
-        self.log.warning('Connect %s', rc)
-        if rc == 0:
+        self.log.warning('Connect %s', reason_code)
+        if reason_code == 0:
             self.__is_connected = True
             for subscription in self.subscriptions:
                 self.subscribe(subscription)
         else:
             raise ConnectionError('Connection failed')
 
-    def __on_disconnect(self, client, userdata, rc): # pylint: disable=unused-argument, invalid-name, arguments-differ
+    def __on_disconnect(self, client, userdata, flags, reason_code, properties): # pylint: disable=unused-argument, invalid-name, arguments-differ, too-many-arguments
         ''' handle disconnects '''
         self.log.warning('Disconnected, reconnecting')
         self.__is_connected = False

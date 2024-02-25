@@ -1,4 +1,4 @@
-pychromecast==13.0.8
-pytz>=2019.2
-paho-mqtt>=1.6.0
+pychromecast==14.0.0
+pytz>=2024.01
+paho-mqtt>=2.0.0
 attrs
