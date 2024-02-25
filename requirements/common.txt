@@ -1,4 +1,4 @@
 pychromecast==14.0.0
 pytz>=2024.01
-paho-mqtt==1.6.1
+paho-mqtt>=2.0.0
 attrs
