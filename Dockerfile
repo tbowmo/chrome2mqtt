@@ -1,4 +1,4 @@
-FROM python:3.7.4-slim
+FROM python:3.12-slim
 WORKDIR /usr/src/app
 COPY requirements.txt ./
 COPY requirements ./requirements
